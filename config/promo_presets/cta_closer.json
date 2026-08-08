@@ -1,0 +1,19 @@
+{
+  "preset_id": "cta_closer",
+  "title": "Call To Action Closer",
+  "format": "closer",
+  "target_duration_seconds": 20,
+  "intensity": "medium",
+  "segments": [
+    {
+      "type": "summary",
+      "speaker_order": ["jim"],
+      "goal": "Summarize the offer simply"
+    },
+    {
+      "type": "call_to_action",
+      "speaker_order": ["phil"],
+      "goal": "Direct the listener to act now"
+    }
+  ]
+}

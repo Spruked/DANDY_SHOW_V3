@@ -1,0 +1,97 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+logs/*.log
+
+# Local environment
+.env
+.env.*
+*.pid
+
+# Generated runtime data
+logs/*
+staging/*
+social/generated/
+kokoro_test.wav
+
+# Large local audio/editor artifacts
+*.aup3
+*.wav
+*.mp3
+!introclip.mp3
+!introclipdandy222.mp3
+
+# Keep folders
+!logs/.gitkeep
+!staging/.gitkeep
+!archive/.gitkeep
+archive/claude_drop/
+archive/clean_slate/
+archive/frontend_legacy_*/
+archive/testing/results/**
+!archive/testing/README.md
+!archive/testing/results/RESULTS_INDEX.md
+frontend_old_*/
+frontend/vite-wired*.log
+
+# Episodes output (do not commit long-form audio/assets)
+episodes/**/audio*.mp3
+episodes/**/production_result.json
+episodes/**/status.json
+episodes/**/script_versions/
+episodes/**/ads/
+episodes/**/assets/
+
+# Local model weights
+*.pt
+*.safetensors
+*.bin
+*.gguf
+
+# Rendered social output (generated, not source)
+social/renders/
+social/generated/
+
+# Vendored local sidecar runtime output
+secondary_systems/**/.agents/
+secondary_systems/**/.codex/
+secondary_systems/**/generated_audio/
+secondary_systems/**/logs/
+secondary_systems/**/staging/
+secondary_systems/**/probe*.json
+
+# Audio binaries — track jingle metadata in config, not the files
+audio/jingles/*.mp3
+audio/sfx/*.mp3
+audio/ads/*.mp3
+!audio/jingles/.gitkeep
+!audio/sfx/.gitkeep
+!audio/ads/.gitkeep
+
+# Backup and restore archives (binary, regeneratable)
+archive/backups/
+archive/restore_points/
+!archive/backups/.gitkeep
+!archive/restore_points/.gitkeep
+
+# Pillow/FFmpeg render scratch
+renders/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

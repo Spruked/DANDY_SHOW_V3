@@ -1,0 +1,43 @@
+{
+  "enabled": true,
+  "role": "secondary",
+  "bridge_url": "http://127.0.0.1:8020",
+  "operator_ui_url": "http://127.0.0.1:7861",
+  "custom_voice_url": "http://127.0.0.1:8031",
+  "clone_voice_url": "http://127.0.0.1:8002",
+  "chunking": {
+    "preferred_min": 120,
+    "preferred_max": 190,
+    "hard_max": 220,
+    "sentence_pause_ms": 425,
+    "clause_pause_ms": 200,
+    "speaker_change_pause_ms": 550
+  },
+  "timeouts": {
+    "health_seconds": 3,
+    "synthesis_seconds": 180
+  },
+  "voices": {
+    "phil": "Ryan",
+    "jim": "Eric",
+    "announcer_male": "Ryan",
+    "announcer_female": "Serena",
+    "host": "Ryan",
+    "guest": "Aiden"
+  },
+  "instructions": {
+    "phil": "A curious, energetic younger-brother host voice. Warm, quick, conversational, with clean cadence.",
+    "jim": "A grounded, practical older-brother host voice. Dry, measured, skeptical, and clear.",
+    "announcer_male": "A confident radio announcer voice with polished articulation.",
+    "announcer_female": "A warm professional announcer voice with steady pacing.",
+    "host": "A clear studio host voice with natural pacing.",
+    "guest": "A natural guest voice with clear pronunciation."
+  },
+  "production": {
+    "enabled": true,
+    "explicit_selection_enabled": true,
+    "use_as_secondary_fallback": true,
+    "fallback_provider": "edge",
+    "store_outputs_under_episode": true
+  }
+}

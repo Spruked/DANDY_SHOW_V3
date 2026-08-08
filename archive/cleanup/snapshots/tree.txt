@@ -1,0 +1,168 @@
+AI_Operating_Guidelines.md
+.gitignore
+Jim_dandy_skg.py
+NEXT_INSTANCE_NOTES.md
+phil_dandy_skg.py
+README.md
+requirements.txt
+test.txt
+tree.txt
+
+archive/
+    .gitkeep
+    claude_drop/
+        AdTab.jsx
+        api.js
+        App.jsx
+        dandy-theme.css
+        EpisodeTab.jsx
+        SocialTab.jsx
+        SystemTab.jsx
+        vite.config.js
+
+backend/
+    main.py
+    app/
+        __init__.py
+        main.py
+        api/
+            __init__.py
+            assets.py
+            library.py
+            production.py
+            social.py
+            system.py
+        core/
+            __init__.py
+            paths.py
+            settings.py
+        schemas/
+            __init__.py
+            episode.py
+        services/
+            __init__.py
+            tts/
+                __init__.py
+                kokoro_wrapper.py
+            production/
+                __init__.py
+                worker.py
+                script_seed.py
+                personality_loader.py
+                dandy_harmonizer.py
+                communication_layer.py
+                audio_post_processor.py
+                ads.py
+            social/
+                __init__.py
+                audiogram_generator.py
+                captions_generator.py
+                clip_generator.py
+                package_builder.py
+                post_copy_generator.py
+                thumbnail_generator.py
+            storage/
+                __init__.py
+                episode_store.py
+
+config/
+    branding.json
+    config.json
+    social_presets.json
+    voices.json
+    promo_presets/
+        cta_closer.json
+        product_teaser.json
+        sponsor_60s.json
+
+docs/
+    BRAND_SYSTEM.md
+    DASHBOARD_DECISION.md
+    PROJECT_STRUCTURE.md
+    SOCIAL_EXPORT_PLAN.md
+
+dandy-frontend/
+    index.html
+    package.json
+    postcss.config.js
+    tailwind.config.js
+    vite.config.js
+    src/
+        App.jsx
+        main.jsx
+        lib/
+            api.js
+        components/
+            AdTab.jsx
+            EpisodeTab.jsx
+            SocialTab.jsx
+            SystemTab.jsx
+            ui.jsx
+        hooks/
+            useToast.js
+        styles/
+            index.css
+
+episodes/
+    .drafts/
+        tts_edge_test.json
+        smoke_test_001.json
+        route_probe_001.json
+        jobs/
+            job_tts_edge_test_bc847afe.json
+            job_tts_edge_test_a29aa3a0.json
+            job_smoke_test_001_453d5448.json
+            job_route_probe_001_8bbcc313.json
+            job_demo_podcast_gen_1c7ff456.json
+        demo_podcast_gen.json
+    asset_probe_001/
+        media_cues.json
+    media_probe_001/
+        media_cues.json
+    route_probe_001/
+        config.json
+        production_metadata.json
+        production_result.json
+        script.json
+        status.json
+        transcript.json
+    demo_podcast_gen/
+        config.json
+        production_metadata.json
+        production_result.json
+        script.json
+        status.json
+        transcript.json
+        dandyshowtestonecomplete.mp3
+    tts_edge_test/
+        config.json
+        script.json
+    smoke_test_001/
+        config.json
+        script.json
+    voice_guard_probe_001/
+        production_metadata.json
+        transcript.json
+    worker_probe_003/
+        production_metadata.json
+        transcript.json
+
+social/
+    branding/
+        README.md
+        personas/
+            README.md
+        segments/
+            README.md
+        styles/
+            README.md
+    templates/
+        ASSET_SLOTS.md
+
+staging/
+    .gitkeep
+
+logs/
+    .gitkeep
+
+tests/

@@ -1,0 +1,78 @@
+{
+  "active_brand": {
+    "primary_master_brand": "gold_city_sign",
+    "alternate_cover": "blue_countryside_title",
+    "character_logo": "vintage_cream_double_headphones",
+    "segment_card": "tech_talk_and_stuff_blue",
+    "legacy_alternate": "beige_two_face_podcast"
+  },
+  "usage_defaults": {
+    "dashboard_brand": "gold_city_sign",
+    "social_thumbnail_brand": "gold_city_sign",
+    "social_audiogram_brand": "gold_city_sign",
+    "alternate_social_brand": "blue_countryside_title",
+    "character_promo_brand": "vintage_cream_double_headphones",
+    "segment_override_brand": "tech_talk_and_stuff_blue"
+  },
+  "automation_rules": {
+    "main_machine_hud": {
+      "brand": "gold_city_sign",
+      "trigger": "system_idle_or_command_mode"
+    },
+    "market_updates": {
+      "brand": "blue_countryside_title",
+      "trigger_keywords": ["sheep", "sales", "katahdin", "market", "true mark mint"]
+    },
+    "tech_dev_sessions": {
+      "brand": "tech_talk_and_stuff_blue",
+      "trigger_keywords": ["rtx", "3050", "python", "merge", "react", "fastapi", "vite", "coding"]
+    },
+    "character_banter": {
+      "brand": "vintage_cream_double_headphones",
+      "trigger": "phil_or_jim_voice_focus"
+    },
+    "deep_dive_archive": {
+      "brand": "beige_two_face_podcast",
+      "trigger_keywords": ["deep dive", "best of", "archive", "long form", "compilation"]
+    }
+  },
+  "assets": {
+    "gold_city_sign": {
+      "role": "primary_master_brand",
+      "target_path": "social/templates/thumbnail_base.png",
+      "notes": "Main official show identity. Also drives waveform base and dashboard branding."
+    },
+    "blue_countryside_title": {
+      "role": "alternate_cover",
+      "target_path": "social/templates/alternate_cover.png",
+      "notes": "Scenic alternate cover for selected promos and rotation."
+    },
+    "vintage_cream_double_headphones": {
+      "role": "character_logo",
+      "target_path": "social/templates/character_logo.png",
+      "notes": "Main illustrated Phil and Jim logo-style asset.",
+      "branding_path": "social/branding/personas/phil_jim_duo.png"
+    },
+    "tech_talk_and_stuff_blue": {
+      "role": "segment_card",
+      "target_path": "social/templates/segment_tech_talk.png",
+      "notes": "Use only for the Tech Talk and Stuff segment lane.",
+      "branding_path": "social/branding/segments/tech_talk_base.png"
+    },
+    "beige_two_face_podcast": {
+      "role": "legacy_alternate",
+      "target_path": "social/templates/legacy_alt.png",
+      "notes": "Optional lower-priority alternate artwork.",
+      "branding_path": "social/branding/styles/retro_cream.png"
+    }
+  },
+  "palette": {
+    "primary_background": "#08111f",
+    "primary_accent": "#d8a340",
+    "primary_text": "#f7f3ea",
+    "secondary_blue": "#2436a8",
+    "secondary_gold": "#c48a2c",
+    "cream_background": "#efe6d3",
+    "muted_green": "#4d6758"
+  }
+}

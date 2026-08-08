@@ -1,0 +1,52 @@
+{
+  "line_count": 386,
+  "phil_count": 166,
+  "jim_count": 206,
+  "host_count": 14,
+  "ads_count": 0,
+  "estimated_runtime_seconds": 2509,
+  "writer_engine": "template_fallback",
+  "writer_engine_actual": "template_fallback",
+  "fallback_used": true,
+  "fallback_sources": [
+    "legacy_template_fallback"
+  ],
+  "fallback_line_count": 41,
+  "llm_sources": [],
+  "llm_line_count": 0,
+  "structural_sources": [],
+  "structural_line_count": 0,
+  "unknown_line_count": 345,
+  "line_source_counts": {
+    "legacy_template_fallback": 41,
+    "unknown": 345
+  },
+  "provenance_reliable": false,
+  "repetition_guard_passed": false,
+  "repetition_guard_max_allowed": 3,
+  "max_repeated_line_count": 41,
+  "repeated_line_count": 22,
+  "duplicate_line_instances": 328,
+  "top_repeated_lines": [
+    {
+      "count": 41,
+      "text": "happy toes begins as a father trying to reach his daughter through words."
+    },
+    {
+      "count": 41,
+      "text": "that is the part to keep centered. before the literary experiment, there is a daughter and a father."
+    },
+    {
+      "count": 35,
+      "text": "the book matters because it lets one private poem echo through many different voices."
+    },
+    {
+      "count": 35,
+      "text": "and if those voices work, they should make the original feeling clearer, not bury it."
+    },
+    {
+      "count": 27,
+      "text": "the practical test is whether the reader still feels the love underneath the structure."
+    }
+  ]
+}

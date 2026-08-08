@@ -1,0 +1,24 @@
+{
+  "preset_id": "product_teaser",
+  "title": "Product Teaser",
+  "format": "teaser",
+  "target_duration_seconds": 30,
+  "intensity": "high",
+  "segments": [
+    {
+      "type": "hook",
+      "speaker_order": ["phil"],
+      "goal": "Lead with urgency or curiosity"
+    },
+    {
+      "type": "reaction",
+      "speaker_order": ["jim"],
+      "goal": "Ground the claim and give practical framing"
+    },
+    {
+      "type": "cta",
+      "speaker_order": ["phil", "jim"],
+      "goal": "Short closing push"
+    }
+  ]
+}

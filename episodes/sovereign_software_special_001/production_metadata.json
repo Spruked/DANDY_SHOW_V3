@@ -1,0 +1,23 @@
+{
+  "episode_id": "sovereign_software_special_001",
+  "title": "The Phil and Jim Dandy Show \u2014 Sovereign Software Special",
+  "topic": "TrueMark Sovereign Software Ecosystem pitch: Mint, GOAT, and the ORB",
+  "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\episodes\\sovereign_software_special_001\\audio.mp3",
+  "segment_count": 105,
+  "generated_at": "2026-04-15T08:43:04.973271",
+  "processing": {
+    "processing_chain": "direct_mp3_fallback",
+    "compliant": false,
+    "warning": "Command '['ffmpeg', '-i', 'C:\\\\Users\\\\bryan\\\\Downloads\\\\dandy_merge\\\\Phil_and_Jim_Dandy_Show\\\\episodes\\\\sovereign_software_special_001\\\\audio.mp3', '-af', 'loudnorm=I=-16:print_format=json', '-f', 'null', '-']' timed out after 60 seconds"
+  },
+  "voice_assignments": {
+    "phil": {
+      "primary": "am_michael",
+      "fallback": "en-US-GuyNeural"
+    },
+    "jim": {
+      "primary": "am_liam",
+      "fallback": "en-US-TonyNeural"
+    }
+  }
+}

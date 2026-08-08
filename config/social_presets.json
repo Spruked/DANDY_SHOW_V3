@@ -1,0 +1,118 @@
+{
+  "branding": {
+    "theme": "midnight_amber",
+    "active_brand": "gold_city_sign",
+    "alternate_brand": "blue_countryside_title",
+    "character_brand": "vintage_cream_double_headphones",
+    "segment_brand": "tech_talk_and_stuff_blue",
+    "background": "#08111f",
+    "accent": "#d8a340",
+    "text_primary": "#f7f3ea",
+    "text_secondary": "#c7bca5",
+    "disclosure_text": "Sponsored"
+  },
+  "defaults": {
+    "extract_best_clips": 3,
+    "caption_burn_in": true,
+    "include_hashtags": true,
+    "include_post_copy": true,
+    "zip_social_package": true
+  },
+  "thumbnail": {
+    "width": 1280,
+    "height": 720,
+    "background_color": "#08111f",
+    "text_color": "#d8a340",
+    "subtitle_color": "#f7f3ea",
+    "sponsor_color": "#ff6b4a",
+    "font_path": null,
+    "logo_path": "social/templates/logo.png",
+    "background_image_path": "social/templates/thumbnail_base.png",
+    "font_size_title": 72,
+    "font_size_subtitle": 40,
+    "font_size_sponsor": 34,
+    "safe_zone_x": 56,
+    "safe_zone_top": 72,
+    "safe_zone_bottom": 140,
+    "title_max_chars": 80,
+    "subtitle_max_chars": 100,
+    "sponsor_max_chars": 90,
+    "output_format": "jpg",
+    "quality": 92
+  },
+  "audiogram": {
+    "width": 1280,
+    "height": 720,
+    "wave_color": "#d8a340",
+    "wave_mode": "cline",
+    "wave_scale": "cbrt",
+    "background_color": "#08111f",
+    "title_color": "white",
+    "sponsor_color": "white",
+    "hook_color": "#f7f3ea",
+    "caption_color": "white",
+    "hook_box_color": "black@0.55",
+    "caption_box_color": "black@0.5",
+    "logo_path": "social/templates/logo.png",
+    "background_image_path": "social/templates/waveform_base.png",
+    "font_path": null,
+    "title_font_size": 46,
+    "sponsor_font_size": 34,
+    "hook_font_size": 58,
+    "caption_font_size": 34,
+    "fps": 30,
+    "codec_cuda": "h264_nvenc",
+    "codec_cpu": "libx264",
+    "audio_codec": "aac",
+    "pixel_format": "yuv420p"
+  },
+  "platforms": {
+    "youtube_thumbnail": {
+      "type": "image",
+      "width": 1280,
+      "height": 720,
+      "format": "jpg"
+    },
+    "youtube_shorts": {
+      "type": "video",
+      "width": 1080,
+      "height": 1920,
+      "format": "mp4"
+    },
+    "tiktok": {
+      "type": "video",
+      "width": 1080,
+      "height": 1920,
+      "format": "mp4"
+    },
+    "instagram_reels": {
+      "type": "video",
+      "width": 1080,
+      "height": 1920,
+      "format": "mp4"
+    },
+    "facebook_feed": {
+      "type": "video",
+      "width": 1080,
+      "height": 1080,
+      "format": "mp4"
+    },
+    "linkedin_post": {
+      "type": "image",
+      "width": 1080,
+      "height": 1080,
+      "format": "jpg"
+    },
+    "x_post": {
+      "type": "image",
+      "width": 1280,
+      "height": 720,
+      "format": "jpg"
+    }
+  },
+  "promo_overlays": {
+    "show_sponsor_tag": true,
+    "show_episode_title": true,
+    "show_cta": true
+  }
+}

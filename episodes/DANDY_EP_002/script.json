@@ -1,0 +1,2760 @@
+{
+  "episode_id": "DANDY_EP_002",
+  "updated_at": "2026-08-08T06:07:52.724143",
+  "script": [
+    {
+      "speaker": "phil",
+      "text": "Alright folks, welcome to the show. Today Jim and I are taking on Happy Toes - A Poem.",
+      "emotion": "enthusiastic",
+      "pause_after": 0.5,
+      "line_number": 1
+    },
+    {
+      "speaker": "jim",
+      "text": "Fair warning: Phil is going to get excited. I am going to ask hard questions. That is the deal.",
+      "emotion": "measured",
+      "pause_after": 0.5,
+      "line_number": 2
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 3
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 4
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 5
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 6
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 7
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 8
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 9
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 10
+    },
+    {
+      "speaker": "jim",
+      "text": "I think we are talking around the real issue with The father\u2013daughter bond and why the poem mattered. Let me name it.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 11
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 12
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 13
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 14
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 15
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 16
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 17
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 18
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 19
+    },
+    {
+      "speaker": "jim",
+      "text": "Fair point about the poem expanded into a full book. But what about the practical side?",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 20
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 21
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 22
+    },
+    {
+      "speaker": "host",
+      "text": "If you are listening and you have dealt with the poem expanded into a full book, you know exactly what I mean.",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 23
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 24
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 25
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 26
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 27
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 28
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 29
+    },
+    {
+      "speaker": "jim",
+      "text": "Alright, let us look at Literary reinterpretations and what they reveal from a different angle.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 30
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 31
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 32
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 33
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 34
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 35
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 36
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 37
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 38
+    },
+    {
+      "speaker": "jim",
+      "text": "Let me ask you this about Themes of legacy, distance, and connection...",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 39
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 40
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 41
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 42
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 43
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 44
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 45
+    },
+    {
+      "speaker": "phil",
+      "text": "The heart of Happy Toes is not complexity. It is love finding another form.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 46
+    },
+    {
+      "speaker": "jim",
+      "text": "Keep the origin honest, and the larger book has something real to stand on.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 47
+    },
+    {
+      "speaker": "jim",
+      "text": "I want to believe in The emotional origin of the poem during incarceration. Convince me one more time.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 48
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 49
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 50
+    },
+    {
+      "speaker": "host",
+      "text": "Here is a question for everyone: when is the last time The emotional origin of the poem during incarceration actually worked for you?",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 51
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 52
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 53
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 54
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 55
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 56
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 57
+    },
+    {
+      "speaker": "jim",
+      "text": "Here is what I keep circling back to with The father\u2013daughter bond and why the poem mattered: who is actually winning here?",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 58
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 59
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 60
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 61
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 62
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 63
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 64
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 65
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 66
+    },
+    {
+      "speaker": "jim",
+      "text": "Okay, but consider the opposite of the poem expanded into a full book for a second.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 67
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 68
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 69
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 70
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 71
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 72
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 73
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 74
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 75
+    },
+    {
+      "speaker": "jim",
+      "text": "I want to come back to something you said about Literary reinterpretations and what they reveal earlier.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 76
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 77
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 78
+    },
+    {
+      "speaker": "host",
+      "text": "If this conversation about Literary reinterpretations and what they reveal is resonating, you are not alone.",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 79
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 80
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 81
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 82
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 83
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 84
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 85
+    },
+    {
+      "speaker": "jim",
+      "text": "Let me be the devil's advocate on Themes of legacy, distance, and connection for just one more minute.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 86
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 87
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 88
+    },
+    {
+      "speaker": "host",
+      "text": "Think about your own situation with Themes of legacy, distance, and connection. Does this match what you are seeing?",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 89
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 90
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 91
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 92
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 93
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 94
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 95
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the optimistic read on The emotional origin of the poem during incarceration. Now give me the pessimistic one.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 96
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 97
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 98
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 99
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 100
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 101
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 102
+    },
+    {
+      "speaker": "phil",
+      "text": "The heart of Happy Toes is not complexity. It is love finding another form.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 103
+    },
+    {
+      "speaker": "jim",
+      "text": "Keep the origin honest, and the larger book has something real to stand on.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 104
+    },
+    {
+      "speaker": "jim",
+      "text": "Before we move on from The father\u2013daughter bond and why the poem mattered, I want to poke at that a little more.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 105
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 106
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 107
+    },
+    {
+      "speaker": "host",
+      "text": "Some of you are shaking your heads right now about The father\u2013daughter bond and why the poem mattered. I get it.",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 108
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 109
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 110
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 111
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 112
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 113
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 114
+    },
+    {
+      "speaker": "jim",
+      "text": "I hear you on the poem expanded into a full book. Now let me flip it.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 115
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 116
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 117
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 118
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 119
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 120
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 121
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 122
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 123
+    },
+    {
+      "speaker": "jim",
+      "text": "Let me play this out. If Literary reinterpretations and what they reveal works exactly as advertised, what happens next?",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 124
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 125
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 126
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 127
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 128
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 129
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 130
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 131
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 132
+    },
+    {
+      "speaker": "jim",
+      "text": "I think we are talking around the real issue with Themes of legacy, distance, and connection. Let me name it.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 133
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 134
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 135
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 136
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 137
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 138
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 139
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 140
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 141
+    },
+    {
+      "speaker": "jim",
+      "text": "That is one side of The emotional origin of the poem during incarceration. Here is the other.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 142
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 143
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 144
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 145
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 146
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 147
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 148
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 149
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 150
+    },
+    {
+      "speaker": "jim",
+      "text": "Fair point about The father\u2013daughter bond and why the poem mattered. But what about the practical side?",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 151
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 152
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 153
+    },
+    {
+      "speaker": "host",
+      "text": "Some of you are shaking your heads right now about The father\u2013daughter bond and why the poem mattered. I get it.",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 154
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 155
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 156
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 157
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 158
+    },
+    {
+      "speaker": "phil",
+      "text": "The heart of Happy Toes is not complexity. It is love finding another form.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 159
+    },
+    {
+      "speaker": "jim",
+      "text": "Keep the origin honest, and the larger book has something real to stand on.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 160
+    },
+    {
+      "speaker": "jim",
+      "text": "You know what would change my mind about the poem expanded into a full book? One concrete example. Just one.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 161
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 162
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 163
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 164
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 165
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 166
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 167
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 168
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 169
+    },
+    {
+      "speaker": "jim",
+      "text": "Let me ask you this about Literary reinterpretations and what they reveal...",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 170
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 171
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 172
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 173
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 174
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 175
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 176
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 177
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 178
+    },
+    {
+      "speaker": "jim",
+      "text": "Alright, let us look at Themes of legacy, distance, and connection from a different angle.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 179
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 180
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 181
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 182
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 183
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 184
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 185
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 186
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 187
+    },
+    {
+      "speaker": "jim",
+      "text": "I want to believe in The emotional origin of the poem during incarceration. Convince me one more time.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 188
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 189
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 190
+    },
+    {
+      "speaker": "host",
+      "text": "Think about your own situation with The emotional origin of the poem during incarceration. Does this match what you are seeing?",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 191
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 192
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 193
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 194
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 195
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 196
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 197
+    },
+    {
+      "speaker": "jim",
+      "text": "I want to come back to something you said about The father\u2013daughter bond and why the poem mattered earlier.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 198
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 199
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 200
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 201
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 202
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 203
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 204
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 205
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 206
+    },
+    {
+      "speaker": "jim",
+      "text": "Here is what I keep circling back to with the poem expanded into a full book: who is actually winning here?",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 207
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 208
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 209
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 210
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 211
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 212
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 213
+    },
+    {
+      "speaker": "phil",
+      "text": "The heart of Happy Toes is not complexity. It is love finding another form.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 214
+    },
+    {
+      "speaker": "jim",
+      "text": "Keep the origin honest, and the larger book has something real to stand on.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 215
+    },
+    {
+      "speaker": "jim",
+      "text": "Okay, but consider the opposite of Literary reinterpretations and what they reveal for a second.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 216
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 217
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 218
+    },
+    {
+      "speaker": "host",
+      "text": "If this conversation about Literary reinterpretations and what they reveal is resonating, you are not alone.",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 219
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 220
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 221
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 222
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 223
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 224
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 225
+    },
+    {
+      "speaker": "jim",
+      "text": "Let me be the devil's advocate on Themes of legacy, distance, and connection for just one more minute.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 226
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 227
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 228
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 229
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 230
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 231
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 232
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 233
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 234
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the optimistic read on The emotional origin of the poem during incarceration. Now give me the pessimistic one.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 235
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 236
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 237
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 238
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 239
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 240
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 241
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 242
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 243
+    },
+    {
+      "speaker": "jim",
+      "text": "Let me play this out. If The father\u2013daughter bond and why the poem mattered works exactly as advertised, what happens next?",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 244
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 245
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 246
+    },
+    {
+      "speaker": "host",
+      "text": "Here is a question for everyone: when is the last time The father\u2013daughter bond and why the poem mattered actually worked for you?",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 247
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 248
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 249
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 250
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 251
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 252
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 253
+    },
+    {
+      "speaker": "jim",
+      "text": "I think we are talking around the real issue with the poem expanded into a full book. Let me name it.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 254
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 255
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 256
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 257
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 258
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 259
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 260
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 261
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 262
+    },
+    {
+      "speaker": "jim",
+      "text": "I hear you on Literary reinterpretations and what they reveal. Now let me flip it.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 263
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 264
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 265
+    },
+    {
+      "speaker": "host",
+      "text": "If you are listening and you have dealt with Literary reinterpretations and what they reveal, you know exactly what I mean.",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 266
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 267
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 268
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 269
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 270
+    },
+    {
+      "speaker": "phil",
+      "text": "The heart of Happy Toes is not complexity. It is love finding another form.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 271
+    },
+    {
+      "speaker": "jim",
+      "text": "Keep the origin honest, and the larger book has something real to stand on.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 272
+    },
+    {
+      "speaker": "jim",
+      "text": "Fair point about Themes of legacy, distance, and connection. But what about the practical side?",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 273
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 274
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 275
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 276
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 277
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 278
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 279
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 280
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 281
+    },
+    {
+      "speaker": "jim",
+      "text": "Before we move on from The emotional origin of the poem during incarceration, I want to poke at that a little more.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 282
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 283
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 284
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 285
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 286
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 287
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 288
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 289
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 290
+    },
+    {
+      "speaker": "jim",
+      "text": "You know what would change my mind about The father\u2013daughter bond and why the poem mattered? One concrete example. Just one.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 291
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 292
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 293
+    },
+    {
+      "speaker": "host",
+      "text": "Some of you are shaking your heads right now about The father\u2013daughter bond and why the poem mattered. I get it.",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 294
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 295
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 296
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 297
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 298
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 299
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 300
+    },
+    {
+      "speaker": "jim",
+      "text": "Alright, let us look at the poem expanded into a full book from a different angle.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 301
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 302
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 303
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 304
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 305
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 306
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 307
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 308
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 309
+    },
+    {
+      "speaker": "jim",
+      "text": "Let me ask you this about Literary reinterpretations and what they reveal...",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 310
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 311
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 312
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 313
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 314
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 315
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 316
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 317
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 318
+    },
+    {
+      "speaker": "jim",
+      "text": "I want to believe in Themes of legacy, distance, and connection. Convince me one more time.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 319
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 320
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 321
+    },
+    {
+      "speaker": "host",
+      "text": "If you are listening and you have dealt with Themes of legacy, distance, and connection, you know exactly what I mean.",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 322
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 323
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 324
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 325
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 326
+    },
+    {
+      "speaker": "phil",
+      "text": "The heart of Happy Toes is not complexity. It is love finding another form.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 327
+    },
+    {
+      "speaker": "jim",
+      "text": "Keep the origin honest, and the larger book has something real to stand on.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 328
+    },
+    {
+      "speaker": "jim",
+      "text": "That is one side of The emotional origin of the poem during incarceration. Here is the other.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 329
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 330
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 331
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 332
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 333
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 334
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 335
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 336
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 337
+    },
+    {
+      "speaker": "jim",
+      "text": "I want to come back to something you said about The father\u2013daughter bond and why the poem mattered earlier.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 338
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 339
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 340
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 341
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 342
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 343
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 344
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 345
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 346
+    },
+    {
+      "speaker": "jim",
+      "text": "Here is what I keep circling back to with the poem expanded into a full book: who is actually winning here?",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 347
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 348
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 349
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 350
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 351
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 352
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 353
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 354
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 355
+    },
+    {
+      "speaker": "jim",
+      "text": "Let me be the devil's advocate on Literary reinterpretations and what they reveal for just one more minute.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 356
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 357
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 358
+    },
+    {
+      "speaker": "host",
+      "text": "Think about your own situation with Literary reinterpretations and what they reveal. Does this match what you are seeing?",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 359
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 360
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 361
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 362
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 363
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 364
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 365
+    },
+    {
+      "speaker": "jim",
+      "text": "Let me play this out. If Themes of legacy, distance, and connection works exactly as advertised, what happens next?",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 366
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 367
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 368
+    },
+    {
+      "speaker": "jim",
+      "text": "The practical test is whether the reader still feels the love underneath the structure.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 369
+    },
+    {
+      "speaker": "phil",
+      "text": "Right. The reinterpretations only matter if they protect the emotional core of the poem.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 370
+    },
+    {
+      "speaker": "phil",
+      "text": "What stays with me is how a simple poem can become a record of presence across distance.",
+      "emotion": "curious",
+      "pause_after": 0.4,
+      "line_number": 371
+    },
+    {
+      "speaker": "jim",
+      "text": "That is legacy in plain language: proof that someone was thinking about you.",
+      "emotion": "measured",
+      "pause_after": 0.6,
+      "line_number": 372
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 373
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 374
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the optimistic read on The emotional origin of the poem during incarceration. Now give me the pessimistic one.",
+      "emotion": "neutral",
+      "pause_after": 0.4,
+      "line_number": 375
+    },
+    {
+      "speaker": "phil",
+      "text": "Happy Toes begins as a father trying to reach his daughter through words.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 376
+    },
+    {
+      "speaker": "jim",
+      "text": "That is the part to keep centered. Before the literary experiment, there is a daughter and a father.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 377
+    },
+    {
+      "speaker": "host",
+      "text": "Here is a question for everyone: when is the last time The emotional origin of the poem during incarceration actually worked for you?",
+      "emotion": "neutral",
+      "pause_after": 0.3,
+      "line_number": 378
+    },
+    {
+      "speaker": "phil",
+      "text": "The book matters because it lets one private poem echo through many different voices.",
+      "emotion": "curious",
+      "pause_after": 0.35,
+      "line_number": 379
+    },
+    {
+      "speaker": "jim",
+      "text": "And if those voices work, they should make the original feeling clearer, not bury it.",
+      "emotion": "pragmatic",
+      "pause_after": 0.55,
+      "line_number": 380
+    },
+    {
+      "speaker": "phil",
+      "text": "The literary voices become a kind of jury, each one testing a different side of the same feeling.",
+      "emotion": "warm",
+      "pause_after": 0.35,
+      "line_number": 381
+    },
+    {
+      "speaker": "jim",
+      "text": "As long as the verdict comes back to Abby, fatherhood, and the original poem, it works.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 382
+    },
+    {
+      "speaker": "phil",
+      "text": "The heart of Happy Toes is not complexity. It is love finding another form.",
+      "emotion": "warm",
+      "pause_after": 0.4,
+      "line_number": 383
+    },
+    {
+      "speaker": "jim",
+      "text": "Keep the origin honest, and the larger book has something real to stand on.",
+      "emotion": "measured",
+      "pause_after": 0.55,
+      "line_number": 384
+    },
+    {
+      "speaker": "jim",
+      "text": "Thanks for spending time with us. Remember: ideas are cheap. Execution is everything.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 385
+    },
+    {
+      "speaker": "phil",
+      "text": "And remember \u2014 everything links to something else. You just have not seen it yet.",
+      "emotion": "warm",
+      "pause_after": 0.5,
+      "line_number": 386
+    }
+  ],
+  "metadata": {
+    "line_count": 386,
+    "phil_count": 166,
+    "jim_count": 206,
+    "host_count": 14,
+    "ads_count": 0,
+    "estimated_runtime_seconds": 2509,
+    "writer_engine": "template_fallback",
+    "writer_engine_actual": "template_fallback",
+    "fallback_used": true,
+    "fallback_sources": [
+      "legacy_template_fallback"
+    ],
+    "fallback_line_count": 41,
+    "llm_sources": [],
+    "llm_line_count": 0,
+    "structural_sources": [],
+    "structural_line_count": 0,
+    "unknown_line_count": 345,
+    "line_source_counts": {
+      "legacy_template_fallback": 41,
+      "unknown": 345
+    },
+    "provenance_reliable": false,
+    "repetition_guard_passed": false,
+    "repetition_guard_max_allowed": 3,
+    "max_repeated_line_count": 41,
+    "repeated_line_count": 22,
+    "duplicate_line_instances": 328,
+    "top_repeated_lines": [
+      {
+        "count": 41,
+        "text": "happy toes begins as a father trying to reach his daughter through words."
+      },
+      {
+        "count": 41,
+        "text": "that is the part to keep centered. before the literary experiment, there is a daughter and a father."
+      },
+      {
+        "count": 35,
+        "text": "the book matters because it lets one private poem echo through many different voices."
+      },
+      {
+        "count": 35,
+        "text": "and if those voices work, they should make the original feeling clearer, not bury it."
+      },
+      {
+        "count": 27,
+        "text": "the practical test is whether the reader still feels the love underneath the structure."
+      }
+    ]
+  }
+}

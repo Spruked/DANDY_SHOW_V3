@@ -1,0 +1,144 @@
+{
+  "project": {
+    "name": "Phil and Jim Dandy Show",
+    "mode": "private_internal_studio",
+    "operator_count": 1
+  },
+  "paths": {
+    "project_root": ".",
+    "episodes_root": "./episodes",
+    "logs_root": "./logs",
+    "staging_root": "./staging",
+    "archive_root": "./archive",
+    "frontend_root": "./frontend",
+    "backend_root": "./backend",
+    "config_root": "./config"
+  },
+  "dashboard": {
+    "ui_reference_source": "frontend/src/components/StudioTab.jsx",
+    "preserve_high_control_surface": true,
+    "minimal_redesign": true
+  },
+  "tts": {
+    "primary_engine": "kokoro",
+    "fallback_engine": "edge",
+    "preferred_device": "cuda",
+    "fallback_device": "cpu",
+    "allow_cpu_fallback": true,
+    "kokoro_repo_path": "./backend/app/services/tts/kokoro-tts",
+    "voices_config": "./config/voices.json"
+  },
+  "production": {
+    "default_target_duration_seconds": 2400,
+    "default_intensity": "medium",
+    "auto_save_drafts": true,
+    "drafts_root": "./episodes/.drafts"
+  },
+  "social": {
+    "enabled": true,
+    "templates_root": "./social/templates",
+    "generated_root": "./social/generated",
+    "presets_config": "./config/social_presets.json",
+    "default_brand_theme": "midnight_amber",
+    "default_disclosure_text": "Sponsored",
+    "generate_platform_package": true
+  },
+  "audio": {
+    "jingles_root": "./audio/jingles",
+    "jingles": {
+      "intro": "./audio/jingles/phil_jim_theme.mp3",
+      "outro": "./audio/jingles/phil_jim_theme.mp3",
+      "bumper_in": null,
+      "bumper_out": null,
+      "bed_loop": null
+    },
+    "intro_trim_seconds": 0,
+    "outro_trim_seconds": 0,
+    "intro_fade_out_seconds": 2.0,
+    "outro_fade_in_seconds": 2.0,
+    "jingle_gain_db": -6
+  },
+  "intro_outro": {
+    "enabled": true,
+    "music_file": "./audio/jingles/phil_jim_theme.mp3",
+    "intro": {
+      "clip_start_ms": 0,
+      "clip_duration_ms": 14000,
+      "music_fade_in_ms": 1200,
+      "music_fade_out_ms": 2000,
+      "duck_start_ms": 4000,
+      "duck_db": -18,
+      "announcer_text": "And now... the Phil and Jiiiiiimmmmm Dandyyyy Shooowwwww!",
+      "announcer_voice": "am_eric",
+      "silence_after_ms": 800,
+      "pause_duration_ms": 700
+    },
+    "outro": {
+      "clip_start_ms": 3000,
+      "clip_duration_ms": 14000,
+      "music_fade_in_ms": 2000,
+      "music_fade_out_ms": 3000,
+      "announcer_text": "That is a wrap on today's Phil and Jim Dandy Show.[pause] Thanks for listening. We will see you next time.",
+      "announcer_voice": "am_eric",
+      "silence_before_ms": 600,
+      "pause_duration_ms": 700
+    }
+  },
+  "sfx": {
+    "enabled": true,
+    "gain_db": -12,
+    "events": [
+      {
+        "slug": "papers_rustling",
+        "mode": "overlay",
+        "position": "after_intro",
+        "offset_ms": 800,
+        "gain_db": -18,
+        "fade_in_ms": 600,
+        "fade_out_ms": 2000
+      },
+      {
+        "slug": "papers_shuffling",
+        "mode": "overlay",
+        "position": "after_intro",
+        "offset_ms": 3000,
+        "gain_db": -20,
+        "fade_in_ms": 400,
+        "fade_out_ms": 1500
+      },
+      {
+        "slug": "phone_ring_distant",
+        "mode": "overlay",
+        "position": "before_outro",
+        "offset_ms": 5000,
+        "gain_db": -16,
+        "fade_in_ms": 0,
+        "fade_out_ms": 800
+      },
+      {
+        "slug": "drawer_open",
+        "mode": "overlay",
+        "position": "after_intro",
+        "offset_ms": 1200,
+        "gain_db": -14,
+        "fade_in_ms": 0,
+        "fade_out_ms": 400
+      },
+      {
+        "slug": "keyboard_typing",
+        "mode": "overlay",
+        "position": "after_intro",
+        "offset_ms": 2000,
+        "gain_db": -20,
+        "fade_in_ms": 500,
+        "fade_out_ms": 2000
+      }
+    ]
+  },
+  "obs": {
+    "host": "127.0.0.1",
+    "port": 4455,
+    "password": "5Fxn3K1EsgjQH4TO",
+    "timeout_seconds": 2.5
+  }
+}

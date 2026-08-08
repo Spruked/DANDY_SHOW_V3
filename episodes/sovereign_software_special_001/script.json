@@ -1,0 +1,2974 @@
+{
+  "episode_id": "sovereign_software_special_001",
+  "updated_at": "2026-04-22T17:18:49.896185",
+  "script": [
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 1
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 2
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 3
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 4
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it? I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 5
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 6
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 7
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 8
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... but here's the thing... Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 9
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 10
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 11
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 12
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 13
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 14
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 15
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 16
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 17
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 18
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 19
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 20
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 21
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 22
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 23
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 24
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 25
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 26
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 27
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 28
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 29
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 30
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 31
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 32
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 33
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 34
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 35
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 36
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 37
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 38
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 39
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 40
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 41
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 42
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie? I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 43
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 44
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 45
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 46
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 47
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 48
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 49
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 50
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. and that's connected to... I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 51
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 52
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 53
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 54
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 55
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 56
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... and that's connected to... Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 57
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 58
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 59
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 60
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 61
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 62
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 63
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 64
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 65
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 66
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 67
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 68
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 69
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 70
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 71
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 72
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 73
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 74
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 75
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 76
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 77
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 78
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 79
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 80
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software? Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 81
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 82
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 83
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 84
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 85
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 86
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 87
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 88
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 89
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 90
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. which makes me think... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 91
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 92
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 93
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 94
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 95
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 96
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 97
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 98
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 99
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 100
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 101
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 102
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 103
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 104
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 105
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 106
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 107
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 108
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... which makes me think...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 109
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 110
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 111
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 112
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 113
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 114
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. which makes me think... I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 115
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 116
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 117
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 118
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 119
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 120
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 121
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 122
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 123
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 124
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 125
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 126
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 127
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 128
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 129
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 130
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. which makes me think... I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 131
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 132
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 133
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 134
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 135
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 136
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 137
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 138
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 139
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 140
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 141
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 142
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 143
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 144
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 145
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 146
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 147
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 148
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... which makes me think... I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 149
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 150
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 151
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 152
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... but here's the thing... I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 153
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 154
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. but here's the thing... I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 155
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 156
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 157
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 158
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 159
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 160
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 161
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 162
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. but here's the thing... Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 163
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 164
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 165
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 166
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 167
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 168
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 169
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 170
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 171
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 172
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 173
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 174
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 175
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 176
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. but here's the thing... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 177
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 178
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 179
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 180
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 181
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 182
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 183
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 184
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. and that's connected to... Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 185
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 186
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 187
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 188
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 189
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 190
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 191
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 192
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... and that's connected to... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 193
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 194
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. which makes me think... Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 195
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 196
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 197
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 198
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 199
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 200
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 201
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 202
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 203
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 204
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 205
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 206
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 207
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 208
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. but here's the thing... Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 209
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 210
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 211
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 212
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. which makes me think...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 213
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 214
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... and that's connected to... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 215
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 216
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 217
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 218
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 219
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 220
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 221
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 222
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 223
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 224
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. which makes me think...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 225
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 226
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 227
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 228
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. but here's the thing... Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 229
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 230
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 231
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 232
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to... Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 233
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 234
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 235
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 236
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 237
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 238
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... but here's the thing... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 239
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 240
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. which makes me think...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 241
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 242
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to... Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 243
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 244
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 245
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 246
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. which makes me think... I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 247
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 248
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 249
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 250
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 251
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 252
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 253
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 254
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 255
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 256
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 257
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 258
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 259
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 260
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 261
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 262
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it? I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 263
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 264
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 265
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 266
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 267
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 268
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 269
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 270
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 271
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 272
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 273
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 274
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. which makes me think...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 275
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 276
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. which makes me think...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 277
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 278
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 279
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 280
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 281
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 282
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 283
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 284
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 285
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 286
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 287
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 288
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it? I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 289
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 290
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. but here's the thing... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 291
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 292
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 293
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 294
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 295
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 296
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 297
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 298
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 299
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 300
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 301
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 302
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software? Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 303
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 304
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 305
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 306
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 307
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 308
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie? I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 309
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 310
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 311
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 312
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 313
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 314
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie? I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 315
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 316
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 317
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 318
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. which makes me think... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 319
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 320
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 321
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 322
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 323
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 324
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... and that's connected to... Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 325
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 326
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. but here's the thing...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 327
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 328
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 329
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 330
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 331
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 332
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 333
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 334
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 335
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 336
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 337
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 338
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 339
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 340
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 341
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 342
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 343
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 344
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software? Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 345
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 346
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 347
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 348
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... but here's the thing... Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 349
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 350
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 351
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 352
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie? I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 353
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 354
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 355
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 356
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 357
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 358
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 359
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 360
+    },
+    {
+      "speaker": "phil",
+      "text": "I was messing with something the other day\u2014TrueMark Sovereign Software\u2014and it got me thinking... and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 361
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 362
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 363
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 364
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 365
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 366
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 367
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 368
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 369
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 370
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 371
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. But does it actually work?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 372
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to... Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 373
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 374
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 375
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 376
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 377
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 378
+    },
+    {
+      "speaker": "phil",
+      "text": "So I had this thought... TrueMark Sovereign Software, which makes me think about TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 379
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 380
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 381
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 382
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to... I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 383
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 384
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 385
+    },
+    {
+      "speaker": "jim",
+      "text": "Phil, sometimes the simplest solution is the right one. Occam's Razor. My grandfather taught me that.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 386
+    },
+    {
+      "speaker": "phil",
+      "text": "Okay hear me out... what if TrueMark Sovereign Software?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 387
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 388
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. Obviously the cloud is just a bunch of floppy disks.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 389
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 390
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 391
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 392
+    },
+    {
+      "speaker": "phil",
+      "text": "Maybe TrueMark Sovereign Software is just TrueMark Sovereign Software in disguise. and that's connected to... Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 393
+    },
+    {
+      "speaker": "jim",
+      "text": "I love you, brother, but I think you're missing the point here.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 394
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 395
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 396
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 397
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 398
+    },
+    {
+      "speaker": "phil",
+      "text": "This might be dumb but... TrueMark Sovereign Software",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 399
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 400
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards? Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 401
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 402
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 403
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Yeah but... prove it.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 404
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. and that's connected to...",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 405
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 406
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 407
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 408
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it? Podcasts are printed first, then streamed. That's how it works.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 409
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 410
+    },
+    {
+      "speaker": "phil",
+      "text": "I think the internet is just a garage sale where nobody actually wants to sell anything. and that's connected to... Everyone knows EVs don't use electricity when going downhill.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 411
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 412
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 413
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 414
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 415
+    },
+    {
+      "speaker": "jim",
+      "text": "Hold on. Who told you that?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 416
+    },
+    {
+      "speaker": "phil",
+      "text": "What if TrueMark Sovereign Software is actually just an expensive fortune cookie?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 417
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 418
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 419
+    },
+    {
+      "speaker": "jim",
+      "text": "I'm with you on the enthusiasm, but let's be practical about this.",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 420
+    },
+    {
+      "speaker": "phil",
+      "text": "Is it possible that everyone understands TrueMark Sovereign Software is completely backwards?",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 421
+    },
+    {
+      "speaker": "jim",
+      "text": "Who told you that? And have they actually done it, or just read about it?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 422
+    },
+    {
+      "speaker": "phil",
+      "text": "You ever think about TrueMark Sovereign Software? Like, really think about it? I'm 100% sure vinyl is faster than fiber.",
+      "emotion": "excited",
+      "pause_after": 0.35,
+      "line_number": 423
+    },
+    {
+      "speaker": "jim",
+      "text": "That doesn't make sense... have you considered the practical implications?",
+      "emotion": "skeptical",
+      "pause_after": 0.55,
+      "line_number": 424
+    }
+  ]
+}

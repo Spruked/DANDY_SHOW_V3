@@ -1,0 +1,288 @@
+/* social-tab.css — matches existing Dandy Studio dark + gold aesthetic */
+
+:root {
+  --dandy-bg:       #0e1116;
+  --dandy-panel:    #161a22;
+  --dandy-border:   #232834;
+  --dandy-text:     #d8d8d0;
+  --dandy-muted:    #7a7e88;
+  --dandy-gold:     #d4b64a;
+  --dandy-gold-hi:  #e6cc5f;
+  --dandy-accent:   #2a3040;
+}
+
+/* ---------- sub-tab bar ---------- */
+.social-submode-bar {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--dandy-border);
+  background: var(--dandy-bg);
+}
+
+.social-submode-btn {
+  background: transparent;
+  color: var(--dandy-muted);
+  border: 1px solid transparent;
+  padding: 6px 16px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.social-submode-btn:hover { color: var(--dandy-text); }
+
+.social-submode-btn.active {
+  color: var(--dandy-gold);
+  border-bottom: 2px solid var(--dandy-gold);
+}
+
+.social-mode-body {
+  display: flex;
+  height: calc(100vh - 140px);
+}
+
+/* ---------- shared 3-panel layout ---------- */
+.slideshow-builder,
+.adcards-builder {
+  display: grid;
+  grid-template-columns: 260px 1fr 280px;
+  gap: 1px;
+  background: var(--dandy-border);
+  width: 100%;
+  height: 100%;
+}
+
+.panel {
+  background: var(--dandy-panel);
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.panel-header {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dandy-muted);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--dandy-border);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header button {
+  background: transparent;
+  border: 1px solid var(--dandy-border);
+  color: var(--dandy-gold);
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.panel label {
+  display: block;
+  font-size: 11px;
+  color: var(--dandy-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+.panel input,
+.panel textarea,
+.panel select {
+  width: 100%;
+  background: var(--dandy-bg);
+  border: 1px solid var(--dandy-border);
+  color: var(--dandy-text);
+  padding: 6px 8px;
+  margin-top: 4px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.panel textarea { min-height: 60px; resize: vertical; }
+
+/* ---------- slide / card list ---------- */
+.slide-list, .card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slide-list-item, .card-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--dandy-bg);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.slide-list-item:hover, .card-list-item:hover {
+  border-color: var(--dandy-border);
+}
+
+.slide-list-item.active, .card-list-item.active {
+  border-color: var(--dandy-gold);
+  background: var(--dandy-accent);
+}
+
+.slide-idx {
+  color: var(--dandy-muted);
+  font-family: monospace;
+}
+
+.slide-title, .card-sponsor {
+  flex: 1;
+  color: var(--dandy-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-type {
+  color: var(--dandy-gold);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.slide-actions button {
+  background: transparent;
+  border: none;
+  color: var(--dandy-muted);
+  cursor: pointer;
+  font-size: 10px;
+}
+.slide-actions button:hover { color: var(--dandy-gold); }
+
+.panel-footer {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-footer button, .export-actions button {
+  background: var(--dandy-bg);
+  border: 1px solid var(--dandy-border);
+  color: var(--dandy-text);
+  padding: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.panel-footer button:hover, .export-actions button:hover {
+  border-color: var(--dandy-gold);
+  color: var(--dandy-gold);
+}
+
+.btn-auto, .btn-render {
+  background: var(--dandy-gold) !important;
+  color: var(--dandy-bg) !important;
+  border-color: var(--dandy-gold) !important;
+  font-weight: 600;
+}
+
+.btn-render:hover { background: var(--dandy-gold-hi) !important; }
+
+/* ---------- preview ---------- */
+.slide-preview, .adcard-preview {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto 16px;
+  background: var(--dandy-bg);
+  border: 1px solid var(--dandy-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.slide-preview-content {
+  padding: 32px;
+  max-width: 90%;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.slide-preview-content h2 { margin: 0 0 12px; }
+.slide-preview-content h3 { margin: 0 0 8px; opacity: 0.85; font-weight: 400; }
+.slide-preview-content p  { margin: 0; font-size: 0.6em; opacity: 0.8; }
+
+.adcard-overlay {
+  padding: 24px;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+}
+
+.adcard-logo { max-width: 80px; margin-bottom: 12px; }
+.adcard-sponsor { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+.adcard-cta { font-size: 16px; margin-bottom: 12px; }
+.adcard-offer { font-size: 14px; color: var(--dandy-gold); }
+.adcard-url { font-size: 12px; opacity: 0.75; margin-top: 8px; }
+
+.preview-empty {
+  color: var(--dandy-muted);
+  text-align: center;
+  padding: 80px 20px;
+  font-size: 13px;
+}
+
+/* ---------- editor & templates ---------- */
+.slide-editor, .adcard-editor {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.style-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.template-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.template-tile {
+  background: var(--dandy-bg);
+  border: 1px solid var(--dandy-border);
+  color: var(--dandy-text);
+  padding: 10px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.template-tile:hover {
+  border-color: var(--dandy-gold);
+  color: var(--dandy-gold);
+}
+
+.duration-readout {
+  color: var(--dandy-gold);
+  font-family: monospace;
+  font-size: 12px;
+  padding: 6px 0;
+  margin-bottom: 12px;
+}
+
+.export-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+}

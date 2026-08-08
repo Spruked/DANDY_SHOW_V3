@@ -1,0 +1,67 @@
+frontend/
+├─ dist/
+├─ index.html
+├─ postcss.config.js
+├─ public/
+├─ src/
+│  ├─ App.jsx
+│  ├─ main.jsx
+│  ├─ components/
+│  │  └─ ui.jsx
+│  ├─ hooks/
+│  │  └─ useToast.js
+│  ├─ lib/
+│  │  └─ api.js
+│  ├─ styles/
+│  │  ├─ dandy-theme.css
+│  │  └─ index.css
+│  └─ tabs/
+│     ├─ AdTab.jsx
+│     ├─ EpisodeTab.jsx
+│     ├─ SocialTab.jsx
+│     └─ SystemTab.jsx
+├─ tailwind.config.js
+└─ vite.config.js
+
+frontend_old_20260323/
+├─ dist/
+├─ index.html
+├─ postcss.config.js
+├─ public/
+│  └─ studio.html
+├─ src/
+│  ├─ App.jsx
+│  ├─ main.jsx
+│  ├─ assets/
+│  ├─ components/
+│  │  ├─ AdPanel.jsx
+│  │  ├─ CreateEpisodeForm.jsx
+│  │  ├─ Dashboard.jsx
+│  │  ├─ EpisodeList.jsx
+│  │  ├─ FeedbackForm.jsx
+│  │  ├─ LineItem.jsx
+│  │  ├─ ScriptEditor.jsx
+│  │  ├─ SocialPanel.jsx
+│  │  ├─ SystemPanel.jsx
+│  │  ├─ ToneAdjuster.jsx
+│  │  ├─ VoiceAdjuster.jsx
+│  │  ├─ common/ (empty)
+│  │  ├─ library/ (empty)
+│  │  └─ studio/
+│  │     ├─ ExportModal.jsx
+│  │     ├─ LineItem.jsx
+│  │     ├─ SegmentCard.jsx
+│  │     ├─ StudioSidebar.jsx
+│  │     ├─ StudioTelemetry.jsx
+│  │     └─ StudioTimelineBar.jsx
+│  ├─ hooks/
+│  │  ├─ useEpisodeList.js
+│  │  └─ useScriptStats.js
+│  ├─ pages/ (empty)
+│  ├─ services/
+│  │  └─ api.js
+│  ├─ styles/
+│  └─ utils/
+├─ studio.html
+├─ tailwind.config.js
+└─ vite.config.js

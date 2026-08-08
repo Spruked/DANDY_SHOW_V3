@@ -1,0 +1,24 @@
+{
+  "episode_id": "DANDY_EP_002",
+  "title": "Happy Toes - A Poem",
+  "topic": "A father\u2019s poem written for his daughter Abby during incarceration, which later grew into a published book with literary reinterpretations.",
+  "audio_file": "C:\\dev\\Desktop\\Dandy\\episodes\\DANDY_EP_002\\audio.mp3",
+  "segment_count": 251,
+  "generated_at": "2026-05-01T04:05:12.319917",
+  "processing": {
+    "processing_chain": "direct_mp3_fallback",
+    "compliant": false,
+    "warning": "Command '['ffmpeg', '-i', 'C:\\\\dev\\\\Desktop\\\\Dandy\\\\episodes\\\\DANDY_EP_002\\\\audio.mp3', '-af', 'loudnorm=I=-16:print_format=json', '-f', 'null', '-']' timed out after 60 seconds",
+    "intro_outro": "wrapped"
+  },
+  "voice_assignments": {
+    "phil": {
+      "primary": "am_michael",
+      "fallback": "en-US-GuyNeural"
+    },
+    "jim": {
+      "primary": "am_liam",
+      "fallback": "en-US-TonyNeural"
+    }
+  }
+}

@@ -1,0 +1,1900 @@
+{
+  "episode_id": "sovereign_software_special_001",
+  "title": "The Phil and Jim Dandy Show \u2014 Sovereign Software Special",
+  "topic": "TrueMark Sovereign Software Ecosystem pitch: Mint, GOAT, and the ORB",
+  "created_at": "2026-04-15T08:43:04.967771",
+  "script": [
+    {
+      "line_number": 1,
+      "speaker": "announcer_male",
+      "text": "Live from the intersection of genius and \"why didn't anyone build this sooner\" - it is time. For two men who have never met a microphone they didn't love, a problem they didn't solve, or a subscription fee they didn't despise - broadcasting from the Pro Prime Series studio - this is The Phil and Jim Dandy Show.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 2,
+      "speaker": "phil",
+      "text": "That was the most beautiful thing I've ever heard. Jim, are we live?",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 3,
+      "speaker": "jim",
+      "text": "We are very, very live. And I want everyone to know that I tried to get us a proper jingle but Phil said - and I quote - \"Jim, we are the jingle.\"",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 4,
+      "speaker": "phil",
+      "text": "I stand by that. Welcome, everybody. This is The Phil and Jim Dandy Show. I'm Phil. He's Jim. And today - today is not a regular episode. Today we are doing something we've been building toward for a long time.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 5,
+      "speaker": "jim",
+      "text": "Today we pull back the curtain. We show you what we've been working on. We introduce you to three products that, genuinely - and I don't say this lightly - changed how I think about owning software.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 6,
+      "speaker": "phil",
+      "text": "Before we do that - quick housekeeping. We've got two breaks in today's show, and they are worth staying for. Because one of them is about how you - yes, the person listening right now - can get your product, your song, your invention, your business - featured on this show. Weekly. In front of this audience. We'll get to that. But first.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 7,
+      "speaker": "jim",
+      "text": "First, we need to talk about the problem that started all of this.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 8,
+      "speaker": "phil",
+      "text": "Ladies and gentlemen - buckle your seatbelts, secure your digital assets, and please - for the love of everything - silence any subscription notifications you may be receiving right now. Because they are about to become very embarrassing for you.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 9,
+      "speaker": "jim",
+      "text": "Today is not a product demo. Let me say that clearly. Today is an intervention. A dignified, well-produced, extremely entertaining intervention - for every person who has been renting their own digital life back from a corporation - and smiling about it.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 10,
+      "speaker": "phil",
+      "text": "We're not here to sell you something. We're here to return something. Something that used to belong to you before the tech industry decided convenience was worth more than ownership.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 11,
+      "speaker": "jim",
+      "text": "And for the investors in the room - yes, we know you're here - welcome. You've been patient. We're about to show you why that patience is worth something.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 12,
+      "speaker": "phil",
+      "text": "Today we are unveiling the TrueMark Sovereign Software Ecosystem.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 13,
+      "speaker": "jim",
+      "text": "The tools are called Mint, GOAT, and the ORB. And by the time we're done today, you're going to know exactly what they do, why they matter, and where to go to get your hands on them.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 14,
+      "speaker": "phil",
+      "text": "Alright. Let's build the case. Jim - hit 'em with the problem.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 15,
+      "speaker": "jim",
+      "text": "Let me ask you a question. And I want you to answer it honestly - you don't have to say it out loud, just feel the weight of it. How many software subscriptions are you paying for right now that you don't fully understand?",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 16,
+      "speaker": "phil",
+      "text": "Take your time. We'll wait.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 17,
+      "speaker": "jim",
+      "text": "There's the cloud storage one. The PDF editor you used twice. The AI tool that had a free tier until it didn't. The creative suite that costs more per month than your first car payment. The \"productivity\" app that somehow made you less productive. The antivirus. The password manager. The backup software that backs up your files to a server in a country you've never visited.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 18,
+      "speaker": "phil",
+      "text": "And here's the thing that should make everyone in this room furious - every single one of those tools? You used to be able to just buy them. One time. Install them. Own them. Use them forever.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 19,
+      "speaker": "jim",
+      "text": "Somewhere along the way, the industry decided that ownership was bad for business. And they were right - it's very bad for their business. But it's very good for yours.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 20,
+      "speaker": "phil",
+      "text": "And then there's the AI question. Phil - walk me through the privacy horror show.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 21,
+      "speaker": "phil",
+      "text": "Happy to. You upload a document to a cloud AI tool. Could be a contract. Could be a medical record. Could be a business plan you've been working on for three years. And buried in the terms of service - in language that takes a law degree to decode - it says: this file may be used to improve our models.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 22,
+      "speaker": "jim",
+      "text": "And most people - most people - have no idea that's happening. They think they're using a tool. They don't realize they're feeding a machine they'll never own.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 23,
+      "speaker": "phil",
+      "text": "So we asked a simple question: what if we built it differently? What if the software ran locally - on your machine - and never called home? What if you bought it once, owned it forever, and it stayed completely in your control?",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 24,
+      "speaker": "jim",
+      "text": "What if the AI you used worked for you - and only you - and reported to nobody?",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 25,
+      "speaker": "phil",
+      "text": "That question is the TrueMark Sovereign Software Ecosystem. And before I give you the investor framing - because the investor framing is good - let me just put a number on the problem. The global subscription software market is pushing eight hundred billion dollars. A growing category of users - and enterprise buyers - are actively searching for local-first, private, one-time-purchase alternatives. We are not fighting the cloud. We are serving the people the cloud left behind. And there are a lot of them.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 26,
+      "speaker": "phil",
+      "text": "First tool in the ecosystem. TrueMark Mint. And I want to describe this the right way, because people hear \"certification\" and they immediately picture something boring and bureaucratic. This is not that.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 27,
+      "speaker": "jim",
+      "text": "Think of it as a vault and a witness combined into one.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 28,
+      "speaker": "phil",
+      "text": "Exactly. You have something you created - a document, a photograph, a song, a business plan, a contract, a piece of artwork, a video, a design file - anything digital that has value to you. You drop it into TrueMark Mint. It gets timestamped, cryptographically locked, and turned into what we call a Knowledge NFT. A K-NFT.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 29,
+      "speaker": "jim",
+      "text": "Hold on. You said NFT. You can hear people shifting in their seats. Phil.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 30,
+      "speaker": "phil",
+      "text": "I know. I know. Forget everything you know about monkey pictures and digital trading cards. Strip that entire circus out of your brain. A K-NFT is a certificate with a backbone. It's a license, a timestamp, and a proof of authorship - all locked together in a format that nobody can alter, nobody can revoke, and nobody can charge you a monthly fee to keep alive.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 31,
+      "speaker": "jim",
+      "text": "The blockchain part is just how it stays honest. No server needed. No company needs to stay in business to protect your proof. It just exists - permanently - the way a physical document exists, except it can't burn and it can't be stolen.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 32,
+      "speaker": "phil",
+      "text": "So imagine you're a musician. You write a song. You record a demo. You mint it. That song now has a timestamp that predates anyone who might try to claim they wrote it first. That's not a legal theory - that's a cryptographic fact.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 33,
+      "speaker": "jim",
+      "text": "Imagine you're a contractor. You send a proposal. You mint it before you send it. Now there's a record that this proposal existed, in this form, on this date - before anyone could alter it.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 34,
+      "speaker": "phil",
+      "text": "Imagine you're a parent. You've been keeping journals and photos and voice recordings of your kids growing up. You mint them. Decade from now, those records are unimpeachable. They exist. They're yours. They will never disappear because a cloud company went bankrupt or changed its terms.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 35,
+      "speaker": "jim",
+      "text": "For the investors - Mint is a one-time purchase product. But the behavior it enables is constant. People mint documents, then revisions, then deliverables, then new versions. The tool grows with how people actually work. No subscription required - but the LTV compounds naturally with user activity.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 36,
+      "speaker": "phil",
+      "text": "And it's offline capable. You can mint on a plane. In a cabin. In a building with no wifi. Your proof does not depend on anyone else's infrastructure.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 37,
+      "speaker": "announcer_male",
+      "text": "This segment of The Phil and Jim Dandy Show is brought to you by The Dandy Weekly Feature - the show's ongoing spotlight dedicated entirely to you.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 38,
+      "speaker": "announcer_male",
+      "text": "Every week, The Phil and Jim Dandy Show reserves a dedicated feature segment for real people - creators, inventors, musicians, entrepreneurs, artists, and builders - to showcase what they're preserving, building, or launching through the TrueMark ecosystem.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 39,
+      "speaker": "announcer_male",
+      "text": "Have a song you've just minted? We'll play it. Have a product you've certified and you want the world to know it exists? We'll feature it. A business, a book, a blueprint, a collection - if you've built it, protected it, and you're proud of it - The Dandy Weekly Feature is your stage.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 40,
+      "speaker": "announcer_male",
+      "text": "Submissions are open to all TrueMark users. One featured creator per week. Reach an audience of builders, investors, and sovereign-software believers who are exactly the kind of people who want to discover what you've made.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 41,
+      "speaker": "announcer_male",
+      "text": "Find the submission link in the show description. The Dandy Weekly Feature - because what you've built deserves to be heard. Now back to Phil and Jim.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 42,
+      "speaker": "phil",
+      "text": "I love that guy. Jim, do you ever wish we had his voice?",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 43,
+      "speaker": "jim",
+      "text": "Every single day of my life. Alright - let's keep moving. Tool number two.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 44,
+      "speaker": "jim",
+      "text": "Tool number two. The GOAT. And yes - Generalized Operational Artifact Transformer - but also yes, we named it GOAT on purpose, and no, we are not apologizing for that.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 45,
+      "speaker": "phil",
+      "text": "The GOAT is your local file intelligence engine. And I want you to picture something for me. Picture the most chaotic file situation you have ever been in. A folder of documents in four different formats. A scanned PDF that looks like someone held the pages up to a window and took a photo. An audio file someone sent you with no label. A bunch of images that may or may not be in order.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 46,
+      "speaker": "jim",
+      "text": "You throw all of it at the GOAT. And the GOAT eats it.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 47,
+      "speaker": "phil",
+      "text": "It ingests it. It reads it. It cleans it. It redacts whatever you tell it to redact - your personal information, your client data, anything you don't want exposed - and it hands you back a clean, organized output package. ZIP file. Done.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 48,
+      "speaker": "jim",
+      "text": "And here is the part that I need everyone to really sit with. It does all of this on your machine. Locally. Nothing leaves. Nothing goes to a cloud. Nothing gets analyzed by a server in another country. Nothing gets absorbed into someone else's training data. It happens right there - between you and your hardware - and nobody else is invited.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 49,
+      "speaker": "phil",
+      "text": "The GOAT has a built-in safety layer. It will not process illegal harm content. That is a hard line, and we hold it. But outside of that - it stays entirely out of your business. Because it is not our business what's in your files. It's yours.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 50,
+      "speaker": "jim",
+      "text": "I want to walk through who this changes the game for. You're a lawyer. You have a hundred-and-fifty-page contract and you need to strip out client information before sharing it. GOAT does that in seconds, locally, with no liability exposure from a third-party cloud tool. You're a doctor's office coordinator - same situation. You're a small business owner with three years of disorganized invoices and you need a clean record before a meeting with your accountant. GOAT. You're a musician with a hard drive full of demos and voice notes and you want to catalog everything before you mint it. GOAT gets you ready for Mint.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 51,
+      "speaker": "phil",
+      "text": "For the investors - GOAT touches every industry where documents are sensitive and privacy is non-negotiable. Legal, medical, finance, real estate, creative, academic. One purchase. Deep utility. Massive stickiness. And it feeds naturally into Mint - so your GOAT output becomes your Mint input. The ecosystem creates its own workflow.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 52,
+      "speaker": "phil",
+      "text": "Now we get to the center of everything. The thing this whole show is named after, if you look closely enough. The ORB.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 53,
+      "speaker": "jim",
+      "text": "The ORB is your personal intelligence layer. Not a chatbot. Not a search engine with a personality. Not a subscription AI that knows just enough about you to be useful but not enough to actually help. Your ORB is yours - completely, architecturally, by design.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 54,
+      "speaker": "phil",
+      "text": "It runs on your desktop. It runs in your browser. It is local-first by default - which means it works without a connection, it doesn't phone home, and it doesn't share your data with anyone. You configure it. You control it. You own what it knows about you.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 55,
+      "speaker": "jim",
+      "text": "Now - it can integrate with a large language model. You can connect it to an AI. But here is the architectural difference that matters: your ORB is the sovereign authority. The LLM - the AI model - is a tool that your ORB calls when it decides to call it. The ORB is in charge. The AI works for the ORB. The ORB works for you.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 56,
+      "speaker": "phil",
+      "text": "Most AI products have it backwards. The AI is the brain, the AI is the authority, and you're just a user making requests. With the ORB - you are the brain. You are the authority.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 57,
+      "speaker": "jim",
+      "text": "Phil - tell me what it actually feels like to use it. For someone who's never seen one.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 58,
+      "speaker": "phil",
+      "text": "Imagine you have an assistant who has been working with you for years. They know how you think. They know your priorities. They know what information you need in the morning versus what you need at eleven PM when you're in the middle of a project. They never forget a conversation. They never share your business with anyone. They never charge you more because you used them more this month. That's the ORB. Except it lives on your machine and it does not need lunch breaks.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 59,
+      "speaker": "jim",
+      "text": "And your API key, your model - you bring what you want. The ORB is the architecture. You supply the intelligence layer you trust. Want to run a local model entirely offline? You can. Want to connect to the model of your choice with your own credentials? You can. The ORB doesn't pick your AI for you - it lets you pick.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 60,
+      "speaker": "phil",
+      "text": "Now - the ORB Premium Docking Station. This is the command center. Think of it as the bridge of your ship. System diagnostics - you can see what your ORB knows, what it's doing, how healthy it is. Local model management - install, update, switch models without going through any third party. Plugin control - extend your ORB's capabilities on your terms. USB-key unlock for encrypted features - physical sovereignty for your most sensitive configurations. And offline mode that actually works, not a degraded version of the product. The full product.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 61,
+      "speaker": "jim",
+      "text": "And then there's the part that I personally am most excited about.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 62,
+      "speaker": "phil",
+      "text": "The Skin Studio.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 63,
+      "speaker": "jim",
+      "text": "Sovereignty does not mean boring. Your ORB has a face. And you get to choose what that face looks like.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 64,
+      "speaker": "phil",
+      "text": "Skins start at eighty-eight cents. Premium animated skins - full motion, personality, visual identity - up to twenty-nine ninety-five. We do seasonal drops. Artist collaborations. Limited editions that become collectible once the window closes. And if you want to put your own NFT - your own artwork - on your ORB's face, that's two dollars and eighty-eight cents. That's it. Your ORB, your identity, your look.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 65,
+      "speaker": "jim",
+      "text": "I need to describe this moment for the audio audience. Because right now Phil is looking at his ORB and it is wearing what I can only describe as a neon storm cloud with eyes. And it is genuinely unsettling in the best possible way.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 66,
+      "speaker": "phil",
+      "text": "It is a limited edition. And you cannot have it.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 67,
+      "speaker": "jim",
+      "text": "For the investors - the Skin Studio is recurring revenue embedded inside a one-time-purchase product. The user already bought the ORB. They're already committed. The skin purchases are low-friction, high-frequency, emotionally driven micro-transactions from an audience that is already invested. That's how you build meaningful LTV without bolting a subscription onto something people resent paying monthly for.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 68,
+      "speaker": "jim",
+      "text": "Hey - real quick before we keep going. I want to talk to you for a second. Not you in general - I mean you specifically. The person listening right now who has something.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 69,
+      "speaker": "jim",
+      "text": "Maybe it's a song you recorded in your bedroom at midnight that you think is the best thing you've ever made. Maybe it's a product you've been building for two years and you finally got it right. Maybe it's a book, a painting, a business idea, an invention, a service - something you created and you know it's real, you know it has value, and you're trying to figure out how to get it in front of people who get it.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 70,
+      "speaker": "jim",
+      "text": "That's what The Dandy Weekly Feature is for. Every single week, we feature one creator on this show - in front of this audience - and we talk about what they built, why it matters, and how they protected it. If you minted it through TrueMark, we especially want to hear from you - because that's proof you're serious about what you made.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 71,
+      "speaker": "jim",
+      "text": "The link is in the description below this episode. Fill out the form. Tell us what you built. We read every single submission - Phil reads them over my shoulder whether I want him to or not - and we pick one every week. This audience is exactly the kind of audience that wants to find you. So let them.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 72,
+      "speaker": "phil",
+      "text": "I do read them. All of them. Some of them are extraordinary. Alright - let's do the demo.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 73,
+      "speaker": "phil",
+      "text": "Alright. I want to walk you through what this looks like end to end. Not theoretically - I mean right here, right now, in this studio. Jim - I'm going to drop the worst file you've ever seen into the GOAT. Are you ready?",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 74,
+      "speaker": "jim",
+      "text": "Phil, I have watched you do a lot of things in this studio and I am never ready. Let's go.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 75,
+      "speaker": "jim",
+      "text": "What is that? That is three years of vendor invoices, what appears to be a scanned hand-written note from someone named Carl, a lease agreement for a building that I think no longer exists, and - Phil, is that a grocery list? Is there a grocery list in your business documents?",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 76,
+      "speaker": "phil",
+      "text": "Carl is very organized. It just doesn't look like that from the outside. Watch what happens.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 77,
+      "speaker": "phil",
+      "text": "GOAT ingests every file in that folder. It reads the text - even Carl's handwriting. It cleans the formatting. We redact Phil's home address, we pull the personal account numbers, we flag anything that shouldn't leave the building - and we tell GOAT what to keep and what to strip. Then it packages the output. Clean files. Labeled. Structured. ZIP.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 78,
+      "speaker": "jim",
+      "text": "That is beautiful. Carl would not recognize his own files right now.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 79,
+      "speaker": "phil",
+      "text": "Carl is going to cry when he sees this. Alright - now we take the output and we move to Mint.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 80,
+      "speaker": "jim",
+      "text": "Drop it into TrueMark Mint.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 81,
+      "speaker": "phil",
+      "text": "And it mints. Timestamp locked. Cryptographically signed. The K-NFT is born. Carl's vendor history - the real one, the cleaned one - is now a permanent, verifiable record that exists independent of any cloud server, any company, any terms of service. It's Carl's forever.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 82,
+      "speaker": "jim",
+      "text": "And the ORB walked us through the entire process. Step by step. Suggested which files to redact. Flagged the grocery list as probably not a business document - which is correct - and confirmed the mint was successful. No account. No login. No cloud. No subscription. The ORB just did its job because that's what it exists to do.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 83,
+      "speaker": "phil",
+      "text": "And now - final step. Because we can. Jim, swap your ORB skin.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 84,
+      "speaker": "jim",
+      "text": "I went with the deep ocean skin. Blue, slow-moving, very calm. It's how I aspire to feel in meetings.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 85,
+      "speaker": "phil",
+      "text": "That is your ORB. That is your identity. That is the three-tool ecosystem working as a complete workflow - from chaos to clean to certified to beautiful - and every piece of it is local, private, and yours.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 86,
+      "speaker": "jim",
+      "text": "Alright. I want to talk directly to the investors in the room for a few minutes. We've been building toward this and I want to give it the weight it deserves. No jokes. Just the real picture.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 87,
+      "speaker": "phil",
+      "text": "The global productivity software market is approaching a trillion dollars. The privacy-native, local-first segment is the fastest-growing slice of that market - driven by enterprise compliance pressure, consumer trust erosion with cloud AI, and a generation of buyers who watched subscription fatigue turn into subscription rage.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 88,
+      "speaker": "jim",
+      "text": "We are not positioning as a competitor to the big platforms. We are positioning as the sovereign alternative - the category that exists for people who have decided they do not want what the big platforms are offering. That category currently has no dominant player. There is no TrueMark of this space yet. We are building it.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 89,
+      "speaker": "phil",
+      "text": "Our business model inverts the standard SaaS logic. One-time purchase drives conversion - low friction, high trust. The Skin Studio creates post-purchase recurring micro-revenue from a user base that is already bought in. The Weekly Feature creates community and content that drives organic growth without an ad budget. And the Kickstarter campaign - which goes live alongside this pitch - is our demand proof. We are not asking you to take our word for it. We are showing you what the market does when we open the door.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 90,
+      "speaker": "jim",
+      "text": "The substrate is already built. This is not a deck with a vision and a team. The product exists, runs locally, and has been architected to scale. What we are raising seed capital for is the team to build around it - marketing, Docking Station hardware production, and the Skin Studio marketplace infrastructure.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 91,
+      "speaker": "phil",
+      "text": "This is a first-round opportunity in a category with no sovereign competitor, a working product, a clear pricing model, and a go-to-market that is already in motion. The floor is being built right now. The walls are next. If you want to be in before the walls go up - this is the moment.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 92,
+      "speaker": "jim",
+      "text": "Contact information and the investor deck are in the show description. Reach out. We will make time. We are very easy to believe in once you've seen the demo - and you just saw the demo.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 93,
+      "speaker": "jim",
+      "text": "If you believe software should belong to the people who use it - back the Kickstarter. The link is in the description. Do it before this episode ends. Do it before the founding backer window closes. Because once it closes, those skins and that status are gone forever.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 94,
+      "speaker": "phil",
+      "text": "And if you are an investor who sees what we see - who understands what a category looks like before it has a name - reach out. We are not hard to find. And we are very, very motivated to build this thing at the scale it deserves.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 95,
+      "speaker": "phil",
+      "text": "Alright. Before we let you go - let's bring it home. Jim.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 96,
+      "speaker": "jim",
+      "text": "We came in here today and we said this was an intervention. I want to check back on that. Do you feel intervened? Because I think the evidence is in.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 97,
+      "speaker": "phil",
+      "text": "Carl's files are clean. Carl's documents are minted. Carl's ORB is wearing a limited-edition skin that I'm a little jealous of. And Carl never uploaded a single byte to anyone else's server.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 98,
+      "speaker": "jim",
+      "text": "Carl is sovereign. And so can you be.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 99,
+      "speaker": "phil",
+      "text": "Local.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 100,
+      "speaker": "jim",
+      "text": "Private.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 101,
+      "speaker": "phil",
+      "text": "Sovereign.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 102,
+      "speaker": "phil",
+      "text": "And if you have something you built - something you're proud of - submit it for the Dandy Weekly Feature. Link in the description. We want to hear it.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 103,
+      "speaker": "jim",
+      "text": "We are the Phil and Jim Dandy Show. I'm Jim.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 104,
+      "speaker": "phil",
+      "text": "I'm Phil. And we are just getting started.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    },
+    {
+      "line_number": 105,
+      "speaker": "announcer_male",
+      "text": "The Phil and Jim Dandy Show is produced by Pro Prime Series AI. All products featured today are part of the TrueMark Sovereign Software Ecosystem. Kickstarter and investor information can be found in the episode description. The Dandy Weekly Feature submission window is open now. This has been The Phil and Jim Dandy Show. We'll see you next week.",
+      "emotion": "neutral",
+      "pause_after": 0.5
+    }
+  ],
+  "segments": [
+    {
+      "index": 1,
+      "speaker": "announcer_male",
+      "text": "Live from the intersection of genius and \"why didn't anyone build this sooner\" - it is time. For two men who have never met a microphone they didn't love, a problem they didn't solve, or a subscription fee they didn't despise - broadcasting from the Pro Prime Series studio - this is The Phil and Jim Dandy Show.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_001_announcer_male.mp3",
+      "duration_seconds": 14.68,
+      "engine": "kokoro",
+      "voice_name": "am_eric",
+      "pause_after": 0.5
+    },
+    {
+      "index": 2,
+      "speaker": "phil",
+      "text": "That was the most beautiful thing I've ever heard. Jim, are we live?",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_002_phil.mp3",
+      "duration_seconds": 4.75,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 3,
+      "speaker": "jim",
+      "text": "We are very, very live. And I want everyone to know that I tried to get us a proper jingle but Phil said - and I quote - \"Jim, we are the jingle.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_003_jim.mp3",
+      "duration_seconds": 8.03,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 4,
+      "speaker": "phil",
+      "text": "I stand by that. Welcome, everybody. This is The Phil and Jim Dandy Show. I'm Phil. He's Jim. And today - today is not a regular episode. Today we are doing something we've been building toward for a long time.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_004_phil.mp3",
+      "duration_seconds": 14.53,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 5,
+      "speaker": "jim",
+      "text": "Today we pull back the curtain. We show you what we've been working on. We introduce you to three products that, genuinely - and I don't say this lightly - changed how I think about owning software.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_005_jim.mp3",
+      "duration_seconds": 10.05,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 6,
+      "speaker": "phil",
+      "text": "Before we do that - quick housekeeping. We've got two breaks in today's show, and they are worth staying for. Because one of them is about how you - yes, the person listening right now - can get your product, your song, your invention, your business - featured on this show. Weekly. In front of this audience. We'll get to that. But first.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_006_phil.mp3",
+      "duration_seconds": 19.43,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 7,
+      "speaker": "jim",
+      "text": "First, we need to talk about the problem that started all of this.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_007_jim.mp3",
+      "duration_seconds": 3.85,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 8,
+      "speaker": "phil",
+      "text": "Ladies and gentlemen - buckle your seatbelts, secure your digital assets, and please - for the love of everything - silence any subscription notifications you may be receiving right now. Because they are about to become very embarrassing for you.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_008_phil.mp3",
+      "duration_seconds": 15.4,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 9,
+      "speaker": "jim",
+      "text": "Today is not a product demo. Let me say that clearly. Today is an intervention. A dignified, well-produced, extremely entertaining intervention - for every person who has been renting their own digital life back from a corporation - and smiling about it.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_009_jim.mp3",
+      "duration_seconds": 14.38,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 10,
+      "speaker": "phil",
+      "text": "We're not here to sell you something. We're here to return something. Something that used to belong to you before the tech industry decided convenience was worth more than ownership.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_010_phil.mp3",
+      "duration_seconds": 11.33,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 11,
+      "speaker": "jim",
+      "text": "And for the investors in the room - yes, we know you're here - welcome. You've been patient. We're about to show you why that patience is worth something.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_011_jim.mp3",
+      "duration_seconds": 7.9,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 12,
+      "speaker": "phil",
+      "text": "Today we are unveiling the TrueMark Sovereign Software Ecosystem.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_012_phil.mp3",
+      "duration_seconds": 4.58,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 13,
+      "speaker": "jim",
+      "text": "The tools are called Mint, GOAT, and the ORB. And by the time we're done today, you're going to know exactly what they do, why they matter, and where to go to get your hands on them.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_013_jim.mp3",
+      "duration_seconds": 8.75,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 14,
+      "speaker": "phil",
+      "text": "Alright. Let's build the case. Jim - hit 'em with the problem.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_014_phil.mp3",
+      "duration_seconds": 3.98,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 15,
+      "speaker": "jim",
+      "text": "Let me ask you a question. And I want you to answer it honestly - you don't have to say it out loud, just feel the weight of it. How many software subscriptions are you paying for right now that you don't fully understand?",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_015_jim.mp3",
+      "duration_seconds": 11.0,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 16,
+      "speaker": "phil",
+      "text": "Take your time. We'll wait.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_016_phil.mp3",
+      "duration_seconds": 2.0,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 17,
+      "speaker": "jim",
+      "text": "There's the cloud storage one. The PDF editor you used twice. The AI tool that had a free tier until it didn't. The creative suite that costs more per month than your first car payment. The \"productivity\" app that somehow made you less productive. The antivirus. The password manager. The backup software that backs up your files to a server in a country you've never visited.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_017_jim.mp3",
+      "duration_seconds": 19.3,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 18,
+      "speaker": "phil",
+      "text": "And here's the thing that should make everyone in this room furious - every single one of those tools? You used to be able to just buy them. One time. Install them. Own them. Use them forever.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_018_phil.mp3",
+      "duration_seconds": 12.33,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 19,
+      "speaker": "jim",
+      "text": "Somewhere along the way, the industry decided that ownership was bad for business. And they were right - it's very bad for their business. But it's very good for yours.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_019_jim.mp3",
+      "duration_seconds": 9.28,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 20,
+      "speaker": "phil",
+      "text": "And then there's the AI question. Phil - walk me through the privacy horror show.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_020_phil.mp3",
+      "duration_seconds": 5.3,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 21,
+      "speaker": "phil",
+      "text": "Happy to. You upload a document to a cloud AI tool. Could be a contract. Could be a medical record. Could be a business plan you've been working on for three years. And buried in the terms of service - in language that takes a law degree to decode - it says: this file may be used to improve our models.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_021_phil.mp3",
+      "duration_seconds": 19.38,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 22,
+      "speaker": "jim",
+      "text": "And most people - most people - have no idea that's happening. They think they're using a tool. They don't realize they're feeding a machine they'll never own.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_022_jim.mp3",
+      "duration_seconds": 8.23,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 23,
+      "speaker": "phil",
+      "text": "So we asked a simple question: what if we built it differently? What if the software ran locally - on your machine - and never called home? What if you bought it once, owned it forever, and it stayed completely in your control?",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_023_phil.mp3",
+      "duration_seconds": 13.98,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 24,
+      "speaker": "jim",
+      "text": "What if the AI you used worked for you - and only you - and reported to nobody?",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_024_jim.mp3",
+      "duration_seconds": 4.7,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 25,
+      "speaker": "phil",
+      "text": "That question is the TrueMark Sovereign Software Ecosystem. And before I give you the investor framing - because the investor framing is good - let me just put a number on the problem. The global subscription software market is pushing eight hundred billion dollars. A growing category of users - and enterprise buyers - are actively searching for local-first, private, one-time-purchase alternatives. We are not fighting the cloud. We are serving the people the cloud left behind. And there are a lot of them.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_025_phil.mp3",
+      "duration_seconds": 30.2,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 26,
+      "speaker": "phil",
+      "text": "First tool in the ecosystem. TrueMark Mint. And I want to describe this the right way, because people hear \"certification\" and they immediately picture something boring and bureaucratic. This is not that.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_026_phil.mp3",
+      "duration_seconds": 13.08,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 27,
+      "speaker": "jim",
+      "text": "Think of it as a vault and a witness combined into one.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_027_jim.mp3",
+      "duration_seconds": 3.73,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 28,
+      "speaker": "phil",
+      "text": "Exactly. You have something you created - a document, a photograph, a song, a business plan, a contract, a piece of artwork, a video, a design file - anything digital that has value to you. You drop it into TrueMark Mint. It gets timestamped, cryptographically locked, and turned into what we call a Knowledge NFT. A K-NFT.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_028_phil.mp3",
+      "duration_seconds": 20.65,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 29,
+      "speaker": "jim",
+      "text": "Hold on. You said NFT. You can hear people shifting in their seats. Phil.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_029_jim.mp3",
+      "duration_seconds": 4.6,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 30,
+      "speaker": "phil",
+      "text": "I know. I know. Forget everything you know about monkey pictures and digital trading cards. Strip that entire circus out of your brain. A K-NFT is a certificate with a backbone. It's a license, a timestamp, and a proof of authorship - all locked together in a format that nobody can alter, nobody can revoke, and nobody can charge you a monthly fee to keep alive.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_030_phil.mp3",
+      "duration_seconds": 23.48,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 31,
+      "speaker": "jim",
+      "text": "The blockchain part is just how it stays honest. No server needed. No company needs to stay in business to protect your proof. It just exists - permanently - the way a physical document exists, except it can't burn and it can't be stolen.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_031_jim.mp3",
+      "duration_seconds": 13.4,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 32,
+      "speaker": "phil",
+      "text": "So imagine you're a musician. You write a song. You record a demo. You mint it. That song now has a timestamp that predates anyone who might try to claim they wrote it first. That's not a legal theory - that's a cryptographic fact.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_032_phil.mp3",
+      "duration_seconds": 14.58,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 33,
+      "speaker": "jim",
+      "text": "Imagine you're a contractor. You send a proposal. You mint it before you send it. Now there's a record that this proposal existed, in this form, on this date - before anyone could alter it.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_033_jim.mp3",
+      "duration_seconds": 10.2,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 34,
+      "speaker": "phil",
+      "text": "Imagine you're a parent. You've been keeping journals and photos and voice recordings of your kids growing up. You mint them. Decade from now, those records are unimpeachable. They exist. They're yours. They will never disappear because a cloud company went bankrupt or changed its terms.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_034_phil.mp3",
+      "duration_seconds": 18.25,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 35,
+      "speaker": "jim",
+      "text": "For the investors - Mint is a one-time purchase product. But the behavior it enables is constant. People mint documents, then revisions, then deliverables, then new versions. The tool grows with how people actually work. No subscription required - but the LTV compounds naturally with user activity.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_035_jim.mp3",
+      "duration_seconds": 17.08,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 36,
+      "speaker": "phil",
+      "text": "And it's offline capable. You can mint on a plane. In a cabin. In a building with no wifi. Your proof does not depend on anyone else's infrastructure.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_036_phil.mp3",
+      "duration_seconds": 10.7,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 37,
+      "speaker": "announcer_male",
+      "text": "This segment of The Phil and Jim Dandy Show is brought to you by The Dandy Weekly Feature - the show's ongoing spotlight dedicated entirely to you.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_037_announcer_male.mp3",
+      "duration_seconds": 8.08,
+      "engine": "kokoro",
+      "voice_name": "am_eric",
+      "pause_after": 0.5
+    },
+    {
+      "index": 38,
+      "speaker": "announcer_male",
+      "text": "Every week, The Phil and Jim Dandy Show reserves a dedicated feature segment for real people - creators, inventors, musicians, entrepreneurs, artists, and builders - to showcase what they're preserving, building, or launching through the TrueMark ecosystem.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_038_announcer_male.mp3",
+      "duration_seconds": 13.5,
+      "engine": "kokoro",
+      "voice_name": "am_eric",
+      "pause_after": 0.5
+    },
+    {
+      "index": 39,
+      "speaker": "announcer_male",
+      "text": "Have a song you've just minted? We'll play it. Have a product you've certified and you want the world to know it exists? We'll feature it. A business, a book, a blueprint, a collection - if you've built it, protected it, and you're proud of it - The Dandy Weekly Feature is your stage.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_039_announcer_male.mp3",
+      "duration_seconds": 12.18,
+      "engine": "kokoro",
+      "voice_name": "am_eric",
+      "pause_after": 0.5
+    },
+    {
+      "index": 40,
+      "speaker": "announcer_male",
+      "text": "Submissions are open to all TrueMark users. One featured creator per week. Reach an audience of builders, investors, and sovereign-software believers who are exactly the kind of people who want to discover what you've made.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_040_announcer_male.mp3",
+      "duration_seconds": 12.03,
+      "engine": "kokoro",
+      "voice_name": "am_eric",
+      "pause_after": 0.5
+    },
+    {
+      "index": 41,
+      "speaker": "announcer_male",
+      "text": "Find the submission link in the show description. The Dandy Weekly Feature - because what you've built deserves to be heard. Now back to Phil and Jim.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_041_announcer_male.mp3",
+      "duration_seconds": 7.65,
+      "engine": "kokoro",
+      "voice_name": "am_eric",
+      "pause_after": 0.5
+    },
+    {
+      "index": 42,
+      "speaker": "phil",
+      "text": "I love that guy. Jim, do you ever wish we had his voice?",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_042_phil.mp3",
+      "duration_seconds": 4.3,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 43,
+      "speaker": "jim",
+      "text": "Every single day of my life. Alright - let's keep moving. Tool number two.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_043_jim.mp3",
+      "duration_seconds": 4.48,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 44,
+      "speaker": "jim",
+      "text": "Tool number two. The GOAT. And yes - Generalized Operational Artifact Transformer - but also yes, we named it GOAT on purpose, and no, we are not apologizing for that.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_044_jim.mp3",
+      "duration_seconds": 9.93,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 45,
+      "speaker": "phil",
+      "text": "The GOAT is your local file intelligence engine. And I want you to picture something for me. Picture the most chaotic file situation you have ever been in. A folder of documents in four different formats. A scanned PDF that looks like someone held the pages up to a window and took a photo. An audio file someone sent you with no label. A bunch of images that may or may not be in order.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_045_phil.mp3",
+      "duration_seconds": 24.2,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 46,
+      "speaker": "jim",
+      "text": "You throw all of it at the GOAT. And the GOAT eats it.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_046_jim.mp3",
+      "duration_seconds": 3.38,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 47,
+      "speaker": "phil",
+      "text": "It ingests it. It reads it. It cleans it. It redacts whatever you tell it to redact - your personal information, your client data, anything you don't want exposed - and it hands you back a clean, organized output package. ZIP file. Done.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_047_phil.mp3",
+      "duration_seconds": 15.4,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 48,
+      "speaker": "jim",
+      "text": "And here is the part that I need everyone to really sit with. It does all of this on your machine. Locally. Nothing leaves. Nothing goes to a cloud. Nothing gets analyzed by a server in another country. Nothing gets absorbed into someone else's training data. It happens right there - between you and your hardware - and nobody else is invited.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_048_jim.mp3",
+      "duration_seconds": 17.78,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 49,
+      "speaker": "phil",
+      "text": "The GOAT has a built-in safety layer. It will not process illegal harm content. That is a hard line, and we hold it. But outside of that - it stays entirely out of your business. Because it is not our business what's in your files. It's yours.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_049_phil.mp3",
+      "duration_seconds": 15.83,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 50,
+      "speaker": "jim",
+      "text": "I want to walk through who this changes the game for. You're a lawyer. You have a hundred-and-fifty-page contract and you need to strip out client information before sharing it. GOAT does that in seconds, locally, with no liability exposure from a third-party cloud tool. You're a doctor's office coordinator - same situation. You're a small business owner with three years of disorganized invoices and you need a clean record before a meeting with your accountant. GOAT. You're a musician with a hard drive full of demos and voice notes and you want to catalog everything before you mint it. GOAT gets you ready for Mint.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_050_jim.mp3",
+      "duration_seconds": 30.58,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 51,
+      "speaker": "phil",
+      "text": "For the investors - GOAT touches every industry where documents are sensitive and privacy is non-negotiable. Legal, medical, finance, real estate, creative, academic. One purchase. Deep utility. Massive stickiness. And it feeds naturally into Mint - so your GOAT output becomes your Mint input. The ecosystem creates its own workflow.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_051_phil.mp3",
+      "duration_seconds": 22.23,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 52,
+      "speaker": "phil",
+      "text": "Now we get to the center of everything. The thing this whole show is named after, if you look closely enough. The ORB.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_052_phil.mp3",
+      "duration_seconds": 7.55,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 53,
+      "speaker": "jim",
+      "text": "The ORB is your personal intelligence layer. Not a chatbot. Not a search engine with a personality. Not a subscription AI that knows just enough about you to be useful but not enough to actually help. Your ORB is yours - completely, architecturally, by design.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_053_jim.mp3",
+      "duration_seconds": 14.75,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 54,
+      "speaker": "phil",
+      "text": "It runs on your desktop. It runs in your browser. It is local-first by default - which means it works without a connection, it doesn't phone home, and it doesn't share your data with anyone. You configure it. You control it. You own what it knows about you.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_054_phil.mp3",
+      "duration_seconds": 16.1,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 55,
+      "speaker": "jim",
+      "text": "Now - it can integrate with a large language model. You can connect it to an AI. But here is the architectural difference that matters: your ORB is the sovereign authority. The LLM - the AI model - is a tool that your ORB calls when it decides to call it. The ORB is in charge. The AI works for the ORB. The ORB works for you.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_055_jim.mp3",
+      "duration_seconds": 17.13,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 56,
+      "speaker": "phil",
+      "text": "Most AI products have it backwards. The AI is the brain, the AI is the authority, and you're just a user making requests. With the ORB - you are the brain. You are the authority.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_056_phil.mp3",
+      "duration_seconds": 12.18,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 57,
+      "speaker": "jim",
+      "text": "tell me what it actually feels like to use it. For someone who's never seen one.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_057_jim.mp3",
+      "duration_seconds": 4.85,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 58,
+      "speaker": "phil",
+      "text": "Imagine you have an assistant who has been working with you for years. They know how you think. They know your priorities. They know what information you need in the morning versus what you need at eleven PM when you're in the middle of a project. They never forget a conversation. They never share your business with anyone. They never charge you more because you used them more this month. That's the ORB. Except it lives on your machine and it does not need lunch breaks.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_058_phil.mp3",
+      "duration_seconds": 25.68,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 59,
+      "speaker": "jim",
+      "text": "And your API key, your model - you bring what you want. The ORB is the architecture. You supply the intelligence layer you trust. Want to run a local model entirely offline? You can. Want to connect to the model of your choice with your own credentials? You can. The ORB doesn't pick your AI for you - it lets you pick.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_059_jim.mp3",
+      "duration_seconds": 15.63,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 60,
+      "speaker": "phil",
+      "text": "Now - the ORB Premium Docking Station. This is the command center. Think of it as the bridge of your ship. System diagnostics - you can see what your ORB knows, what it's doing, how healthy it is. Local model management - install, update, switch models without going through any third party. Plugin control - extend your ORB's capabilities on your terms. USB-key unlock for encrypted features - physical sovereignty for your most sensitive configurations. And offline mode that actually works, not a degraded version of the product. The full product.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_060_phil.mp3",
+      "duration_seconds": 34.15,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 61,
+      "speaker": "jim",
+      "text": "And then there's the part that I personally am most excited about.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_061_jim.mp3",
+      "duration_seconds": 3.9,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 62,
+      "speaker": "phil",
+      "text": "The Skin Studio.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_062_phil.mp3",
+      "duration_seconds": 1.8,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 63,
+      "speaker": "jim",
+      "text": "Sovereignty does not mean boring. Your ORB has a face. And you get to choose what that face looks like.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_063_jim.mp3",
+      "duration_seconds": 5.88,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 64,
+      "speaker": "phil",
+      "text": "Skins start at eighty-eight cents. Premium animated skins - full motion, personality, visual identity - up to twenty-nine ninety-five. We do seasonal drops. Artist collaborations. Limited editions that become collectible once the window closes. And if you want to put your own NFT - your own artwork - on your ORB's face, that's two dollars and eighty-eight cents. That's it. Your ORB, your identity, your look.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_064_phil.mp3",
+      "duration_seconds": 25.38,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 65,
+      "speaker": "jim",
+      "text": "I need to describe this moment for the audio audience. Because right now Phil is looking at his ORB and it is wearing what I can only describe as a neon storm cloud with eyes. And it is genuinely unsettling in the best possible way.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_065_jim.mp3",
+      "duration_seconds": 13.15,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 66,
+      "speaker": "phil",
+      "text": "It is a limited edition. And you cannot have it.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_066_phil.mp3",
+      "duration_seconds": 3.45,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 67,
+      "speaker": "jim",
+      "text": "For the investors - the Skin Studio is recurring revenue embedded inside a one-time-purchase product. The user already bought the ORB. They're already committed. The skin purchases are low-friction, high-frequency, emotionally driven micro-transactions from an audience that is already invested. That's how you build meaningful LTV without bolting a subscription onto something people resent paying monthly for.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_067_jim.mp3",
+      "duration_seconds": 21.18,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 68,
+      "speaker": "jim",
+      "text": "Hey - real quick before we keep going. I want to talk to you for a second. Not you in general - I mean you specifically. The person listening right now who has something.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_068_jim.mp3",
+      "duration_seconds": 9.38,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 69,
+      "speaker": "jim",
+      "text": "Maybe it's a song you recorded in your bedroom at midnight that you think is the best thing you've ever made. Maybe it's a product you've been building for two years and you finally got it right. Maybe it's a book, a painting, a business idea, an invention, a service - something you created and you know it's real, you know it has value, and you're trying to figure out how to get it in front of people who get it.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_069_jim.mp3",
+      "duration_seconds": 18.53,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 70,
+      "speaker": "jim",
+      "text": "That's what The Dandy Weekly Feature is for. Every single week, we feature one creator on this show - in front of this audience - and we talk about what they built, why it matters, and how they protected it. If you minted it through TrueMark, we especially want to hear from you - because that's proof you're serious about what you made.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_070_jim.mp3",
+      "duration_seconds": 16.33,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 71,
+      "speaker": "jim",
+      "text": "The link is in the description below this episode. Fill out the form. Tell us what you built. We read every single submission - Phil reads them over my shoulder whether I want him to or not - and we pick one every week. This audience is exactly the kind of audience that wants to find you. So let them.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_071_jim.mp3",
+      "duration_seconds": 16.08,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 72,
+      "speaker": "phil",
+      "text": "I do read them. All of them. Some of them are extraordinary. Alright - let's do the demo.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_072_phil.mp3",
+      "duration_seconds": 5.93,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 73,
+      "speaker": "phil",
+      "text": "Alright. I want to walk you through what this looks like end to end. Not theoretically - I mean right here, right now, in this studio. Jim - I'm going to drop the worst file you've ever seen into the GOAT. Are you ready?",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_073_phil.mp3",
+      "duration_seconds": 13.28,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 74,
+      "speaker": "jim",
+      "text": "Phil, I have watched you do a lot of things in this studio and I am never ready. Let's go.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_074_jim.mp3",
+      "duration_seconds": 5.18,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 75,
+      "speaker": "jim",
+      "text": "What is that? That is three years of vendor invoices, what appears to be a scanned hand-written note from someone named Carl, a lease agreement for a building that I think no longer exists, and - Phil, is that a grocery list? Is there a grocery list in your business documents?",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_075_jim.mp3",
+      "duration_seconds": 14.4,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 76,
+      "speaker": "phil",
+      "text": "Carl is very organized. It just doesn't look like that from the outside. Watch what happens.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_076_phil.mp3",
+      "duration_seconds": 6.4,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 77,
+      "speaker": "phil",
+      "text": "GOAT ingests every file in that folder. It reads the text - even Carl's handwriting. It cleans the formatting. We redact Phil's home address, we pull the personal account numbers, we flag anything that shouldn't leave the building - and we tell GOAT what to keep and what to strip. Then it packages the output. Clean files. Labeled. Structured. ZIP.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_077_phil.mp3",
+      "duration_seconds": 21.48,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 78,
+      "speaker": "jim",
+      "text": "That is beautiful. Carl would not recognize his own files right now.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_078_jim.mp3",
+      "duration_seconds": 4.25,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 79,
+      "speaker": "phil",
+      "text": "Carl is going to cry when he sees this. Alright - now we take the output and we move to Mint.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_079_phil.mp3",
+      "duration_seconds": 6.1,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 80,
+      "speaker": "jim",
+      "text": "Drop it into TrueMark Mint.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_080_jim.mp3",
+      "duration_seconds": 2.35,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 81,
+      "speaker": "phil",
+      "text": "And it mints. Timestamp locked. Cryptographically signed. The K-NFT is born. Carl's vendor history - the real one, the cleaned one - is now a permanent, verifiable record that exists independent of any cloud server, any company, any terms of service. It's Carl's forever.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_081_phil.mp3",
+      "duration_seconds": 18.95,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 82,
+      "speaker": "jim",
+      "text": "And the ORB walked us through the entire process. Step by step. Suggested which files to redact. Flagged the grocery list as probably not a business document - which is correct - and confirmed the mint was successful. No account. No login. No cloud. No subscription. The ORB just did its job because that's what it exists to do.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_082_jim.mp3",
+      "duration_seconds": 17.7,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 83,
+      "speaker": "phil",
+      "text": "And now - final step. Because we can. Jim, swap your ORB skin.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_083_phil.mp3",
+      "duration_seconds": 4.7,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 84,
+      "speaker": "jim",
+      "text": "I went with the deep ocean skin. Blue, slow-moving, very calm. It's how I aspire to feel in meetings.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_084_jim.mp3",
+      "duration_seconds": 6.13,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 85,
+      "speaker": "phil",
+      "text": "That is your ORB. That is your identity. That is the three-tool ecosystem working as a complete workflow - from chaos to clean to certified to beautiful - and every piece of it is local, private, and yours.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_085_phil.mp3",
+      "duration_seconds": 13.85,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 86,
+      "speaker": "jim",
+      "text": "Alright. I want to talk directly to the investors in the room for a few minutes. We've been building toward this and I want to give it the weight it deserves. No jokes. Just the real picture.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_086_jim.mp3",
+      "duration_seconds": 10.08,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 87,
+      "speaker": "phil",
+      "text": "The global productivity software market is approaching a trillion dollars. The privacy-native, local-first segment is the fastest-growing slice of that market - driven by enterprise compliance pressure, consumer trust erosion with cloud AI, and a generation of buyers who watched subscription fatigue turn into subscription rage.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_087_phil.mp3",
+      "duration_seconds": 21.23,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 88,
+      "speaker": "jim",
+      "text": "We are not positioning as a competitor to the big platforms. We are positioning as the sovereign alternative - the category that exists for people who have decided they do not want what the big platforms are offering. That category currently has no dominant player. There is no TrueMark of this space yet. We are building it.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_088_jim.mp3",
+      "duration_seconds": 17.0,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 89,
+      "speaker": "phil",
+      "text": "Our business model inverts the standard SaaS logic. One-time purchase drives conversion - low friction, high trust. The Skin Studio creates post-purchase recurring micro-revenue from a user base that is already bought in. The Weekly Feature creates community and content that drives organic growth without an ad budget. And the Kickstarter campaign - which goes live alongside this pitch - is our demand proof. We are not asking you to take our word for it. We are showing you what the market does when we open the door.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_089_phil.mp3",
+      "duration_seconds": 31.5,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 90,
+      "speaker": "jim",
+      "text": "The substrate is already built. This is not a deck with a vision and a team. The product exists, runs locally, and has been architected to scale. What we are raising seed capital for is the team to build around it - marketing, Docking Station hardware production, and the Skin Studio marketplace infrastructure.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_090_jim.mp3",
+      "duration_seconds": 17.2,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 91,
+      "speaker": "phil",
+      "text": "This is a first-round opportunity in a category with no sovereign competitor, a working product, a clear pricing model, and a go-to-market that is already in motion. The floor is being built right now. The walls are next. If you want to be in before the walls go up - this is the moment.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_091_phil.mp3",
+      "duration_seconds": 18.78,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 92,
+      "speaker": "jim",
+      "text": "Contact information and the investor deck are in the show description. Reach out. We will make time. We are very easy to believe in once you've seen the demo - and you just saw the demo.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_092_jim.mp3",
+      "duration_seconds": 10.0,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 93,
+      "speaker": "jim",
+      "text": "If you believe software should belong to the people who use it - back the Kickstarter. The link is in the description. Do it before this episode ends. Do it before the founding backer window closes. Because once it closes, those skins and that status are gone forever.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_093_jim.mp3",
+      "duration_seconds": 14.13,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 94,
+      "speaker": "phil",
+      "text": "And if you are an investor who sees what we see - who understands what a category looks like before it has a name - reach out. We are not hard to find. And we are very, very motivated to build this thing at the scale it deserves.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_094_phil.mp3",
+      "duration_seconds": 14.38,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 95,
+      "speaker": "phil",
+      "text": "Alright. Before we let you go - let's bring it home. Jim.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_095_phil.mp3",
+      "duration_seconds": 3.65,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 96,
+      "speaker": "jim",
+      "text": "We came in here today and we said this was an intervention. I want to check back on that. Do you feel intervened? Because I think the evidence is in.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_096_jim.mp3",
+      "duration_seconds": 8.28,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 97,
+      "speaker": "phil",
+      "text": "Carl's files are clean. Carl's documents are minted. Carl's ORB is wearing a limited-edition skin that I'm a little jealous of. And Carl never uploaded a single byte to anyone else's server.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_097_phil.mp3",
+      "duration_seconds": 12.85,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 98,
+      "speaker": "jim",
+      "text": "Carl is sovereign. And so can you be.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_098_jim.mp3",
+      "duration_seconds": 2.68,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 99,
+      "speaker": "phil",
+      "text": "Local.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_099_phil.mp3",
+      "duration_seconds": 1.3,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 100,
+      "speaker": "jim",
+      "text": "Private.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_100_jim.mp3",
+      "duration_seconds": 1.08,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 101,
+      "speaker": "phil",
+      "text": "Sovereign.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_101_phil.mp3",
+      "duration_seconds": 1.4,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 102,
+      "speaker": "phil",
+      "text": "And if you have something you built - something you're proud of - submit it for the Dandy Weekly Feature. Link in the description. We want to hear it.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_102_phil.mp3",
+      "duration_seconds": 8.45,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 103,
+      "speaker": "jim",
+      "text": "We are the Phil and Jim Dandy Show. I'm Jim.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_103_jim.mp3",
+      "duration_seconds": 3.15,
+      "engine": "kokoro",
+      "voice_name": "am_liam",
+      "pause_after": 0.5
+    },
+    {
+      "index": 104,
+      "speaker": "phil",
+      "text": "I'm Phil. And we are just getting started.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_104_phil.mp3",
+      "duration_seconds": 3.03,
+      "engine": "kokoro",
+      "voice_name": "am_michael",
+      "pause_after": 0.5
+    },
+    {
+      "index": 105,
+      "speaker": "announcer_male",
+      "text": "The Phil and Jim Dandy Show is produced by Pro Prime Series AI. All products featured today are part of the TrueMark Sovereign Software Ecosystem. Kickstarter and investor information can be found in the episode description. The Dandy Weekly Feature submission window is open now. This has been The Phil and Jim Dandy Show. We'll see you next week.",
+      "emotion": "neutral",
+      "audio_file": "C:\\Users\\bryan\\Downloads\\dandy_merge\\Phil_and_Jim_Dandy_Show\\staging\\tmpbnpcdsbm\\segments\\sovereign_software_special_001_105_announcer_male.mp3",
+      "duration_seconds": 17.78,
+      "engine": "kokoro",
+      "voice_name": "am_eric",
+      "pause_after": 0.5
+    }
+  ]
+}

@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Phil & Jim Dandy Show — Full 30-Min Pitch Script</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;1,400&display=swap');
+
+  :root {
+    --red: #D85A30;
+    --red-light: #FAECE7;
+    --red-dark: #4A1B0C;
+    --gold: #BA7517;
+    --gold-light: #FAEEDA;
+    --gold-dark: #412402;
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-dark: #04342C;
+    --purple: #534AB7;
+    --purple-light: #EEEDFE;
+    --purple-dark: #26215C;
+    --gray: #888780;
+    --gray-light: #F1EFE8;
+    --gray-dark: #2C2C2A;
+    --ink: #1a1a1a;
+    --paper: #f9f7f4;
+    --rule: #d3d1c7;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --display: 'Bebas Neue', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 5rem;
+  }
+
+  /* HEADER */
+  .show-header {
+    border-top: 5px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 1.5rem 0 1.2rem;
+    margin-bottom: 2rem;
+  }
+  .show-title {
+    font-family: var(--display);
+    font-size: 58px;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .show-subtitle {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gray);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .show-meta {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    margin-top: 1.2rem;
+    border: 1px solid var(--rule);
+  }
+  .meta-cell {
+    padding: 8px 12px;
+    border-right: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .meta-cell:last-child { border-right: none; }
+  .meta-label { color: var(--gray); display: block; margin-bottom: 2px; }
+  .meta-value { font-weight: 600; color: var(--ink); font-size: 12px; }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: var(--gray-light);
+    border-radius: 4px;
+    margin-bottom: 2.5rem;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .leg { display: flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* SECTION BLOCK */
+  .section {
+    margin-bottom: 3rem;
+    border-left: 3px solid var(--rule);
+    padding-left: 1.5rem;
+  }
+  .section:hover { border-left-color: var(--red); transition: border-color 0.2s; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .section-number {
+    font-family: var(--display);
+    font-size: 38px;
+    color: var(--rule);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: 24px;
+    letter-spacing: 0.5px;
+    color: var(--ink);
+  }
+  .section-runtime {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gray);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* CUES */
+  .cue-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .cue {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .cue-energy-high  { background: var(--red-light); color: var(--red-dark); }
+  .cue-energy-build { background: var(--gold-light); color: var(--gold-dark); }
+  .cue-energy-drop  { background: var(--teal-light); color: var(--teal-dark); }
+  .cue-energy-punch { background: var(--ink); color: var(--paper); }
+  .cue-user         { background: #E6F1FB; color: #0C447C; }
+  .cue-investor     { background: var(--purple-light); color: var(--purple-dark); }
+  .cue-riff         { background: var(--gray-light); color: var(--gray-dark); border: 1px solid var(--rule); }
+
+  /* DIALOGUE */
+  .dialogue { margin-bottom: 1rem; }
+  .line {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: start;
+  }
+  .speaker {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    text-align: right;
+    padding-top: 3px;
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+  .speaker-phil  { color: var(--red); }
+  .speaker-jim   { color: var(--teal); }
+  .speaker-both  { color: var(--gold); font-size: 10px; }
+  .speaker-anncr { color: var(--purple); font-size: 10px; }
+
+  .text { font-size: 15px; color: var(--ink); }
+  .beat {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gray);
+    font-style: italic;
+    grid-column: 2;
+    margin-bottom: 8px;
+    margin-top: -4px;
+    padding-left: 2px;
+  }
+  .key-line {
+    font-weight: 500;
+    background: var(--gold-light);
+    padding: 2px 6px;
+    border-radius: 2px;
+    display: inline;
+  }
+  .riff-note {
+    display: block;
+    margin: 2px 0 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gray);
+    padding: 5px 10px;
+    border-left: 2px solid var(--rule);
+    font-style: italic;
+  }
+  .pivot {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 8px 14px;
+    margin: 1rem 0;
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  /* INTRO / OUTRO SPECIAL BLOCKS */
+  .broadcast-block {
+    border: 2px solid var(--ink);
+    padding: 1.5rem;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+  .broadcast-label {
+    position: absolute;
+    top: -12px;
+    left: 14px;
+    background: var(--paper);
+    padding: 0 8px;
+    font-family: var(--display);
+    font-size: 16px;
+    letter-spacing: 1px;
+    color: var(--ink);
+  }
+
+  /* AD BREAK BLOCK */
+  .ad-block {
+    background: var(--gray-light);
+    border: 2px dashed var(--gray);
+    padding: 1.5rem 1.5rem 1.5rem 1rem;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+  .ad-label {
+    position: absolute;
+    top: -12px;
+    left: 14px;
+    background: var(--gray-light);
+    padding: 0 8px;
+    font-family: var(--display);
+    font-size: 16px;
+    letter-spacing: 1px;
+    color: var(--gray-dark);
+  }
+  .ad-type {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--purple);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  /* THE ASK BOX */
+  .ask-box { border: 2px solid var(--ink); padding: 1.5rem; margin-top: 1rem; }
+  .ask-title { font-family: var(--display); font-size: 30px; margin-bottom: 1rem; }
+  .ask-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .ask-col-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--gray);
+    display: block;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 6px;
+  }
+  .ask-item {
+    font-size: 14px;
+    margin-bottom: 7px;
+    padding-left: 14px;
+    position: relative;
+  }
+  .ask-item::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--red);
+    font-family: var(--mono);
+  }
+
+  /* OUTRO */
+  .outro-rule {
+    border: none;
+    border-top: 3px solid var(--ink);
+    margin: 2rem 0 1rem;
+  }
+
+  /* FOOTER */
+  .show-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gray);
+  }
+
+  /* TOC */
+  .toc {
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--rule);
+  }
+  .toc-head {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 8px 14px;
+  }
+  .toc-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+    padding: 7px 14px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 13px;
+    align-items: center;
+  }
+  .toc-row:last-child { border-bottom: none; }
+  .toc-num { font-family: var(--mono); font-size: 11px; color: var(--gray); }
+  .toc-time { font-family: var(--mono); font-size: 11px; color: var(--gray); text-align: right; }
+  .toc-ad { color: var(--purple); font-style: italic; }
+  .toc-special { color: var(--red); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="show-header">
+  <div class="show-title">The Phil &amp; Jim Dandy Show</div>
+  <div class="show-subtitle">Sovereign Software Special — Full 30-Minute Studio Script · SKG-Optimized</div>
+  <div class="show-meta">
+    <div class="meta-cell">
+      <span class="meta-label">Target Runtime</span>
+      <span class="meta-value">30 – 38 min</span>
+    </div>
+    <div class="meta-cell">
+      <span class="meta-label">Format</span>
+      <span class="meta-value">Podcast / Dual Pitch</span>
+    </div>
+    <div class="meta-cell">
+      <span class="meta-label">Audience</span>
+      <span class="meta-value">Users + Seed Investors</span>
+    </div>
+    <div class="meta-cell">
+      <span class="meta-label">Ad Breaks</span>
+      <span class="meta-value">2 — Dandy Weekly Feature</span>
+    </div>
+    <div class="meta-cell">
+      <span class="meta-label">Products</span>
+      <span class="meta-value">Mint · GOAT · ORB</span>
+    </div>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:var(--red)"></div> Phil — visionary closer</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div> Jim — grounded everyman</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--gold)"></div> Both — synchronized punches</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--purple)"></div> Announcer — V.O. / studio voice</div>
+  <div class="leg"><span class="cue cue-user">USER</span> user hook</div>
+  <div class="leg"><span class="cue cue-investor">INVESTOR</span> investor hook</div>
+  <div class="leg"><span class="cue cue-riff">RIFF</span> SKG expand zone</div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <div class="toc-head">Show Rundown — Segment by Segment</div>
+  <div class="toc-row"><span class="toc-num">00</span><span class="toc-special">INTRO — Theme / Announcer Open / Phil &amp; Jim Enter</span><span class="toc-time">2:00</span></div>
+  <div class="toc-row"><span class="toc-num">01</span><span>Cold Open — The Promise</span><span class="toc-time">2:00</span></div>
+  <div class="toc-row"><span class="toc-num">02</span><span>The Problem — Name the Pain</span><span class="toc-time">4:00</span></div>
+  <div class="toc-row"><span class="toc-num">03</span><span>TrueMark Mint — The Certification Engine</span><span class="toc-time">4:00</span></div>
+  <div class="toc-row"><span class="toc-num">AD1</span><span class="toc-ad">Ad Break One — Dandy Weekly Feature (Announcer V.O.)</span><span class="toc-time">1:00</span></div>
+  <div class="toc-row"><span class="toc-num">04</span><span>GOAT — Generalized Operational Artifact Transformer</span><span class="toc-time">4:00</span></div>
+  <div class="toc-row"><span class="toc-num">05</span><span>The ORB — Sovereign Intelligence Layer</span><span class="toc-time">6:00</span></div>
+  <div class="toc-row"><span class="toc-num">AD2</span><span class="toc-ad">Ad Break Two — Dandy Weekly Feature (Jim In-Character)</span><span class="toc-time">1:00</span></div>
+  <div class="toc-row"><span class="toc-num">06</span><span>Live Demo Walkthrough</span><span class="toc-time">4:00</span></div>
+  <div class="toc-row"><span class="toc-num">07</span><span>The Investor Pivot — Straight Talk</span><span class="toc-time">3:00</span></div>
+  <div class="toc-row"><span class="toc-num">08</span><span>The Ask — Two Doors, One Mission</span><span class="toc-time">2:00</span></div>
+  <div class="toc-row"><span class="toc-num">09</span><span class="toc-special">OUTRO — Callbacks / Sign-Off / Theme Out</span><span class="toc-time">2:00</span></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- INTRO -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="broadcast-block">
+  <span class="broadcast-label">INTRO — Theme In / Announcer Open</span>
+  <div class="cue-row">
+    <span class="cue cue-energy-high">Energy: BIG — studio launch</span>
+    <span class="cue cue-riff">RIFF — Phil &amp; Jim's mic check banter before Announcer cuts in</span>
+  </div>
+  <div class="dialogue">
+    <div class="beat">[ THEME MUSIC UP — bold, punchy, slightly retro with digital undertones — hold 10 seconds full, then duck under ]</div>
+    <div class="line">
+      <span class="speaker speaker-anncr">ANNCR</span>
+      <span class="text">Live from the intersection of genius and "why didn't anyone build this sooner" — it is time. For two men who have never met a microphone they didn't love, a problem they didn't solve, or a subscription fee they didn't despise — broadcasting from the Pro Prime Series studio — this is <em>The Phil and Jim Dandy Show.</em></span>
+    </div>
+    <div class="beat">[ music swells for 3 seconds — then drops hard ]</div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">That was the most beautiful thing I've ever heard. Jim, are we live?</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">We are very, very live. And I want everyone to know that I tried to get us a proper jingle but Phil said — and I quote — "Jim, we are the jingle."</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">I stand by that. Welcome, everybody. This is The Phil and Jim Dandy Show. I'm Phil. He's Jim. And today — today is not a regular episode. Today we are doing something we've been building toward for a long time.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Today we pull back the curtain. We show you what we've been working on. We introduce you to three products that, genuinely — and I don't say this lightly — changed how I think about owning software.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Before we do that — quick housekeeping. We've got two breaks in today's show, and they are worth staying for. Because one of them is about how you — yes, the person listening right now — can get your product, your song, your invention, your business — featured on this show. Weekly. In front of this audience. We'll get to that. But first.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">First, we need to talk about the problem that started all of this.</span>
+    </div>
+    <div class="beat">[ theme music stinger — short hit — then silence ]</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 01 — COLD OPEN -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-number">01</div>
+    <div class="section-title">Cold Open — The Promise</div>
+    <div class="section-runtime">~2:00</div>
+  </div>
+  <div class="cue-row">
+    <span class="cue cue-energy-high">Energy: HIGH — confident and theatrical</span>
+    <span class="cue cue-user">USER — speak to the gut before the brain</span>
+    <span class="cue cue-riff">RIFF — Phil can extend the "intervention" metaphor, Jim plays the reluctant patient</span>
+  </div>
+  <div class="dialogue">
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Ladies and gentlemen — buckle your seatbelts, secure your digital assets, and please — for the love of everything — silence any subscription notifications you may be receiving right now. Because they are about to become very embarrassing for you.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Today is not a product demo. Let me say that clearly. Today is an intervention. A dignified, well-produced, extremely entertaining intervention — for every person who has been renting their own digital life back from a corporation — and smiling about it.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">We're not here to sell you something. We're here to return something. Something that used to belong to you before the tech industry decided convenience was worth more than ownership.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">And for the investors in the room — yes, we know you're here — welcome. You've been patient. We're about to show you why that patience is worth something.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text"><span class="key-line">Today we are unveiling the TrueMark Sovereign Software Ecosystem.</span> Three tools. One mission. Give people their digital lives back. And we are going to show you exactly how.</span>
+    </div>
+    <div class="beat">[ short music sting — half a second — then dialogue continues ]</div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">The tools are called Mint, GOAT, and the ORB. And by the time we're done today, you're going to know exactly what they do, why they matter, and where to go to get your hands on them.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Alright. Let's build the case. Jim — hit 'em with the problem.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 02 — THE PROBLEM -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-number">02</div>
+    <div class="section-title">The Problem — Name the Pain</div>
+    <div class="section-runtime">~4:00</div>
+  </div>
+  <div class="cue-row">
+    <span class="cue cue-energy-build">Energy: BUILD — slow burn to a boil</span>
+    <span class="cue cue-user">USER — make them feel it personally</span>
+    <span class="cue cue-investor">INVESTOR — market framing lands at the end</span>
+    <span class="cue cue-riff">RIFF — Jim can list subscriptions, Phil escalates each one</span>
+  </div>
+  <div class="dialogue">
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Let me ask you a question. And I want you to answer it honestly — you don't have to say it out loud, just feel the weight of it. How many software subscriptions are you paying for right now that you don't fully understand?</span>
+    </div>
+    <div class="beat">[ pause — let it breathe — 3 full seconds ]</div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Take your time. We'll wait.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">There's the cloud storage one. The PDF editor you used twice. The AI tool that had a free tier until it didn't. The creative suite that costs more per month than your first car payment. The "productivity" app that somehow made you less productive. The antivirus. The password manager. The backup software that backs up your files to a server in a country you've never visited.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">And here's the thing that should make everyone in this room furious — every single one of those tools? You used to be able to just buy them. One time. Install them. Own them. Use them forever.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Somewhere along the way, the industry decided that ownership was bad for business. And they were right — it's very bad for their business. But it's very good for yours.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">And then there's the AI question. Phil — walk me through the privacy horror show.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Happy to. You upload a document to a cloud AI tool. Could be a contract. Could be a medical record. Could be a business plan you've been working on for three years. And buried in the terms of service — in language that takes a law degree to decode — it says: <span class="key-line">this file may be used to improve our models.</span> Which means it's training their next version. Permanently.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">And most people — most people — have no idea that's happening. They think they're using a tool. They don't realize they're feeding a machine they'll never own.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">So we asked a simple question: what if we built it differently? What if the software ran locally — on your machine — and never called home? What if you bought it once, owned it forever, and it stayed completely in your control?</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">What if the AI you used worked for you — and only you — and reported to nobody?</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">That question is the TrueMark Sovereign Software Ecosystem. And before I give you the investor framing — because the investor framing is good — let me just put a number on the problem. The global subscription software market is pushing eight hundred billion dollars. A growing category of users — and enterprise buyers — are actively searching for local-first, private, one-time-purchase alternatives. We are not fighting the cloud. We are serving the people the cloud left behind. And there are a lot of them.</span>
+    </div>
+    <div class="riff-note">SKG RIFF ANCHOR: Phil or Jim can open the floor — "What's the worst subscription you're still paying for?" Audience engagement moment before moving to solutions.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 03 — TRUEMARK MINT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-number">03</div>
+    <div class="section-title">TrueMark Mint — The Certification Engine</div>
+    <div class="section-runtime">~4:00</div>
+  </div>
+  <div class="cue-row">
+    <span class="cue cue-energy-build">Energy: BUILD — introduce with weight</span>
+    <span class="cue cue-user">USER — ownership, proof, protection</span>
+    <span class="cue cue-investor">INVESTOR — LTV logic without subscription anchor</span>
+    <span class="cue cue-riff">RIFF — Jim plays the skeptic on NFT language, Phil defuses it with clarity</span>
+  </div>
+  <div class="dialogue">
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">First tool in the ecosystem. TrueMark Mint. And I want to describe this the right way, because people hear "certification" and they immediately picture something boring and bureaucratic. This is not that.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Think of it as a vault and a witness combined into one.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Exactly. You have something you created — a document, a photograph, a song, a business plan, a contract, a piece of artwork, a video, a design file — anything digital that has value to you. You drop it into TrueMark Mint. It gets timestamped, cryptographically locked, and turned into what we call a Knowledge NFT. A K-NFT.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Hold on. You said NFT. You can hear people shifting in their seats. Phil.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">I know. I know. Forget everything you know about monkey pictures and digital trading cards. Strip that entire circus out of your brain. A K-NFT is a certificate with a backbone. It's a license, a timestamp, and a proof of authorship — all locked together in a format that nobody can alter, nobody can revoke, and nobody can charge you a monthly fee to keep alive.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">The blockchain part is just how it stays honest. No server needed. No company needs to stay in business to protect your proof. It just exists — permanently — the way a physical document exists, except it can't burn and it can't be stolen.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">So imagine you're a musician. You write a song. You record a demo. You mint it. That song now has a timestamp that predates anyone who might try to claim they wrote it first. That's not a legal theory — that's a cryptographic fact.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Imagine you're a contractor. You send a proposal. You mint it before you send it. Now there's a record that this proposal existed, in this form, on this date — before anyone could alter it.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Imagine you're a parent. You've been keeping journals and photos and voice recordings of your kids growing up. You mint them. Decade from now, those records are unimpeachable. They exist. They're yours. They will never disappear because a cloud company went bankrupt or changed its terms.</span>
+    </div>
+    <div class="beat">[ let that last one land — it's emotional and it's true ]</div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">For the investors — Mint is a one-time purchase product. But the behavior it enables is constant. People mint documents, then revisions, then deliverables, then new versions. The tool grows with how people actually work. No subscription required — but the LTV compounds naturally with user activity.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">And it's offline capable. You can mint on a plane. In a cabin. In a building with no wifi. Your proof does not depend on anyone else's infrastructure.</span>
+    </div>
+    <div class="riff-note">SKG RIFF ANCHOR: Phil or Jim can riff on a real scenario — "what if you had minted THAT before it was stolen" — personal story from either character, emotionally grounded.</riff-note>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- AD BREAK 1 — ANNOUNCER V.O. -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="ad-block">
+  <span class="ad-label">Ad Break One — Dandy Weekly Feature</span>
+  <span class="ad-type">Performed by: Studio Announcer (V.O.) — Formal Radio Style — ~1:00</span>
+  <div class="cue-row">
+    <span class="cue cue-energy-drop">Energy: DROP — warm, professional, inviting</span>
+    <span class="cue cue-riff">RIFF — Announcer can personalize examples based on show context</span>
+  </div>
+  <div class="dialogue">
+    <div class="beat">[ music transition — clean, warm, slightly upbeat — under Announcer ]</div>
+    <div class="line">
+      <span class="speaker speaker-anncr">ANNCR</span>
+      <span class="text">This segment of The Phil and Jim Dandy Show is brought to you by The Dandy Weekly Feature — the show's ongoing spotlight dedicated entirely to you.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-anncr">ANNCR</span>
+      <span class="text">Every week, The Phil and Jim Dandy Show reserves a dedicated feature segment for real people — creators, inventors, musicians, entrepreneurs, artists, and builders — to showcase what they're preserving, building, or launching through the TrueMark ecosystem.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-anncr">ANNCR</span>
+      <span class="text">Have a song you've just minted? We'll play it. Have a product you've certified and you want the world to know it exists? We'll feature it. A business, a book, a blueprint, a collection — if you've built it, protected it, and you're proud of it — The Dandy Weekly Feature is your stage.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-anncr">ANNCR</span>
+      <span class="text">Submissions are open to all TrueMark users. One featured creator per week. Reach an audience of builders, investors, and sovereign-software believers who are exactly the kind of people who want to discover what you've made.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-anncr">ANNCR</span>
+      <span class="text">Find the submission link in the show description. The Dandy Weekly Feature — because what you've built deserves to be heard. Now back to Phil and Jim.</span>
+    </div>
+    <div class="beat">[ music fades — Phil and Jim come back in ]</div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">I love that guy. Jim, do you ever wish we had his voice?</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Every single day of my life. Alright — let's keep moving. Tool number two.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 04 — GOAT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-number">04</div>
+    <div class="section-title">GOAT — Generalized Operational Artifact Transformer</div>
+    <div class="section-runtime">~4:00</div>
+  </div>
+  <div class="cue-row">
+    <span class="cue cue-energy-high">Energy: HIGH — Jim owns this one, Phil plays the hype man</span>
+    <span class="cue cue-user">USER — local privacy, practical daily utility</span>
+    <span class="cue cue-investor">INVESTOR — horizontal market, enterprise privacy wedge</span>
+    <span class="cue cue-riff">RIFF — Jim narrates a chaotic file scenario, GOAT is the hero</span>
+  </div>
+  <div class="dialogue">
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Tool number two. The GOAT. And yes — Generalized Operational Artifact Transformer — but also yes, we named it GOAT on purpose, and no, we are not apologizing for that.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">The GOAT is your local file intelligence engine. And I want you to picture something for me. Picture the most chaotic file situation you have ever been in. A folder of documents in four different formats. A scanned PDF that looks like someone held the pages up to a window and took a photo. An audio file someone sent you with no label. A bunch of images that may or may not be in order.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">You throw all of it at the GOAT. And the GOAT eats it.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">It ingests it. It reads it. It cleans it. It redacts whatever you tell it to redact — your personal information, your client data, anything you don't want exposed — and it hands you back a clean, organized output package. ZIP file. Done.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">And here is the part that I need everyone to really sit with. It does all of this on your machine. Locally. Nothing leaves. Nothing goes to a cloud. Nothing gets analyzed by a server in another country. Nothing gets absorbed into someone else's training data. It happens right there — between you and your hardware — and nobody else is invited.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">The GOAT has a built-in safety layer. It will not process illegal harm content. That is a hard line, and we hold it. But outside of that — it stays entirely out of your business. Because it is not our business what's in your files. It's yours.</span>
+    </div>
+    <div class="beat">[ riff zone — Jim can extend with a personal story or hypothetical vertical use case ]</div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">I want to walk through who this changes the game for. You're a lawyer. You have a hundred-and-fifty-page contract and you need to strip out client information before sharing it. GOAT does that in seconds, locally, with no liability exposure from a third-party cloud tool. You're a doctor's office coordinator — same situation. You're a small business owner with three years of disorganized invoices and you need a clean record before a meeting with your accountant. GOAT. You're a musician with a hard drive full of demos and voice notes and you want to catalog everything before you mint it. GOAT gets you ready for Mint.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">For the investors — GOAT touches every industry where documents are sensitive and privacy is non-negotiable. Legal, medical, finance, real estate, creative, academic. One purchase. Deep utility. Massive stickiness. And it feeds naturally into Mint — so your GOAT output becomes your Mint input. The ecosystem creates its own workflow.</span>
+    </div>
+    <div class="riff-note">SKG RIFF ANCHOR: Phil or Jim can extend the "GOAT eats anything" metaphor — get playful, get vivid. The more absurd the file scenario, the better the laugh before the real utility lands.</riff-note>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 05 — THE ORB -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-number">05</div>
+    <div class="section-title">The ORB — Your Sovereign Intelligence Layer</div>
+    <div class="section-runtime">~6:00</div>
+  </div>
+  <div class="cue-row">
+    <span class="cue cue-energy-punch">Energy: PUNCH — this is the star, give it room</span>
+    <span class="cue cue-user">USER — identity, control, personalization, trust</span>
+    <span class="cue cue-investor">INVESTOR — platform economics, marketplace LTV, skin Studio recurring revenue</span>
+    <span class="cue cue-riff">RIFF — Phil describes the ORB like a character, Jim asks what it FEELS like to work with one</span>
+  </div>
+  <div class="dialogue">
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Now we get to the center of everything. The thing this whole show is named after, if you look closely enough. The ORB.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">The ORB is your personal intelligence layer. Not a chatbot. Not a search engine with a personality. Not a subscription AI that knows just enough about you to be useful but not enough to actually help. Your ORB is yours — completely, architecturally, by design.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">It runs on your desktop. It runs in your browser. It is local-first by default — which means it works without a connection, it doesn't phone home, and it doesn't share your data with anyone. You configure it. You control it. You own what it knows about you.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Now — it can integrate with a large language model. You can connect it to an AI. But here is the architectural difference that matters: your ORB is the sovereign authority. The LLM — the AI model — is a tool that your ORB calls when it decides to call it. The ORB is in charge. The AI works for the ORB. The ORB works for you.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Most AI products have it backwards. The AI is the brain, the AI is the authority, and you're just a user making requests. With the ORB — <span class="key-line">you are the brain. You are the authority.</span> Everything else is infrastructure that serves your intent.</span>
+    </div>
+    <div class="beat">[ let that land — it's the philosophical core of the whole product ]</div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Phil — tell me what it actually feels like to use it. For someone who's never seen one.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Imagine you have an assistant who has been working with you for years. They know how you think. They know your priorities. They know what information you need in the morning versus what you need at eleven PM when you're in the middle of a project. They never forget a conversation. They never share your business with anyone. They never charge you more because you used them more this month. That's the ORB. Except it lives on your machine and it does not need lunch breaks.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">And your API key, your model — you bring what you want. The ORB is the architecture. You supply the intelligence layer you trust. Want to run a local model entirely offline? You can. Want to connect to the model of your choice with your own credentials? You can. The ORB doesn't pick your AI for you — it lets you pick.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Now — the ORB Premium Docking Station. This is the command center. Think of it as the bridge of your ship. System diagnostics — you can see what your ORB knows, what it's doing, how healthy it is. Local model management — install, update, switch models without going through any third party. Plugin control — extend your ORB's capabilities on your terms. USB-key unlock for encrypted features — physical sovereignty for your most sensitive configurations. And offline mode that actually works, not a degraded version of the product. The full product.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">And then there's the part that I personally am most excited about.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">The Skin Studio.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Sovereignty does not mean boring. Your ORB has a face. And you get to choose what that face looks like.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Skins start at eighty-eight cents. Premium animated skins — full motion, personality, visual identity — up to twenty-nine ninety-five. We do seasonal drops. Artist collaborations. Limited editions that become collectible once the window closes. And if you want to put your own NFT — your own artwork — on your ORB's face, that's two dollars and eighty-eight cents. That's it. Your ORB, your identity, your look.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">I need to describe this moment for the audio audience. Because right now Phil is looking at his ORB and it is wearing what I can only describe as a neon storm cloud with eyes. And it is genuinely unsettling in the best possible way.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">It is a limited edition. And you cannot have it.</span>
+    </div>
+    <div class="beat">[ brief laugh — let the moment breathe ]</div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">For the investors — the Skin Studio is recurring revenue embedded inside a one-time-purchase product. The user already bought the ORB. They're already committed. The skin purchases are low-friction, high-frequency, emotionally driven micro-transactions from an audience that is already invested. That's how you build meaningful LTV without bolting a subscription onto something people resent paying monthly for.</span>
+    </div>
+    <div class="riff-note">SKG RIFF ANCHOR: Phil describes what his specific ORB skin is and why he chose it — gets personal, shows the identity dimension. Jim can challenge him: "okay but does the skin make it work better?" Phil: "Jim, does a great office make you work better?" Pause. "Yes. Yes it does."</riff-note>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- AD BREAK 2 — JIM IN CHARACTER -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="ad-block">
+  <span class="ad-label">Ad Break Two — Dandy Weekly Feature</span>
+  <span class="ad-type">Performed by: Jim Dandy — In Character — Casual / Personal — ~1:00</span>
+  <div class="cue-row">
+    <span class="cue cue-energy-drop">Energy: DROP — conversational, warm, like Jim talking directly to the listener</span>
+    <span class="cue cue-riff">RIFF — Jim can pivot off something just mentioned — the song or product someone in the audience built</span>
+  </div>
+  <div class="dialogue">
+    <div class="beat">[ music transition — softer, almost like Jim just turned to the mic ]</div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Hey — real quick before we keep going. I want to talk to you for a second. Not you in general — I mean you specifically. The person listening right now who has something.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Maybe it's a song you recorded in your bedroom at midnight that you think is the best thing you've ever made. Maybe it's a product you've been building for two years and you finally got it right. Maybe it's a book, a painting, a business idea, an invention, a service — something you created and you know it's real, you know it has value, and you're trying to figure out how to get it in front of people who get it.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">That's what The Dandy Weekly Feature is for. Every single week, we feature one creator on this show — in front of this audience — and we talk about what they built, why it matters, and how they protected it. If you minted it through TrueMark, we especially want to hear from you — because that's proof you're serious about what you made.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">The link is in the description below this episode. Fill out the form. Tell us what you built. We read every single submission — Phil reads them over my shoulder whether I want him to or not — and we pick one every week. This audience is exactly the kind of audience that wants to find you. So let them.</span>
+    </div>
+    <div class="beat">[ music up briefly then fade back ]</div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">I do read them. All of them. Some of them are extraordinary. Alright — let's do the demo.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 06 — LIVE DEMO WALKTHROUGH -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-number">06</div>
+    <div class="section-title">Live Demo Walkthrough — The Full Ecosystem in Motion</div>
+    <div class="section-runtime">~4:00</div>
+  </div>
+  <div class="cue-row">
+    <span class="cue cue-energy-build">Energy: BUILD to PUNCH — start grounded, finish electric</span>
+    <span class="cue cue-riff">RIFF — Phil narrates, Jim reacts in real time — this is the most improvisation-heavy section</span>
+  </div>
+  <div class="dialogue">
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Alright. I want to walk you through what this looks like end to end. Not theoretically — I mean right here, right now, in this studio. Jim — I'm going to drop the worst file you've ever seen into the GOAT. Are you ready?</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Phil, I have watched you do a lot of things in this studio and I am never ready. Let's go.</span>
+    </div>
+    <div class="beat">[ Phil drags file — SKG riff zone — Jim reacts to what the file is, describe it as vivid and chaotic as possible ]</div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">What is that? That is three years of vendor invoices, what appears to be a scanned hand-written note from someone named Carl, a lease agreement for a building that I think no longer exists, and — Phil, is that a grocery list? Is there a grocery list in your business documents?</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Carl is very organized. It just doesn't look like that from the outside. Watch what happens.</span>
+    </div>
+    <div class="beat">[ GOAT processes — SKG can narrate the progress with sound effects or just let the silence build ]</div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">GOAT ingests every file in that folder. It reads the text — even Carl's handwriting. It cleans the formatting. We redact Phil's home address, we pull the personal account numbers, we flag anything that shouldn't leave the building — and we tell GOAT what to keep and what to strip. Then it packages the output. Clean files. Labeled. Structured. ZIP.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">That is beautiful. Carl would not recognize his own files right now.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Carl is going to cry when he sees this. Alright — now we take the output and we move to Mint.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Drop it into TrueMark Mint.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">And it mints. Timestamp locked. Cryptographically signed. The K-NFT is born. Carl's vendor history — the real one, the cleaned one — is now a permanent, verifiable record that exists independent of any cloud server, any company, any terms of service. It's Carl's forever.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">And the ORB walked us through the entire process. Step by step. Suggested which files to redact. Flagged the grocery list as probably not a business document — which is correct — and confirmed the mint was successful. No account. No login. No cloud. No subscription. The ORB just did its job because that's what it exists to do.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">And now — final step. Because we can. Jim, swap your ORB skin.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">I went with the deep ocean skin. Blue, slow-moving, very calm. It's how I aspire to feel in meetings.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">That is your ORB. That is your identity. That is the three-tool ecosystem working as a complete workflow — from chaos to clean to certified to beautiful — and every piece of it is local, private, and yours.</span>
+    </div>
+    <div class="riff-note">SKG RIFF ANCHOR: After the demo, Jim can break the fourth wall slightly — "if you're watching the video version of this, you just saw it live. If you're on audio — I promise it was as good as it sounds."</riff-note>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 07 — INVESTOR PIVOT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-number">07</div>
+    <div class="section-title">The Investor Pivot — Straight Talk</div>
+    <div class="section-runtime">~3:00</div>
+  </div>
+  <div class="cue-row">
+    <span class="cue cue-energy-drop">Energy: DROP — measured, direct, confident — no comedy here</span>
+    <span class="cue cue-investor">INVESTOR — this section is for them entirely</span>
+  </div>
+  <div class="pivot">— Tone shift — Jim drops the character. Phil drops the showmanship. This is 3 minutes of clean straight talk. —</div>
+  <div class="dialogue">
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Alright. I want to talk directly to the investors in the room for a few minutes. We've been building toward this and I want to give it the weight it deserves. No jokes. Just the real picture.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">The global productivity software market is approaching a trillion dollars. The privacy-native, local-first segment is the fastest-growing slice of that market — driven by enterprise compliance pressure, consumer trust erosion with cloud AI, and a generation of buyers who watched subscription fatigue turn into subscription rage.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">We are not positioning as a competitor to the big platforms. We are positioning as the sovereign alternative — the category that exists for people who have decided they do not want what the big platforms are offering. That category currently has no dominant player. There is no TrueMark of this space yet. We are building it.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Our business model inverts the standard SaaS logic. One-time purchase drives conversion — low friction, high trust. The Skin Studio creates post-purchase recurring micro-revenue from a user base that is already bought in. The Weekly Feature creates community and content that drives organic growth without an ad budget. And the Kickstarter campaign — which goes live alongside this pitch — is our demand proof. We are not asking you to take our word for it. We are showing you what the market does when we open the door.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">The substrate is already built. This is not a deck with a vision and a team. The product exists, runs locally, and has been architected to scale. What we are raising seed capital for is the team to build around it — marketing, Docking Station hardware production, and the Skin Studio marketplace infrastructure.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">This is a first-round opportunity in a category with no sovereign competitor, a working product, a clear pricing model, and a go-to-market that is already in motion. The floor is being built right now. The walls are next. If you want to be in before the walls go up — this is the moment.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Contact information and the investor deck are in the show description. Reach out. We will make time. We are very easy to believe in once you've seen the demo — and you just saw the demo.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 08 — THE ASK -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-number">08</div>
+    <div class="section-title">The Ask — Two Doors, One Mission</div>
+    <div class="section-runtime">~2:00</div>
+  </div>
+  <div class="cue-row">
+    <span class="cue cue-energy-punch">Energy: PUNCH — slow, deliberate, final call</span>
+    <span class="cue cue-user">USER — Kickstarter, founding backer status</span>
+    <span class="cue cue-investor">INVESTOR — seed round, category timing</span>
+  </div>
+  <div class="ask-box">
+    <div class="ask-title">Two Doors. One Mission.</div>
+    <div class="ask-grid">
+      <div>
+        <span class="ask-col-label">For Users — Back the Kickstarter</span>
+        <div class="ask-item">Own it before the world does</div>
+        <div class="ask-item">Founding backer skins — exclusive, permanent, never re-released</div>
+        <div class="ask-item">Early access to all three products at launch</div>
+        <div class="ask-item">Your name in the TrueMark sovereign ledger</div>
+        <div class="ask-item">First-ever Dandy Weekly Feature submission window</div>
+      </div>
+      <div>
+        <span class="ask-col-label">For Investors — Seed Round</span>
+        <div class="ask-item">First-round terms — pre-traction pricing</div>
+        <div class="ask-item">Working substrate, not a concept</div>
+        <div class="ask-item">Kickstarter as live demand validation before close</div>
+        <div class="ask-item">Category-defining position, no sovereign competitor</div>
+        <div class="ask-item">Platform economics + marketplace LTV built in from day one</div>
+      </div>
+    </div>
+  </div>
+  <div class="dialogue" style="margin-top: 1.5rem;">
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">If you believe software should belong to the people who use it — back the Kickstarter. The link is in the description. Do it before this episode ends. Do it before the founding backer window closes. Because once it closes, those skins and that status are gone forever.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">And if you are an investor who sees what we see — who understands what a category looks like before it has a name — reach out. We are not hard to find. And we are very, very motivated to build this thing at the scale it deserves.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- OUTRO -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<hr class="outro-rule">
+<div class="broadcast-block" style="margin-top: 1.5rem;">
+  <span class="broadcast-label">OUTRO — Callbacks / Sign-Off / Theme Out</span>
+  <div class="cue-row">
+    <span class="cue cue-energy-punch">Energy: WARM PUNCH — big feeling, genuine, not overhyped</span>
+    <span class="cue cue-riff">RIFF — Phil and Jim land the callbacks with natural rhythm, then the Announcer closes</span>
+  </div>
+  <div class="dialogue">
+    <div class="beat">[ music begins to drift in under dialogue — very low ]</div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Alright. Before we let you go — let's bring it home. Jim.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">We came in here today and we said this was an intervention. I want to check back on that. Do you feel intervened? Because I think the evidence is in.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Carl's files are clean. Carl's documents are minted. Carl's ORB is wearing a limited-edition skin that I'm a little jealous of. And Carl never uploaded a single byte to anyone else's server.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Carl is sovereign. And so can you be.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-both">BOTH</span>
+      <span class="text" style="font-weight: 500;">TrueMark Mint. GOAT. The ORB.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Local.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">Private.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">Sovereign.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-both">BOTH</span>
+      <span class="text" style="font-weight: 500;">Yours.</span>
+    </div>
+    <div class="beat">[ two-second silence — then Phil ]</div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">And if you have something you built — something you're proud of — submit it for the Dandy Weekly Feature. Link in the description. We want to hear it.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-jim">JIM</span>
+      <span class="text">We are the Phil and Jim Dandy Show. I'm Jim.</span>
+    </div>
+    <div class="line">
+      <span class="speaker speaker-phil">PHIL</span>
+      <span class="text">I'm Phil. And we are just getting started.</span>
+    </div>
+    <div class="beat">[ theme music rises — full for 5 seconds — then the Announcer steps in over it ]</div>
+    <div class="line">
+      <span class="speaker speaker-anncr">ANNCR</span>
+      <span class="text">The Phil and Jim Dandy Show is produced by Pro Prime Series AI. All products featured today are part of the TrueMark Sovereign Software Ecosystem. Kickstarter and investor information can be found in the episode description. The Dandy Weekly Feature submission window is open now. This has been The Phil and Jim Dandy Show. We'll see you next week.</span>
+    </div>
+    <div class="beat">[ theme music full — 8 seconds — fade to silence ]</div>
+  </div>
+</div>
+
+<div class="show-footer">
+  <span>The Phil &amp; Jim Dandy Show — Studio Property of Pro Prime Series AI</span>
+  <span>Full 30-Min SKG-Optimized Script v2.0</span>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "preset_id": "sponsor_60s",
+  "title": "Sponsor 60 Second Promo",
+  "format": "promo",
+  "target_duration_seconds": 60,
+  "intensity": "medium",
+  "segments": [
+    {
+      "type": "intro",
+      "speaker_order": ["phil", "jim"],
+      "goal": "Open fast and frame the sponsor clearly"
+    },
+    {
+      "type": "product_spotlight",
+      "speaker_order": ["phil", "jim"],
+      "goal": "State value, use case, and why it matters"
+    },
+    {
+      "type": "cta",
+      "speaker_order": ["phil"],
+      "goal": "Close with direct call to action"
+    }
+  ]
+}

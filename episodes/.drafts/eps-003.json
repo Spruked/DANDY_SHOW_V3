@@ -1,0 +1,26 @@
+{
+  "job_id": "job_eps-003_9d501488",
+  "episode_id": "eps-003",
+  "created_at": "2026-04-22T21:41:59.647809",
+  "updated_at": "2026-04-22T21:41:59.647809",
+  "status": "draft_created",
+  "config": {
+    "episode_id": "eps-003",
+    "title": "Bryan Spruk the founder",
+    "topic": "Bryan\u2019s struggle with not being a coder while still building powerful ideas, systems, and founder-driven architecture.",
+    "description": "Bryan Spruk is a founder built from real life, not formal code training. This episode tells the story of a man with strong ideas, deep instinct, and relentless vision who keeps building despite not coming from a traditional developer background. It explores the frustration of depending on coders, the pressure of trying to protect the integrity of a design, and the difference between someone who merely writes code and someone who sees the whole machine before it exists. At its core, this is about grit, architecture, vision, and the fight to turn ideas into something real.",
+    "key_points": [
+      "Bryan is a founder and systems thinker, not a traditional coder",
+      "He sees architecture, product direction, and deeper purpose before the build exists",
+      "The struggle is translating strong ideas into code without losing the original design",
+      "His background in sales, business, and hard life experience gives him a different edge",
+      "This is a story about vision, frustration, persistence, and building anyway"
+    ],
+    "target_duration": 2400,
+    "intensity": "medium",
+    "generation_mode": "ai_generate",
+    "provided_script": null,
+    "expand_short_script": false,
+    "target_word_count": 6400
+  }
+}

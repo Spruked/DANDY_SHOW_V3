@@ -1,0 +1,207 @@
+Phil and Jim Dandy Show Studio — Project Tree
+Generated: 2026-04-24  (excludes .venv, node_modules, __pycache__, dist, archive, staging, logs)
+
+C:\dev\Desktop\Dandy
+|
+|   ASSETS.md
+|   CHANGELOG.md
+|   Jim_dandy_skg.py
+|   phil_dandy_skg.py
+|   produce_direct.py
+|   README.md
+|   requirements.txt
+|   shared_encoder.py
+|   tree.txt
+|
++---assets
+|   +---fonts
+|   \---images
+|
++---audio
+|   +---ads
+|   +---jingles
+|   |       intro_outro.mp3
+|   \---sfx
+|
++---backend
+|   |   main.py
+|   \---app
+|       |   __init__.py
+|       |   main.py
+|       +---api
+|       |       __init__.py
+|       |       ads.py
+|       |       assets.py
+|       |       conversation.py
+|       |       library.py          <- PATCH /episodes/{id}/config
+|       |       mixer.py
+|       |       obs.py
+|       |       production.py
+|       |       social_adcards.py
+|       |       social_slideshow.py
+|       |       social.py
+|       |       system.py
+|       +---core
+|       |       __init__.py
+|       |       paths.py
+|       |       settings.py
+|       +---models
+|       +---schemas
+|       |       __init__.py
+|       |       ads.py
+|       |       episode.py
+|       |       social_visual.py
+|       +---services
+|       |   +---ads
+|       |   |       ad_engine.py
+|       |   +---audio
+|       |   +---mixer
+|       |   |       __init__.py
+|       |   |       voicemeeter.py
+|       |   +---obs
+|       |   |       __init__.py
+|       |   |       client.py
+|       |   +---production
+|       |   |       __init__.py
+|       |   |       ads.py
+|       |   |       audio_post_processor.py
+|       |   |       communication_layer.py  <- SKG context mapping (45 vars)
+|       |   |       dandy_harmonizer.py
+|       |   |       personality_loader.py
+|       |   |       rhythm.py
+|       |   |       script_seed.py
+|       |   |       worker.py
+|       |   +---social
+|       |   |       __init__.py
+|       |   |       audiogram_generator.py
+|       |   |       captions_generator.py
+|       |   |       clip_generator.py
+|       |   |       package_builder.py
+|       |   |       post_copy_generator.py
+|       |   |       slideshow_renderer.py
+|       |   |       thumbnail_generator.py
+|       |   +---storage
+|       |   |       __init__.py
+|       |   |       episode_store.py       <- save_episode_config()
+|       |   \---tts
+|       |           __init__.py
+|       |           kokoro_wrapper.py
+|       \---websockets
+|               __init__.py
+|               manager.py
+|
++---config
+|   |   branding.json
+|   |   config.json
+|   |   social_presets.json
+|   |   voices.json
+|   \---promo_presets
+|           cta_closer.json
+|           product_teaser.json
+|           sponsor_60s.json
+|
++---docs
+|   |   BRAND_SYSTEM.md
+|   |   DASHBOARD_DECISION.md
+|   |   DEPENDENCY_MAP.md
+|   |   ENDPOINT_WIRING_AUDIT.md
+|   |   ORB_HANDOFF_CONTEXT_2026-04-05.md
+|   |   ORB_OPERATOR_PROFILE.md
+|   |   phil_jim_dandy_FULL_30MIN.html
+|   |   PROJECT_STRUCTURE.md
+|   |   README.md
+|   |   SOCIAL_EXPORT_PLAN.md
+|   |   USER_GUIDE_AND_OPERATOR_MANUAL.md
+|   \---operations
+|           AI_Operating_Guidelines.md
+|           NEXT_INSTANCE_NOTES.md
+|
++---episodes
+|   +---DANDY_EP_002
+|   |   |   config.json
+|   |   |   script.json
+|   |   |   status.json
+|   |   +---ads
+|   |   |       ad_0c91f8b0.json / .mp3
+|   |   |       ad_863f6dca.json / .mp3
+|   |   |       ad_f340e1ed.json / .mp3
+|   |   +---assets
+|   |   |   \---_meta
+|   |   \---script_versions
+|   |           version_001.json ... version_009.json
+|   +---sovereign_software_special_001
+|   |   |   audio.mp3
+|   |   |   config.json
+|   |   |   production_metadata.json
+|   |   |   script.json
+|   |   |   status.json
+|   |   |   transcript.json
+|   |   +---ads
+|   |   +---assets
+|   |   \---script_versions
+|   \---test
+|       +---ads
+|       \---assets
+|
++---frontend
+|   |   index.html
+|   |   package.json
+|   |   postcss.config.js
+|   |   tailwind.config.js
+|   |   vite.config.js
+|   +---public
+|   |       dandyshowgitrepocard.png
+|   \---src
+|       |   App.jsx
+|       |   main.jsx
+|       +---components
+|       |       AdCardsBuilder.jsx
+|       |       AdTab.jsx            <- insertLines localStorage persistence
+|       |       EpisodeTab.jsx       <- EditConfigModal + asset field persistence
+|       |       ExportsMode.jsx
+|       |       SlideshowBuilder.jsx
+|       |       SocialTab.jsx
+|       |       StudioTab.jsx
+|       |       SystemTab.jsx
+|       |       ui.jsx
+|       +---hooks
+|       |       useToast.js
+|       +---lib
+|       |       api.js               <- updateEpisodeConfig()
+|       \---styles
+|               index.css
+|               social-tab.css
+|
++---scripts
+|   |   audit_endpoints.py
+|   |   smoke_test.py
+|   |   start_dandy_stack.ps1
+|   |   _regen_ep002.py
+|   \---studio
+|           __init__.py
+|           backup.py
+|           check_structure.py
+|           deps.py
+|           restore_point.py
+|           restore.py
+|
++---social
+|   +---assets
+|   +---branding
+|   |   +---personas
+|   |   +---segments
+|   |   \---styles
+|   +---generated
+|   +---renders
+|   \---templates
+|           ASSET_SLOTS.md
+|           character_logo.png
+|           legacy_alt.png
+|           logo.png
+|
+\---[excluded]
+        .venv\          Python 3.11 virtual environment
+        archive\        Backups, restore points, legacy frontend
+        frontend\dist\  Vite build output
+        logs\           Runtime logs
+        staging\        FFmpeg binaries + temp files

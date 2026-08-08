@@ -1,0 +1,15 @@
+# Initial merged project requirements
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+networkx
+numpy
+torch
+torchaudio
+edge-tts
+pydub
+sentence-transformers
+pillow
+ffmpeg-python
+voicemeeter-api

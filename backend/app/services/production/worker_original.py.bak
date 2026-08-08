@@ -1,0 +1,464 @@
+import asyncio
+import json
+import logging
+import re
+import subprocess
+import tempfile
+import threading
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
+
+from pydub import AudioSegment
+
+from ...core.paths import PROJECT_ROOT
+from ...core.settings import load_project_config, load_voices_config
+from .audio_post_processor import FFmpegPostProcessor
+from .communication_layer import DandyCommunicationLayer
+from .intro_outro import wrap_episode_audio
+from .personality_loader import load_personality
+from .script_seed import generate_seed_script
+
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class WorkerRuntime:
+    primary_engine: str
+    fallback_engine: str
+    device: str
+
+
+class MergedDandyPodcastWorker:
+    def __init__(self, base_path: Optional[Path] = None):
+        self.base_path = Path(base_path or PROJECT_ROOT).resolve()
+        self.project_config = load_project_config()
+        self.voices_config = load_voices_config()
+        self.runtime = WorkerRuntime(
+            primary_engine=self.project_config.get("tts", {}).get("primary_engine", "kokoro"),
+            fallback_engine=self.project_config.get("tts", {}).get("fallback_engine", "edge"),
+            device=self.project_config.get("tts", {}).get("preferred_device", "cpu"),
+        )
+        self.post_processor = FFmpegPostProcessor(self.base_path, logger)
+        self._init_skg_systems()
+
+    def _init_skg_systems(self) -> None:
+        self.phil_skg = load_personality("phil")
+        self.jim_skg = load_personality("jim")
+        self.communication_layer = DandyCommunicationLayer(self.phil_skg, self.jim_skg)
+
+    def _apply_personality_settings(self, personality_settings: Dict[str, Any] | None) -> None:
+        if not personality_settings:
+            return
+        for skg in (self.phil_skg, self.jim_skg):
+            setter = getattr(skg, "set_personality_tuning", None)
+            if callable(setter):
+                try:
+                    setter(personality_settings)
+                except Exception:
+                    logger.warning("Personality tuning failed for %s", skg.__class__.__name__)
+
+    def generate_script(self, episode_config: Dict[str, Any], line_callback=None) -> List[Dict[str, Any]]:
+        source_context = str(episode_config.get("source_context", "") or "").strip()
+        key_points = list(episode_config.get("key_points", []))
+        if source_context:
+            key_points.append(f"Source material: {source_context[:500]}")
+
+        self._apply_personality_settings(episode_config.get("personality_settings"))
+
+        script_definition = {
+            "topics": [episode_config.get("topic", "general")],
+            "topic": episode_config.get("topic", "general"),
+            "key_points": key_points,
+            "audience": episode_config.get("audience", "general"),
+            "intensity": episode_config.get("intensity", "medium"),
+            "source_context": source_context,
+            "personality_settings": episode_config.get("personality_settings"),
+            "target_word_count": int(episode_config.get("target_word_count") or 5000),
+        }
+
+        try:
+            conversation = self.communication_layer.orchestrate_banter(
+                script_definition,
+                audience_feedback=None,
+                line_callback=line_callback,
+            )
+            if not conversation:
+                raise RuntimeError("Conversation generation returned no lines")
+            return self._conversation_to_script(conversation)
+        except Exception as exc:
+            logger.warning("Falling back to seed script generation: %s", exc)
+            fallback_config = dict(episode_config)
+            fallback_config["key_points"] = key_points
+            return generate_seed_script(fallback_config)
+
+    def produce_episode(self, episode_id: str, title: str, topic: str, script_lines: List[Dict[str, Any]]) -> Dict[str, Any]:
+        if not script_lines:
+            raise ValueError("script_lines are required for production")
+
+        episode_dir = self.base_path / "episodes" / episode_id
+        episode_dir.mkdir(parents=True, exist_ok=True)
+        final_audio_path = episode_dir / "audio.mp3"
+        transcript_path = episode_dir / "transcript.json"
+        metadata_path = episode_dir / "production_metadata.json"
+        (self.base_path / "staging").mkdir(parents=True, exist_ok=True)
+
+        with tempfile.TemporaryDirectory(dir=str(self.base_path / "staging")) as temp_dir:
+            staging_dir = Path(temp_dir)
+            raw_segments_dir = staging_dir / "segments"
+            raw_segments_dir.mkdir(parents=True, exist_ok=True)
+
+            segment_payloads = self._synthesize_segments(script_lines, raw_segments_dir, episode_id)
+            raw_mix_path = staging_dir / f"{episode_id}_raw_mix.mp3"
+            self._concatenate_segments(segment_payloads, raw_mix_path)
+
+            processing_result: Dict[str, Any]
+            try:
+                processing_result = self.post_processor.process_episode(
+                    input_file=raw_mix_path,
+                    output_file=final_audio_path,
+                    voice_profile="phil_jim_mix",
+                )
+            except Exception as exc:
+                logger.warning("Post-processing failed; exporting direct MP3 fallback: %s", exc)
+                self._export_direct_mp3(raw_mix_path, final_audio_path)
+                processing_result = {
+                    "processing_chain": "direct_mp3_fallback",
+                    "compliant": False,
+                    "warning": str(exc),
+                }
+
+            # ── Intro / Outro wrap ──────────────────────────────────────
+            io_cfg = self.project_config.get("intro_outro", {})
+            if io_cfg.get("enabled", False) and final_audio_path.exists():
+                try:
+                    wrapped_path = episode_dir / "audio_wrapped.mp3"
+                    wrap_episode_audio(
+                        episode_audio_path=final_audio_path,
+                        output_path=wrapped_path,
+                        cfg=io_cfg,
+                        base_path=self.base_path,
+                        topic=topic,
+                    )
+                    # Replace final audio with wrapped version
+                    final_audio_path.unlink()
+                    wrapped_path.rename(final_audio_path)
+                    processing_result["intro_outro"] = "wrapped"
+                    logger.info("Intro/outro applied to %s", episode_id)
+                except Exception as exc:
+                    logger.warning("Intro/outro wrap failed (episode audio kept clean): %s", exc)
+                    processing_result["intro_outro"] = f"failed: {exc}"
+
+            transcript_payload = {
+                "episode_id": episode_id,
+                "title": title,
+                "topic": topic,
+                "created_at": datetime.now().isoformat(),
+                "script": script_lines,
+                "segments": segment_payloads,
+            }
+            transcript_path.write_text(json.dumps(transcript_payload, indent=2), encoding="utf-8")
+
+            metadata = {
+                "episode_id": episode_id,
+                "title": title,
+                "topic": topic,
+                "audio_file": str(final_audio_path),
+                "segment_count": len(segment_payloads),
+                "generated_at": datetime.now().isoformat(),
+                "processing": processing_result,
+                "voice_assignments": {
+                    "phil": {
+                        "primary": self.voices_config.get("phil", {}).get("primary_voice"),
+                        "fallback": self.voices_config.get("phil", {}).get("fallback_voice"),
+                    },
+                    "jim": {
+                        "primary": self.voices_config.get("jim", {}).get("primary_voice"),
+                        "fallback": self.voices_config.get("jim", {}).get("fallback_voice"),
+                    },
+                },
+            }
+            metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+
+        return {
+            "episode_id": episode_id,
+            "audio_file": str(final_audio_path),
+            "transcript": script_lines,
+            "metadata": metadata,
+        }
+
+    def _conversation_to_script(self, conversation: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        script_lines: List[Dict[str, Any]] = []
+        for idx, exchange in enumerate(conversation, start=1):
+            speaker = str(exchange.get("speaker", "phil")).lower()
+            if speaker.startswith("phil"):
+                normalized = "phil"
+            elif speaker.startswith("jim"):
+                normalized = "jim"
+            else:
+                normalized = "host"
+
+            emotional_state = exchange.get("emotional_state", {})
+            emotion = self._map_emotion(normalized, emotional_state)
+            cleaned_text = self._strip_spoken_speaker_prefix(
+                text=str(exchange.get("text", "")).strip(),
+                speaker=normalized,
+            )
+            script_lines.append(
+                {
+                    "speaker": normalized,
+                    "text": cleaned_text,
+                    "emotion": emotion,
+                    "pause_after": 0.55 if normalized == "jim" else 0.35,
+                    "line_number": idx,
+                }
+            )
+        return [line for line in script_lines if line["text"]]
+
+    def _map_emotion(self, speaker: str, emotional_state: Dict[str, Any]) -> str:
+        if speaker == "phil":
+            enthusiasm = emotional_state.get("enthusiasm", emotional_state.get("optimism", 0))
+            return "excited" if enthusiasm and enthusiasm >= 7 else "warm"
+        if speaker == "jim":
+            skepticism = emotional_state.get("skepticism", 0)
+            pragmatism = emotional_state.get("pragmatism", 0)
+            if skepticism and skepticism >= 7:
+                return "skeptical"
+            if pragmatism and pragmatism >= 7:
+                return "pragmatic"
+            return "neutral"
+        return "neutral"
+
+    def _synthesize_segments(self, script_lines: List[Dict[str, Any]], output_dir: Path, episode_id: str) -> List[Dict[str, Any]]:
+        segments: List[Dict[str, Any]] = []
+        for idx, line in enumerate(script_lines, start=1):
+            speaker = str(line.get("speaker", "phil")).lower()
+            text = self._strip_spoken_speaker_prefix(
+                text=str(line.get("text", "")).strip(),
+                speaker=speaker,
+            )
+            if not text:
+                continue
+
+            output_path = output_dir / f"{episode_id}_{idx:03d}_{speaker}.mp3"
+            engine_used = self._synthesize_line(text=text, speaker=speaker, emotion=str(line.get("emotion", "neutral")), output_path=output_path)
+            duration_seconds = self._probe_duration_seconds(output_path) if output_path.exists() else 0.0
+            segments.append(
+                {
+                    "index": idx,
+                    "speaker": speaker,
+                    "text": text,
+                    "emotion": line.get("emotion", "neutral"),
+                    "audio_file": str(output_path),
+                    "duration_seconds": duration_seconds,
+                    "engine": engine_used,
+                    "voice_name": self._resolve_voice_name(speaker, engine_used),
+                    "pause_after": float(line.get("pause_after", 0.4) or 0.4),
+                }
+            )
+        if not segments:
+            raise RuntimeError("No audio segments were generated")
+        return segments
+
+    def _synthesize_line(self, text: str, speaker: str, emotion: str, output_path: Path) -> str:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        errors: List[str] = []
+
+        if self.runtime.primary_engine == "kokoro":
+            try:
+                if self._try_kokoro(text, speaker, emotion, output_path):
+                    return "kokoro"
+            except Exception as exc:
+                errors.append(f"kokoro:{exc}")
+
+        try:
+            self._synthesize_edge(text, speaker, output_path)
+            return "edge"
+        except Exception as exc:
+            errors.append(f"edge:{exc}")
+
+        raise RuntimeError("; ".join(errors) or "All TTS engines failed")
+
+    # ── WSL path helpers ────────────────────────────────────────────────
+    _WSL_PYTHON = "/home/bryan/.venvs/gpu/bin/python"
+    _WSL_WORKER = "/home/bryan/wsl_tts_worker.py"
+    _WSL_TIMEOUT = 120  # seconds per line
+
+    @staticmethod
+    def _win_to_wsl(path: Path) -> str:
+        """Convert a Windows absolute path to a WSL /mnt/... path."""
+        resolved = path.resolve()
+        drive = resolved.drive.rstrip(":\\").lower()  # e.g. "c"
+        rest = resolved.as_posix().lstrip("/")        # e.g. "c:/dev/..."
+        # strip the drive letter prefix that as_posix leaves
+        rest = rest[len(drive) + 1:].lstrip("/")      # e.g. "dev/Desktop/..."
+        return f"/mnt/{drive}/{rest}"
+
+    def _try_kokoro(self, text: str, speaker: str, emotion: str, output_path: Path) -> bool:
+        """Synthesize via Kokoro running in the WSL GPU sidecar."""
+        voice_payload = self.voices_config.get(speaker, {})
+        voice_name = voice_payload.get("primary_voice")
+        if not voice_name:
+            raise RuntimeError(f"No Kokoro voice configured for speaker '{speaker}'")
+
+        speed = self._resolve_speed(speaker, emotion)
+
+        # WSL writes a WAV; we convert to MP3 via FFmpeg on Windows side
+        wav_path = output_path.with_suffix(".wav")
+        wsl_out = self._win_to_wsl(wav_path)
+
+        cmd = [
+            "wsl", "--", self._WSL_PYTHON, self._WSL_WORKER,
+            "--text",   text,
+            "--voice",  voice_name,
+            "--speed",  str(speed),
+            "--output", wsl_out,
+        ]
+
+        logger.debug("WSL-TTS cmd: %s", " ".join(cmd))
+
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=self._WSL_TIMEOUT,
+        )
+
+        if result.returncode != 0:
+            err = (result.stderr or result.stdout or "unknown error").strip()
+            raise RuntimeError(f"WSL Kokoro failed: {err}")
+
+        if not wav_path.exists():
+            raise RuntimeError("WSL Kokoro did not produce output file")
+
+        # Convert WAV → MP3 via FFmpeg (already on PATH for the backend)
+        convert_cmd = [
+            "ffmpeg", "-y", "-i", str(wav_path),
+            "-codec:a", "libmp3lame", "-q:a", "2",
+            str(output_path),
+        ]
+        subprocess.run(convert_cmd, check=True, capture_output=True)
+        wav_path.unlink(missing_ok=True)
+
+        logger.debug("WSL-TTS OK: %s → %s (%s)", speaker, output_path.name, result.stdout.strip())
+        return True
+
+    def _synthesize_edge(self, text: str, speaker: str, output_path: Path) -> None:
+        import edge_tts
+
+        voice_payload = self.voices_config.get(speaker, {})
+        voice_name = voice_payload.get("fallback_voice") or voice_payload.get("primary_voice") or "en-US-GuyNeural"
+
+        async def _run():
+            communicate = edge_tts.Communicate(text, voice_name)
+            await communicate.save(str(output_path))
+
+        error: list[Exception] = []
+
+        def _runner() -> None:
+            try:
+                asyncio.run(_run())
+            except Exception as exc:
+                error.append(exc)
+
+        thread = threading.Thread(target=_runner, daemon=True)
+        thread.start()
+        thread.join()
+        if error:
+            raise error[0]
+        if not output_path.exists():
+            raise RuntimeError("Edge TTS did not create an output file")
+
+    def _resolve_speed(self, speaker: str, emotion: str) -> float:
+        defaults = self.voices_config.get(speaker, {}).get("defaults", {})
+        speed = float(defaults.get("speed", 1.0))
+        if speaker == "phil" and emotion == "excited":
+            return speed + 0.05
+        if speaker == "jim" and emotion == "skeptical":
+            return max(0.85, speed - 0.08)
+        return speed
+
+    def _resolve_voice_name(self, speaker: str, engine_used: str) -> str:
+        voice_payload = self.voices_config.get(speaker, {})
+        if engine_used == "kokoro":
+            return str(voice_payload.get("primary_voice", ""))
+        if engine_used == "edge":
+            return str(voice_payload.get("fallback_voice") or voice_payload.get("primary_voice") or "")
+        return ""
+
+    def _strip_spoken_speaker_prefix(self, text: str, speaker: str) -> str:
+        cleaned = text.strip().strip('"').strip("'").strip()
+        cleaned = re.sub(r"^(phil|jim|host|guest|narrator|both|speaker)\s*[:\-]\s*", "", cleaned, flags=re.IGNORECASE).strip()
+        cleaned = re.sub(rf"^{re.escape(speaker)}\s*[:\-]\s*", "", cleaned, flags=re.IGNORECASE).strip()
+        return cleaned
+
+    def _concatenate_segments(self, segments: List[Dict[str, Any]], output_path: Path) -> None:
+        concat_list = output_path.with_suffix(".txt")
+        generated_files: List[Path] = []
+        try:
+            with concat_list.open("w", encoding="utf-8") as handle:
+                for idx, segment in enumerate(segments, start=1):
+                    audio_file = Path(segment["audio_file"]).resolve()
+                    handle.write(f"file '{audio_file.as_posix()}'\n")
+
+                    pause_ms = int(float(segment.get("pause_after", 0.4)) * 1000)
+                    if pause_ms <= 0:
+                        continue
+                    silence_file = output_path.parent / f"pause_{idx:03d}.mp3"
+                    AudioSegment.silent(duration=pause_ms).export(silence_file, format="mp3")
+                    generated_files.append(silence_file)
+                    handle.write(f"file '{silence_file.resolve().as_posix()}'\n")
+
+            cmd = [
+                "ffmpeg",
+                "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(concat_list),
+                "-c:a",
+                "libmp3lame",
+                "-q:a",
+                "2",
+                str(output_path),
+            ]
+            subprocess.run(cmd, check=True, capture_output=True, text=True)
+        finally:
+            if concat_list.exists():
+                concat_list.unlink()
+            for generated_file in generated_files:
+                if generated_file.exists():
+                    generated_file.unlink()
+
+    def _probe_duration_seconds(self, audio_path: Path) -> float:
+        cmd = ["ffmpeg", "-i", str(audio_path)]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            output = f"{result.stdout}\n{result.stderr}"
+            match = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", output)
+            if not match:
+                return 0.0
+            hours = int(match.group(1))
+            minutes = int(match.group(2))
+            seconds = float(match.group(3))
+            return round((hours * 3600) + (minutes * 60) + seconds, 2)
+        except Exception:
+            return 0.0
+
+    def _export_direct_mp3(self, input_path: Path, output_path: Path) -> None:
+        cmd = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(input_path),
+            "-c:a",
+            "libmp3lame",
+            "-q:a",
+            "2",
+            str(output_path),
+        ]
+        subprocess.run(cmd, check=True, capture_output=True, text=True)

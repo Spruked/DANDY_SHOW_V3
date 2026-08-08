@@ -1,0 +1,24 @@
+{
+  "episode_id": "eps-003",
+  "title": "Bryan Spruk the founder",
+  "topic": "Bryan\u2019s struggle with not being a coder while still building powerful ideas, systems, and founder-driven architecture.",
+  "audio_file": "C:\\dev\\Desktop\\Dandy\\episodes\\eps-003\\audio.mp3",
+  "segment_count": 392,
+  "generated_at": "2026-04-23T00:46:59.878816",
+  "processing": {
+    "processing_chain": "direct_mp3_fallback",
+    "compliant": false,
+    "warning": "Command '['ffmpeg', '-i', 'C:\\\\dev\\\\Desktop\\\\Dandy\\\\episodes\\\\eps-003\\\\audio.mp3', '-af', 'loudnorm=I=-16:print_format=json', '-f', 'null', '-']' timed out after 60 seconds",
+    "intro_outro": "failed: [WinError 2] The system cannot find the file specified"
+  },
+  "voice_assignments": {
+    "phil": {
+      "primary": "am_michael",
+      "fallback": "en-US-GuyNeural"
+    },
+    "jim": {
+      "primary": "am_liam",
+      "fallback": "en-US-TonyNeural"
+    }
+  }
+}

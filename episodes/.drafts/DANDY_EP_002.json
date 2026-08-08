@@ -1,0 +1,26 @@
+{
+  "job_id": "job_DANDY_EP_002_8bf18ad1",
+  "episode_id": "DANDY_EP_002",
+  "created_at": "2026-08-08T06:07:15.737372",
+  "updated_at": "2026-08-08T06:07:15.737372",
+  "status": "draft_created",
+  "config": {
+    "episode_id": "DANDY_EP_002",
+    "title": "Happy Toes - A Poem",
+    "topic": "A father\u2019s poem written for his daughter Abby during incarceration, which later grew into a published book with literary reinterpretations.",
+    "description": "This episode explores the emotional origin of the poem, the father\u2013daughter connection, the transformation of the poem into a full book, and the deeper themes of legacy, distance, and creativity.",
+    "key_points": [
+      "The emotional origin of the poem during incarceration",
+      "The father\u2013daughter bond and why the poem mattered",
+      "How the poem expanded into a full book",
+      "Literary reinterpretations and what they reveal",
+      "Themes of legacy, distance, and connection"
+    ],
+    "target_duration": 2400,
+    "intensity": "medium",
+    "generation_mode": "ai_generate",
+    "provided_script": null,
+    "expand_short_script": false,
+    "target_word_count": null
+  }
+}
