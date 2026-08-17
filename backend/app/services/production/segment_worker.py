@@ -62,6 +62,7 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
 
             script_definition = {
                 "episode_id": episode_config.get("episode_id"),
+                "episode_title": title,
                 "topics": [topic],
                 "topic": topic,
                 "title": title,
@@ -158,16 +159,16 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
 
             for batch_index in range(max_middle_batches):
                 current_words = sum(len(e["text"].split()) for e in exchanges)
-                # Reserve the final portion for reflection/closing rather than
-                # padding the body with repeated expansion material.
-                if current_words >= target_words * 0.78:
+                # Reach most of the requested duration with substantive body
+                # material, then use reflection/closing to land near the target.
+                if current_words >= target_words * 0.86:
                     break
                 stage = "expansion" if batch_index % 2 == 0 else "deepening"
                 if not request_stage(stage, middle_exchanges):
                     break
 
             current_words = sum(len(e["text"].split()) for e in exchanges)
-            if current_words < target_words * 0.92:
+            if current_words < target_words * 0.94:
                 request_stage("reflection", 1)
             request_stage("closing", 1)
 
