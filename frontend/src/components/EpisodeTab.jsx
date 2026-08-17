@@ -34,7 +34,7 @@ export default function EpisodeTab() {
   const [showEditConfig, setShowEditConfig] = useState(false)
 
   const [selectedLine, setSelectedLine] = useState(null)
-  const [editingLine,  setEditingLine]  = useState(null)
+  const [editingLine,  setEditingLine] = useState(null)
   const [versions,     setVersions]     = useState([])
   const [assets,       setAssets]       = useState([])
   const [feedbackText, setFeedbackText] = useState('')
@@ -101,7 +101,9 @@ export default function EpisodeTab() {
   const allText   = lines.map(l => l.text || l.line || '').join(' ')
   const runtimeSec  = wordsToSeconds(allText)
   const runtimeMin  = runtimeSec / 60
-  const targetOk    = runtimeMin >= 28 && runtimeMin <= 47
+  const configuredTargetSeconds = Number(activeEp?.config?.target_duration || activeEp?.target_duration || 600)
+  const targetMinutes = Math.max(1, Math.min(15, Math.round(configuredTargetSeconds / 60)))
+  const targetOk = runtimeMin >= targetMinutes * 0.75 && runtimeMin <= targetMinutes * 1.25
 
   // ── Actions ────────────────────────────────────────────────────────
   const handleGenerate = async () => {
@@ -334,7 +336,7 @@ export default function EpisodeTab() {
             {activeEp && (
               <div className="gap-row" style={{ marginTop: 4 }}>
                 <Badge type={targetOk ? 'green' : 'gold'}>
-                  {secondsToDisplay(runtimeSec)} / 30–45m
+                  {secondsToDisplay(runtimeSec)} / {targetMinutes}m target
                 </Badge>
                 <span className="font-mono" style={{ fontSize: '.46rem', color: 'var(--steel)' }}>
                   {lines.length} lines
@@ -582,7 +584,7 @@ export default function EpisodeTab() {
       {showCreate && (
         <CreateEpisodeModal
           onClose={() => setShowCreate(false)}
-          onCreated={() => { setShowCreate(false); loadEpisodes(); showToast('Episode created ✓') }}
+          onCreated={() => { setShowCreate(false); loadEpisodes(); showToast('Segment created ✓') }}
           showToast={showToast}
         />
       )}
@@ -725,7 +727,7 @@ function EditConfigModal({ episode, onClose, onSaved, showToast }) {
     description:         config.description || '',
     key_points:          (Array.isArray(config.key_points) ? config.key_points : []).join('\n'),
     custom_instructions: config.custom_instructions || '',
-    target_minutes:      Math.round((Number(config.target_duration) || 2400) / 60),
+    target_minutes:      Math.max(1, Math.min(15, Math.round((Number(config.target_duration) || 600) / 60))),
     intensity:           config.intensity || 'medium',
   })
   const [busy, setBusy] = useState(false)
@@ -739,6 +741,7 @@ function EditConfigModal({ episode, onClose, onSaved, showToast }) {
       const body = {
         ...form,
         target_duration: form.target_minutes * 60,
+        target_word_count: form.target_minutes * 155,
         key_points: form.key_points.split('\n').map(s => s.trim()).filter(Boolean),
       }
       const res = await api.updateEpisodeConfig(epId, body)
@@ -782,11 +785,11 @@ function EditConfigModal({ episode, onClose, onSaved, showToast }) {
         <Field label="Custom Instructions">
           <textarea className="ds-textarea" style={{ minHeight: 56 }} value={form.custom_instructions} onChange={e => set('custom_instructions', e.target.value)} placeholder="Special tone or format instructions…" />
         </Field>
-        <Field label={`Target Length: ${form.target_minutes}m`}>
+        <Field label={`Segment Length: ${form.target_minutes}m`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>30m</span>
-            <input type="range" min={30} max={45} step={1} value={form.target_minutes} onChange={e => set('target_minutes', +e.target.value)} />
-            <span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>45m</span>
+            <span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>1m</span>
+            <input type="range" min={1} max={15} step={1} value={form.target_minutes} onChange={e => set('target_minutes', +e.target.value)} />
+            <span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>15m</span>
           </div>
         </Field>
       </div>
@@ -798,11 +801,11 @@ function EditConfigModal({ episode, onClose, onSaved, showToast }) {
 function CreateEpisodeModal({ onClose, onCreated, showToast }) {
   const [form, setForm] = useState({
     episode_id: '', title: '', topic: '', description: '',
-    key_points: '', custom_instructions: '', target_minutes: 40,
+    key_points: '', custom_instructions: '', target_minutes: 10,
   })
   const [busy, setBusy] = useState(false)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-  const targetWords = Math.round(form.target_minutes * 160)
+  const targetWords = Math.round(form.target_minutes * 155)
 
   const submit = async () => {
     if (!form.title.trim()) { showToast('Title required'); return }
@@ -823,7 +826,7 @@ function CreateEpisodeModal({ onClose, onCreated, showToast }) {
 
   return (
     <Modal
-      title="Create Episode"
+      title="Create Segment"
       onClose={onClose}
       footer={<>
         <button className="btn btn-steel" onClick={onClose}>CANCEL</button>
@@ -838,11 +841,11 @@ function CreateEpisodeModal({ onClose, onCreated, showToast }) {
             <input className="ds-input" value={form.episode_id} onChange={e => set('episode_id', e.target.value)} placeholder="e.g. ep_042" />
           </Field>
           <Field label="Title">
-            <input className="ds-input" value={form.title} onChange={e => set('title', e.target.value)} placeholder="Episode title" />
+            <input className="ds-input" value={form.title} onChange={e => set('title', e.target.value)} placeholder="Segment title" />
           </Field>
         </div>
         <Field label="Main Topic">
-          <input className="ds-input" value={form.topic} onChange={e => set('topic', e.target.value)} placeholder="What's this episode about?" />
+          <input className="ds-input" value={form.topic} onChange={e => set('topic', e.target.value)} placeholder="What's this segment about?" />
         </Field>
         <Field label="Description">
           <textarea className="ds-textarea" value={form.description} onChange={e => set('description', e.target.value)} placeholder="Longer description / context…" />
@@ -853,11 +856,11 @@ function CreateEpisodeModal({ onClose, onCreated, showToast }) {
         <Field label="Custom Instructions">
           <textarea className="ds-textarea" style={{ minHeight: 56 }} value={form.custom_instructions} onChange={e => set('custom_instructions', e.target.value)} placeholder="Any special tone/format instructions…" />
         </Field>
-        <Field label={`Target Length: ${form.target_minutes}m (~${targetWords.toLocaleString()} words)`}>
+        <Field label={`Segment Length: ${form.target_minutes}m (~${targetWords.toLocaleString()} words)`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>30m</span>
-            <input type="range" min={30} max={45} step={1} value={form.target_minutes} onChange={e => set('target_minutes', +e.target.value)} />
-            <span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>45m</span>
+            <span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>1m</span>
+            <input type="range" min={1} max={15} step={1} value={form.target_minutes} onChange={e => set('target_minutes', +e.target.value)} />
+            <span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>15m</span>
           </div>
         </Field>
       </div>
