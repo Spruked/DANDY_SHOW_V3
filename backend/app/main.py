@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .api.assets import router as assets_router
 from .api.library import router as library_router
+from .api.segment_production import router as segment_production_router
 from .api.production import router as production_router
 from .api.social import router as social_router
 from .api.social_slideshow import router as slideshow_router
@@ -59,8 +60,15 @@ def create_app() -> FastAPI:
     app.include_router(library_router, prefix="/api")
     app.include_router(assets_router)
     app.include_router(assets_router, prefix="/api")
+
+    # Segment production is registered first so 1-15 minute targets bypass the
+    # legacy 5,000-word floor and automatic in-segment ad insertion. The segment
+    # route delegates targets above 15 minutes back to the legacy handler.
+    app.include_router(segment_production_router)
+    app.include_router(segment_production_router, prefix="/api")
     app.include_router(production_router)
     app.include_router(production_router, prefix="/api")
+
     app.include_router(social_router)
     app.include_router(social_router, prefix="/api")
     app.include_router(ads_router)
