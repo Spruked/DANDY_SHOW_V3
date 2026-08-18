@@ -1,8 +1,8 @@
 """Segment-aware production routing.
 
-For new 1-15 minute targets, production uses the validated script exactly as
-written: no 5,000-word floor, no canned expansion, and no automatic ad
-insertion. Ads are intended to be assembled between completed segments later.
+For 1-15 minute targets, production renders the current approved script exactly
+as written: no 5,000-word floor, no canned expansion, and no automatic ad
+insertion. Reusable media cues are assembled by the worker during audio build.
 Legacy targets above 15 minutes delegate to the established production route.
 """
 
@@ -21,6 +21,7 @@ from .production import (
     produce_episode as legacy_produce_episode,
 )
 from ..services.storage.episode_store import (
+    calculate_script_provenance,
     episode_dir,
     load_episode_detail,
     load_job,
@@ -45,7 +46,6 @@ async def produce_segment_or_legacy(
     config = detail.get("config", {}) or {}
     target_duration = int(config.get("target_duration") or 600)
 
-    # Preserve existing long-form behavior for saved legacy episodes.
     if target_duration > 15 * 60:
         return await legacy_produce_episode(
             background_tasks=background_tasks,
@@ -55,14 +55,16 @@ async def produce_segment_or_legacy(
 
     script = detail.get("script", [])
     if not script:
-        raise HTTPException(status_code=400, detail="No script found. Generate script first.")
+        raise HTTPException(status_code=400, detail="No script found. Generate or paste a script first.")
 
     script = _sanitize_script(script)
-    require_llm = config.get("generation_mode") != "script_feed"
+    provenance = calculate_script_provenance(script)
+    source_counts = provenance.get("line_source_counts", {}) or {}
+    manual_sources = {"script_feed", "manual_edit", "structured"}
+    source_keys = {str(key) for key, count in source_counts.items() if int(count or 0) > 0}
+    manual_only = bool(source_keys) and source_keys.issubset(manual_sources)
+    require_llm = config.get("generation_mode") != "script_feed" and not manual_only
 
-    # Segment mode deliberately does not length-pad or template-expand. The
-    # generation quality gate owns target-length validation; production renders
-    # the approved script that is actually present.
     est_words = sum(len(str(line.get("text", "")).split()) for line in script)
     if est_words <= 0:
         raise HTTPException(status_code=400, detail="Segment script contains no spoken words.")
@@ -77,8 +79,8 @@ async def produce_segment_or_legacy(
     script_text = _script_as_text(script)
     personality_settings = (payload or {}).get("personality_settings") if payload else None
     voice_settings = (payload or {}) if payload else {}
-    writer_engine = str(script_meta.get("writer_engine", "unknown"))
-    bridge_was_reachable = writer_engine in {"llm_bridge", "governance_bridge", "llamacpp"}
+    writer_engine = str(script_meta.get("writer_engine", "manual" if manual_only else "unknown"))
+    writer_online_at_start = writer_engine in {"llm_bridge", "governance_bridge", "llamacpp"}
     target_minutes = max(1, min(15, round(target_duration / 60)))
 
     save_json(
@@ -90,7 +92,8 @@ async def produce_segment_or_legacy(
             "production_mode": "segment",
             "target_minutes": target_minutes,
             "writer_engine": writer_engine,
-            "bridge_reachable_at_start": bridge_was_reachable,
+            "writer_online_at_start": writer_online_at_start,
+            "manual_script": manual_only,
             "fallback_used": script_meta.get("fallback_used"),
             "line_source_counts": script_meta.get("line_source_counts", {}),
         },
@@ -107,7 +110,7 @@ async def produce_segment_or_legacy(
         personality_settings=personality_settings,
         voice_settings=voice_settings,
         writer_engine=writer_engine,
-        bridge_reachable_at_start=bridge_was_reachable,
+        bridge_reachable_at_start=writer_online_at_start,
     )
 
     return {
@@ -117,5 +120,6 @@ async def produce_segment_or_legacy(
         "episode_id": job["episode_id"],
         "target_minutes": target_minutes,
         "word_count": est_words,
+        "manual_script": manual_only,
         "message": "Segment production started in background.",
     }
