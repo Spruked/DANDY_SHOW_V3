@@ -8,6 +8,8 @@ from fastapi import APIRouter, Body, HTTPException
 
 from ..core.paths import PROJECT_ROOT, CONFIG_ROOT
 from ..core.settings import load_project_config, load_qwen_tts_config, load_voices_config
+from ..services.production import llm_writer
+from ..services.storage.asset_library import library_summary
 from ..services.tts.kokoro_wrapper import get_tts_runtime
 
 
@@ -36,8 +38,10 @@ async def health() -> Dict:
         "project_root": str(PROJECT_ROOT),
         "mode": config.get("project", {}).get("mode", "unknown"),
         "dashboard_reference": config.get("dashboard", {}).get("ui_reference_source"),
+        "script_writer": llm_writer.writer_status(),
         "tts_runtime": get_tts_runtime(),
         "qwen_tts_bridge": _qwen_bridge_status(),
+        "asset_library": library_summary(),
     }
 
 
@@ -50,6 +54,8 @@ async def config_summary() -> Dict:
         "dashboard": config.get("dashboard", {}),
         "tts": config.get("tts", {}),
         "voice_keys": sorted(list(voices.keys())),
+        "script_writer": llm_writer.writer_status(),
+        "asset_library": library_summary(),
     }
 
 
@@ -77,12 +83,11 @@ async def voices() -> Dict:
 # ── Intro/Outro config ────────────────────────────────────────────────────────
 
 def _load_intro_outro_cfg() -> Dict[str, Any]:
-    import json
     cfg_path = CONFIG_ROOT / "config.json"
     data = json.loads(cfg_path.read_text(encoding="utf-8"))
     from ..services.production.intro_outro import DEFAULT_CONFIG
     io = data.get("intro_outro", {})
-    # Deep-merge defaults so any missing key has a value
+
     def merge(base, override):
         result = dict(base)
         for k, v in override.items():
@@ -91,6 +96,7 @@ def _load_intro_outro_cfg() -> Dict[str, Any]:
             else:
                 result[k] = v
         return result
+
     return merge(DEFAULT_CONFIG, io)
 
 
@@ -101,15 +107,11 @@ async def get_intro_outro_config() -> Dict:
 
 @router.post("/intro-outro-config")
 async def save_intro_outro_config(payload: Dict[str, Any] = Body(...)) -> Dict:
-    import json
     cfg_path = CONFIG_ROOT / "config.json"
     data = json.loads(cfg_path.read_text(encoding="utf-8"))
-    # Protect top-level structure — only update intro_outro key
-    protected = {"intro_outro"}
     incoming = {k: v for k, v in payload.items() if k not in ("_meta",)}
     data["intro_outro"] = incoming
     cfg_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    # Bust the lru_cache so fresh config is loaded on next call
     from ..core.settings import load_project_config
     load_project_config.cache_clear()
     return {"saved": True, "intro_outro": data["intro_outro"]}
@@ -117,8 +119,6 @@ async def save_intro_outro_config(payload: Dict[str, Any] = Body(...)) -> Dict:
 
 @router.post("/intro-outro-preview")
 async def preview_intro_outro(payload: Dict[str, Any] = Body(...)) -> Any:
-    """Build intro or outro preview clip and return audio bytes as base64."""
-    import base64
     import tempfile
     from fastapi.responses import Response
     from ..services.production.intro_outro import build_intro, build_outro, DEFAULT_CONFIG
