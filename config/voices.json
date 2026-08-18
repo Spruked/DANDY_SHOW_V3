@@ -4,8 +4,6 @@
     "display_name": "Phil Dandy",
     "primary_engine": "kokoro",
     "primary_voice": "am_michael",
-    "fallback_engine": "edge",
-    "fallback_voice": "en-US-GuyNeural",
     "defaults": {
       "speed": 1.1,
       "pitch": 0.2,
@@ -17,8 +15,6 @@
     "display_name": "Jim Dandy",
     "primary_engine": "kokoro",
     "primary_voice": "am_liam",
-    "fallback_engine": "edge",
-    "fallback_voice": "en-US-TonyNeural",
     "defaults": {
       "speed": 1.0,
       "pitch": 0.0,
@@ -27,28 +23,34 @@
   },
   "host": {
     "display_name": "Host",
-    "primary_engine": "edge",
-    "primary_voice": "en-US-BrianNeural"
+    "primary_engine": "kokoro",
+    "primary_voice": "am_eric",
+    "defaults": {
+      "speed": 1.0,
+      "pitch": 0.0,
+      "volume": 1.0
+    }
   },
   "guest": {
     "display_name": "Guest",
-    "primary_engine": "edge",
-    "primary_voice": "en-US-ChristopherNeural"
+    "primary_engine": "kokoro",
+    "primary_voice": "bf_emma",
+    "defaults": {
+      "speed": 1.0,
+      "pitch": 0.0,
+      "volume": 1.0
+    }
   },
   "announcer_male": {
     "display_name": "Announcer Male",
     "primary_engine": "kokoro",
     "primary_voice": "am_eric",
-    "fallback_engine": "edge",
-    "fallback_voice": "en-US-GuyNeural",
     "defaults": { "speed": 1.05, "pitch": 0.0, "volume": 1.0 }
   },
   "announcer_female": {
     "display_name": "Announcer Female",
     "primary_engine": "kokoro",
     "primary_voice": "bf_emma",
-    "fallback_engine": "edge",
-    "fallback_voice": "en-US-JennyNeural",
     "defaults": { "speed": 1.05, "pitch": 0.3, "volume": 1.0 }
   }
 }
