@@ -14,6 +14,7 @@ from ..services.tts.kokoro_wrapper import get_tts_runtime
 
 
 router = APIRouter(tags=["system"])
+_ALLOWED_TTS_ENGINES = {"kokoro", "qwen"}
 
 
 def _qwen_bridge_status() -> Dict[str, Any]:
@@ -56,6 +57,44 @@ async def config_summary() -> Dict:
         "voice_keys": sorted(list(voices.keys())),
         "script_writer": llm_writer.writer_status(),
         "asset_library": library_summary(),
+    }
+
+
+@router.get("/tts-engine")
+async def get_tts_engine() -> Dict[str, Any]:
+    config = load_project_config()
+    selected = str(config.get("tts", {}).get("primary_engine", "kokoro")).lower()
+    return {
+        "selected_engine": selected,
+        "allowed_engines": sorted(_ALLOWED_TTS_ENGINES),
+        "fallback_engine": None,
+    }
+
+
+@router.post("/tts-engine")
+async def set_tts_engine(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
+    selected = str(payload.get("engine") or "").strip().lower()
+    if selected not in _ALLOWED_TTS_ENGINES:
+        raise HTTPException(
+            status_code=400,
+            detail="Dandy production TTS must be either 'kokoro' or 'qwen'. No fallback engine is permitted.",
+        )
+
+    cfg_path = CONFIG_ROOT / "config.json"
+    data = json.loads(cfg_path.read_text(encoding="utf-8"))
+    tts = dict(data.get("tts", {}))
+    tts["primary_engine"] = selected
+    tts["fallback_engine"] = "none"
+    tts["allowed_engines"] = ["kokoro", "qwen"]
+    data["tts"] = tts
+    cfg_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    load_project_config.cache_clear()
+
+    return {
+        "saved": True,
+        "selected_engine": selected,
+        "allowed_engines": ["kokoro", "qwen"],
+        "fallback_engine": None,
     }
 
 
@@ -109,7 +148,6 @@ async def save_intro_outro_config(payload: Dict[str, Any] = Body(...)) -> Dict:
     incoming = {k: v for k, v in payload.items() if k not in ("_meta",)}
     data["intro_outro"] = incoming
     cfg_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    from ..core.settings import load_project_config
     load_project_config.cache_clear()
     return {"saved": True, "intro_outro": data["intro_outro"]}
 
