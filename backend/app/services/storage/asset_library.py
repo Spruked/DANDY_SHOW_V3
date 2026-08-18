@@ -3,12 +3,14 @@
 Dandy keeps reusable media in the repository and indexes it at request time.
 Files are never copied into a database. The catalog provides stable IDs over
 repo-relative paths so the Episodes UI can call reusable SFX, jingles, ad beds,
-music, images, voice clips, and documents from one Assets control.
+music, images, voice clips, documents, and produced episode ads from one Assets
+control.
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import mimetypes
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -18,8 +20,6 @@ from ...core.paths import PROJECT_ROOT
 
 LIBRARY_ROOT = PROJECT_ROOT / "asset_library"
 
-# Existing canonical folders remain first-class. asset_library/ is the new
-# general drop zone for anything reusable across episodes.
 _SCAN_ROOTS = (
     (LIBRARY_ROOT, None),
     (PROJECT_ROOT / "audio" / "sfx", "sfx"),
@@ -136,6 +136,60 @@ def load_library_asset(asset_id: str) -> Optional[Dict[str, Any]]:
     if not str(asset_id or "").startswith("lib_"):
         return None
     for asset in list_library_assets():
+        if asset.get("asset_id") == asset_id:
+            return asset
+    return None
+
+
+def list_episode_ad_assets(episode_id: str) -> List[Dict[str, Any]]:
+    """Expose produced ad MP3s as callable assets without touching ad metadata."""
+    ads_dir = PROJECT_ROOT / "episodes" / episode_id / "ads"
+    if not ads_dir.exists():
+        return []
+
+    assets: List[Dict[str, Any]] = []
+    for path in sorted(ads_dir.glob("ad_*.json")):
+        if path.name.endswith("_assets.json"):
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(payload, dict):
+            continue
+        ad_id = str(payload.get("ad_id") or path.stem)
+        audio_raw = payload.get("audio_file") or payload.get("audio_path") or payload.get("audio")
+        if not audio_raw:
+            continue
+        audio_path = Path(str(audio_raw))
+        if not audio_path.is_absolute():
+            audio_path = (PROJECT_ROOT / audio_path).resolve()
+        if not audio_path.exists() or not audio_path.is_file():
+            continue
+        assets.append({
+            "asset_id": f"adlib_{ad_id}",
+            "source": "episode_ad",
+            "scope": "episode",
+            "role": "ad",
+            "asset_type": "audio",
+            "label": payload.get("label") or payload.get("sponsor") or ad_id,
+            "original_name": audio_path.name,
+            "filename": audio_path.name,
+            "relative_path": audio_path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+                if PROJECT_ROOT.resolve() in audio_path.resolve().parents else str(audio_path),
+            "stored_path": str(audio_path.resolve()),
+            "content_type": "audio/mpeg",
+            "size_bytes": audio_path.stat().st_size,
+            "description": f"Produced episode ad: {ad_id}",
+            "ad_id": ad_id,
+        })
+    return assets
+
+
+def load_episode_ad_asset(episode_id: str, asset_id: str) -> Optional[Dict[str, Any]]:
+    if not str(asset_id or "").startswith("adlib_"):
+        return None
+    for asset in list_episode_ad_assets(episode_id):
         if asset.get("asset_id") == asset_id:
             return asset
     return None
