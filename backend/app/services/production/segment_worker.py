@@ -33,6 +33,41 @@ logger = logging.getLogger(__name__)
 class SegmentAwarePodcastWorker(HardenedPodcastWorker):
     """Use a bounded, forward-only LLM plan for 1-15 minute segments."""
 
+    def _synthesize_line(self, text: str, speaker: str, emotion: str, output_path: Path) -> str:
+        """Synthesize with the selected studio engine only.
+
+        Dandy has no Edge or browser-voice production fallback. Kokoro is the
+        default production engine; Qwen is available only when explicitly
+        selected as the primary TTS engine. If the selected engine fails, the
+        production fails visibly instead of changing voices behind the operator.
+        """
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        selected = str(
+            self.project_config.get("tts", {}).get("primary_engine", "kokoro")
+        ).strip().lower()
+
+        if selected == "kokoro":
+            try:
+                if self._try_kokoro(text, speaker, emotion, output_path):
+                    return "kokoro"
+            except Exception as exc:
+                raise RuntimeError(f"Kokoro TTS failed: {exc}") from exc
+            raise RuntimeError("Kokoro TTS failed without producing audio")
+
+        if selected == "qwen":
+            if not self.qwen_tts_config.get("enabled"):
+                raise RuntimeError("Qwen TTS is selected but disabled")
+            try:
+                if self._try_qwen_bridge(text, speaker, emotion, output_path):
+                    return "qwen"
+            except Exception as exc:
+                raise RuntimeError(f"Qwen TTS failed: {exc}") from exc
+            raise RuntimeError("Qwen TTS failed without producing audio")
+
+        raise RuntimeError(
+            f"Unsupported production TTS engine '{selected}'. Dandy allows only Kokoro or Qwen."
+        )
+
     _SIMILARITY_STOPWORDS = {
         "a", "an", "and", "are", "as", "at", "be", "because", "but", "by",
         "do", "does", "for", "from", "got", "have", "how", "i", "if", "in",
@@ -367,9 +402,6 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
         if not cues:
             return
 
-        # Actual TTS segment durations + pauses give us a stable anchor at the end
-        # of each script line. Existing UI cues are stored from zero-based line
-        # indexes, so stored 0 means "after line 1".
         elapsed_ms = 0
         line_end_ms: Dict[int, int] = {}
         for segment in segments:
