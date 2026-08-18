@@ -4,19 +4,28 @@ Targets from 1 to 15 minutes use a forward-only generation path. The worker
 filters bad turns while the conversation is being built and does not discard a
 mostly-good short script just to regenerate the entire conversation from the
 beginning. Longer legacy episodes continue through the established worker path.
+
+Short-segment audio assembly also honors episode media cues. Reusable repo
+assets and episode-specific assets can be inserted or overlaid after a selected
+script line before intro/outro wrapping.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
 import logging
+from pathlib import Path
 import re
 from typing import Any, Callable, Dict, List, Optional
+
+from pydub import AudioSegment
 
 from .context_builder import build_rich_context
 from .llm_writer import generate_segment
 from .rhythm import RhythmState
 from .worker import HardenedPodcastWorker
+from ..storage.asset_library import load_library_asset
+from ..storage.episode_store import load_asset, load_media_cues
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +135,6 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
         if not script:
             raise RuntimeError("Direct llama.cpp writer returned no usable short-segment dialogue")
 
-        # One final deterministic pass across the completed segment. This never
-        # asks the model to start over; it only removes bad lines that somehow
-        # survived a stage boundary.
         accepted: List[Dict[str, Any]] = []
         prior_texts: List[str] = []
         seen: set[str] = set()
@@ -313,8 +319,6 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 if stalled_batches >= 3:
                     break
 
-            # If duplicate/incomplete filtering removed too much material, continue
-            # forward from retained history instead of throwing everything away.
             continuation_budget = 4
             while continuation_budget > 0:
                 current_words = sum(len(e["text"].split()) for e in exchanges)
@@ -346,8 +350,84 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             return self._conversation_to_script(exchanges)
 
         except Exception as exc:
-            logger.warning(
-                "Segment forward generation failed: %s",
-                exc,
-            )
+            logger.warning("Segment forward generation failed: %s", exc)
             return None
+
+    def _concatenate_segments(self, segments: List[Dict[str, Any]], output_path: Path) -> None:
+        """Build dialogue audio, then apply episode media cues before wrapping."""
+        super()._concatenate_segments(segments, output_path)
+        if not output_path.exists():
+            return
+
+        episode_id = output_path.stem
+        if episode_id.endswith("_raw_mix"):
+            episode_id = episode_id[: -len("_raw_mix")]
+        cue_payload = load_media_cues(episode_id)
+        cues = list(cue_payload.get("cues", []) or [])
+        if not cues:
+            return
+
+        # Actual TTS segment durations + pauses give us a stable anchor at the end
+        # of each script line. Existing UI cues are stored from zero-based line
+        # indexes, so stored 0 means "after line 1".
+        elapsed_ms = 0
+        line_end_ms: Dict[int, int] = {}
+        for segment in segments:
+            elapsed_ms += int(float(segment.get("duration_seconds", 0.0) or 0.0) * 1000)
+            elapsed_ms += int(float(segment.get("pause_after", 0.0) or 0.0) * 1000)
+            try:
+                line_number = int(segment.get("line_index", 0) or 0)
+            except (TypeError, ValueError):
+                line_number = 0
+            if line_number > 0:
+                line_end_ms[line_number] = elapsed_ms
+
+        audio = AudioSegment.from_file(str(output_path))
+        resolved_cues: List[tuple[int, Dict[str, Any], Dict[str, Any]]] = []
+        for cue in cues:
+            asset_id = str(cue.get("asset_id") or "")
+            if not asset_id:
+                continue
+            asset = load_library_asset(asset_id) if asset_id.startswith("lib_") else load_asset(episode_id, asset_id)
+            if not asset:
+                logger.warning("Media cue asset missing: %s", asset_id)
+                continue
+            try:
+                raw_index = cue.get("line_number")
+                if raw_index is None:
+                    base_ms = len(audio)
+                else:
+                    anchor_line = max(1, int(raw_index) + 1)
+                    base_ms = line_end_ms.get(anchor_line, len(audio))
+            except (TypeError, ValueError):
+                base_ms = len(audio)
+            resolved_cues.append((base_ms, cue, asset))
+
+        resolved_cues.sort(key=lambda item: item[0])
+        inserted_shift_ms = 0
+        for base_ms, cue, asset in resolved_cues:
+            asset_path = Path(str(asset.get("stored_path") or ""))
+            if not asset_path.exists():
+                continue
+            try:
+                clip = AudioSegment.from_file(str(asset_path))
+            except Exception as exc:
+                logger.warning("Media cue could not load %s: %s", asset_path, exc)
+                continue
+
+            role = str(asset.get("role") or cue.get("display_label") or "media").lower()
+            note = str(cue.get("notes") or "").lower()
+            overlay = "overlay" in note or role == "sfx"
+            position_ms = max(0, min(len(audio), base_ms + inserted_shift_ms))
+
+            if overlay:
+                gain_db = -8.0
+                clip = clip.apply_gain(gain_db)
+                audio = audio.overlay(clip, position=position_ms)
+                logger.info("Media cue overlay %s at %dms", asset_path.name, position_ms)
+            else:
+                audio = audio[:position_ms] + clip + audio[position_ms:]
+                inserted_shift_ms += len(clip)
+                logger.info("Media cue insert %s at %dms", asset_path.name, position_ms)
+
+        audio.export(str(output_path), format="mp3", bitrate="192k")
