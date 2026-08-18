@@ -6,7 +6,9 @@ from pydantic import BaseModel
 
 from ..services.storage.asset_library import (
     library_summary,
+    list_episode_ad_assets,
     list_library_assets,
+    load_episode_ad_asset,
     load_library_asset,
 )
 from ..services.storage.episode_store import (
@@ -36,9 +38,12 @@ class MediaCueBatchRequest(BaseModel):
 
 
 def _resolve_any_asset(episode_id: str, asset_id: str) -> Optional[Dict[str, Any]]:
-    if str(asset_id or "").startswith("lib_"):
-        return load_library_asset(asset_id)
-    return load_asset(episode_id, asset_id)
+    value = str(asset_id or "")
+    if value.startswith("lib_"):
+        return load_library_asset(value)
+    if value.startswith("adlib_"):
+        return load_episode_ad_asset(episode_id, value)
+    return load_asset(episode_id, value)
 
 
 @router.get("/asset-library")
@@ -73,16 +78,15 @@ async def episode_assets(episode_id: str) -> Dict[str, Any]:
             "scope": asset.get("scope", "episode"),
         })
 
-    # Reusable repo assets are intentionally returned through the same endpoint
-    # so the existing Episodes -> ASSETS button and Media Cue selector can call
-    # them without a second UI subsystem.
     reusable = list_library_assets()
-    combined = episode_assets_list + reusable
+    produced_ads = list_episode_ad_assets(episode_id)
+    combined = episode_assets_list + produced_ads + reusable
     return {
         "episode_id": episode_id,
         "assets": combined,
         "count": len(combined),
         "episode_count": len(episode_assets_list),
+        "produced_ad_count": len(produced_ads),
         "library_count": len(reusable),
         "library": library_summary(),
     }
@@ -142,9 +146,6 @@ async def add_episode_media_cue(episode_id: str, payload: MediaCueRequest) -> Di
     if not asset:
         raise HTTPException(status_code=404, detail="Referenced asset not found")
     record = payload.model_dump()
-    # Keep the selected reusable asset self-describing in the cue label so old
-    # cue storage remains backward-compatible while production can resolve the
-    # actual asset by stable asset_id.
     if not record.get("display_label"):
         record["display_label"] = str(asset.get("role") or asset.get("label") or "media")
     return append_media_cue(episode_id, record)
