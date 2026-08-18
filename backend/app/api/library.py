@@ -9,6 +9,7 @@ from ..services.storage.episode_store import (
     load_script,
     save_episode_config,
     save_script,
+    save_script_version,
 )
 
 
@@ -93,8 +94,9 @@ async def replace_entire_script(
     """Replace the current script without invoking an LLM.
 
     Accepts either a structured ``script`` list or plain ``text`` containing
-    PHIL:/JIM: lines. ``save_script`` automatically creates a version, so the
-    replacement remains rollback-safe.
+    PHIL:/JIM: lines. The currently active script is snapshotted before the
+    replacement is written, and the replacement itself is versioned by
+    ``save_script``.
     """
     detail = load_episode_detail(episode_id)
     if not detail:
@@ -128,6 +130,10 @@ async def replace_entire_script(
             status_code=400,
             detail="No script lines found. Use PHIL: ... and JIM: ... on separate lines.",
         )
+
+    current_script = load_script(episode_id).get("script", [])
+    if current_script:
+        save_script_version(episode_id, current_script)
 
     save_script(episode_id, script)
     return {
