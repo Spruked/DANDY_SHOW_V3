@@ -21,12 +21,13 @@
   },
   "tts": {
     "primary_engine": "kokoro",
-    "fallback_engine": "edge",
+    "fallback_engine": "none",
     "preferred_device": "cuda",
     "fallback_device": "cpu",
     "allow_cpu_fallback": true,
     "kokoro_repo_path": "./backend/app/services/tts/kokoro-tts",
-    "voices_config": "./config/voices.json"
+    "voices_config": "./config/voices.json",
+    "allowed_engines": ["kokoro", "qwen"]
   },
   "production": {
     "default_target_duration_seconds": 2400,
