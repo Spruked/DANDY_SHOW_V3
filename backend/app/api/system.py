@@ -63,21 +63,18 @@ async def config_summary() -> Dict:
 async def voices() -> Dict:
     voices_config = load_voices_config()
     kokoro = []
-    edge = []
     for speaker, info in voices_config.items():
-        primary_engine = info.get("primary_engine")
+        primary_engine = str(info.get("primary_engine") or "").lower()
         primary_voice = info.get("primary_voice")
-        fallback_engine = info.get("fallback_engine")
-        fallback_voice = info.get("fallback_voice")
-
         if primary_engine == "kokoro" and primary_voice:
             kokoro.append({"id": primary_voice, "speaker": speaker, "path": primary_voice})
-        if primary_engine == "edge" and primary_voice:
-            edge.append({"voice": primary_voice, "speaker": speaker})
-        if fallback_engine == "edge" and fallback_voice:
-            edge.append({"voice": fallback_voice, "speaker": speaker})
 
-    return {"kokoro": kokoro, "edge": edge, "source": "config/voices.json"}
+    return {
+        "kokoro": kokoro,
+        "allowed_engines": ["kokoro", "qwen"],
+        "fallback_engine": None,
+        "source": "config/voices.json",
+    }
 
 
 # ── Intro/Outro config ────────────────────────────────────────────────────────
