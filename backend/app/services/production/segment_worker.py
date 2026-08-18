@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import logging
+import re
 from typing import Any, Callable, Dict, List, Optional
 
 from .llm_writer import generate_segment
@@ -22,6 +23,49 @@ logger = logging.getLogger(__name__)
 
 class SegmentAwarePodcastWorker(HardenedPodcastWorker):
     """Use a bounded, duration-aware LLM plan for 1-15 minute segments."""
+
+    _SIMILARITY_STOPWORDS = {
+        "a", "an", "and", "are", "as", "at", "be", "because", "but", "by",
+        "do", "does", "for", "from", "got", "have", "how", "i", "if", "in",
+        "is", "it", "its", "just", "like", "me", "of", "on", "or", "right",
+        "so", "that", "the", "their", "them", "they", "this", "to", "up",
+        "was", "what", "when", "where", "which", "with", "you", "your",
+        "yeah", "exactly", "okay", "well",
+    }
+
+    @classmethod
+    def _similarity_tokens(cls, text: str) -> set[str]:
+        return {
+            token
+            for token in re.findall(r"[a-z0-9']+", str(text or "").lower())
+            if len(token) >= 3 and token not in cls._SIMILARITY_STOPWORDS
+        }
+
+    @classmethod
+    def _is_near_duplicate(cls, text: str, prior_texts: List[str]) -> bool:
+        """Reject reworded repeats without another model call.
+
+        Exact duplicate removal already exists through ``_repeat_key``. This
+        second gate catches the common small-model failure where only the lead-in
+        changes (for example, "Got it" vs "Exactly") while the substantive idea
+        is repeated.
+        """
+        current = cls._similarity_tokens(text)
+        if len(current) < 4:
+            return False
+
+        for prior in prior_texts:
+            previous = cls._similarity_tokens(prior)
+            if len(previous) < 4:
+                continue
+            shared = len(current & previous)
+            if not shared:
+                continue
+            containment = shared / max(1, min(len(current), len(previous)))
+            jaccard = shared / max(1, len(current | previous))
+            if containment >= 0.78 or jaccard >= 0.62:
+                return True
+        return False
 
     def _try_skg_generation(
         self,
@@ -97,15 +141,26 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             seen_text: set[str] = set()
             history_lines: List[str] = []
 
-            def append_fresh(lines: List[Dict[str, Any]]) -> None:
+            def append_fresh(lines: List[Dict[str, Any]]) -> int:
+                accepted = 0
+                prior_texts = [str(exchange.get("text", "")) for exchange in exchanges]
                 for line in lines:
-                    raw_text = str(line.get("text", "")).strip()
-                    if not raw_text:
+                    # Keep the model's complete turn. The generic rhythm helper can
+                    # hard-trim a line at a word boundary and manufacture fragments
+                    # such as "there's all this stuff related." Short segments use
+                    # the prompt's turn-length constraints instead of destructive
+                    # post-generation clipping.
+                    text = str(line.get("text", "")).strip()
+                    if not text:
                         continue
-                    text = self.communication_layer._apply_rhythm_to_text(raw_text, rhythm)
                     repeat_key = self.communication_layer._repeat_key(text)
                     if not repeat_key or repeat_key in seen_text:
+                        logger.info("[SegmentWorker] Dropped exact repeat: %s", text[:90])
                         continue
+                    if self._is_near_duplicate(text, prior_texts):
+                        logger.info("[SegmentWorker] Dropped near-repeat: %s", text[:90])
+                        continue
+
                     seen_text.add(repeat_key)
                     exchange = {
                         "speaker": line.get("speaker", "Phil"),
@@ -117,11 +172,14 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                         "generated_by": line.get("generated_by", "llm_writer"),
                     }
                     exchanges.append(exchange)
+                    prior_texts.append(text)
+                    accepted += 1
                     emotion = (line.get("emotional_state") or {}).get("primary", "")
                     emotion_tag = f" [{emotion}]" if emotion else ""
                     history_lines.append(
                         f"{str(exchange['speaker']).upper()}{emotion_tag}: {text}"
                     )
+                return accepted
 
             def request_stage(stage: str, n_exchanges: int) -> bool:
                 lines = generate_segment(
@@ -138,8 +196,7 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 )
                 if not lines:
                     return False
-                append_fresh(lines)
-                return True
+                return append_fresh(lines) > 0
 
             # Short targets use smaller batches so the model can stop close to the
             # requested duration instead of overshooting with a long fixed plan.
@@ -149,13 +206,13 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
 
             if target_minutes <= 3:
                 middle_exchanges = 1
-                max_middle_batches = 6
+                max_middle_batches = 8
             elif target_minutes <= 8:
                 middle_exchanges = 3
-                max_middle_batches = 8
+                max_middle_batches = 10
             else:
                 middle_exchanges = 4
-                max_middle_batches = 10
+                max_middle_batches = 12
 
             for batch_index in range(max_middle_batches):
                 current_words = sum(len(e["text"].split()) for e in exchanges)
@@ -164,8 +221,7 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 if current_words >= target_words * 0.86:
                     break
                 stage = "expansion" if batch_index % 2 == 0 else "deepening"
-                if not request_stage(stage, middle_exchanges):
-                    break
+                request_stage(stage, middle_exchanges)
 
             current_words = sum(len(e["text"].split()) for e in exchanges)
             if current_words < target_words * 0.94:
