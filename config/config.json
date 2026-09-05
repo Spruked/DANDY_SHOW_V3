@@ -62,14 +62,14 @@
     "enabled": true,
     "music_file": "./audio/jingles/phil_jim_theme.mp3",
     "intro": {
-      "clip_start_ms": 0,
-      "clip_duration_ms": 14000,
+      "clip_start_ms": 5,
+      "clip_duration_ms": 14112,
       "music_fade_in_ms": 1200,
       "music_fade_out_ms": 2000,
       "duck_start_ms": 4000,
       "duck_db": -18,
       "announcer_text": "And now... the Phil and Jiiiiiimmmmm Dandyyyy Shooowwwww!",
-      "announcer_voice": "am_eric",
+      "announcer_voice": "",
       "silence_after_ms": 800,
       "pause_duration_ms": 700
     },

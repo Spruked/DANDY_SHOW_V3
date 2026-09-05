@@ -3,12 +3,14 @@ from datetime import datetime
 from functools import partial
 from pathlib import Path
 import re
+import threading
 from typing import Dict, List, Optional
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Body
 from pydantic import BaseModel
 from pydub import AudioSegment
+from starlette.concurrency import run_in_threadpool
 
 from ..core.paths import PROJECT_ROOT
 from ..schemas.episode import EpisodeCreateRequest
@@ -40,6 +42,55 @@ from ..services.storage.episode_store import (
 router = APIRouter(tags=["production"])
 _WORKER: MergedDandyPodcastWorker | None = None
 _QUALITY_GUARD = ScriptQualityGuard()
+_CANCEL_EVENTS: Dict[str, threading.Event] = {}
+_CANCEL_LOCK = threading.Lock()
+
+
+class JobCancelled(RuntimeError):
+    pass
+
+
+def _job_cancel_event(job_id: str, *, reset: bool = False) -> threading.Event:
+    with _CANCEL_LOCK:
+        event = _CANCEL_EVENTS.get(job_id)
+        if event is None or reset:
+            event = threading.Event()
+            _CANCEL_EVENTS[job_id] = event
+        return event
+
+
+def _request_job_cancel(job_id: str) -> bool:
+    with _CANCEL_LOCK:
+        event = _CANCEL_EVENTS.get(job_id)
+        if event is None:
+            event = threading.Event()
+            _CANCEL_EVENTS[job_id] = event
+        already_set = event.is_set()
+        event.set()
+        return not already_set
+
+
+def _clear_job_cancel(job_id: str) -> None:
+    with _CANCEL_LOCK:
+        _CANCEL_EVENTS.pop(job_id, None)
+
+
+def _raise_if_cancelled(job_id: str) -> None:
+    event = _job_cancel_event(job_id)
+    if event.is_set():
+        raise JobCancelled(f"Job {job_id} was cancelled")
+
+
+def _write_episode_status(episode_id: str, status: str, job_id: str, **extra: object) -> None:
+    save_json(
+        episode_dir(episode_id) / "status.json",
+        {
+            "status": status,
+            "updated_at": datetime.now().isoformat(),
+            "job_id": job_id,
+            **extra,
+        },
+    )
 
 
 @router.get("/writer-status")
@@ -296,11 +347,28 @@ async def create_episode(payload: EpisodeCreateRequest):
     }
 
 
-@router.post("/episodes/generate-script")
-async def generate_script(
-    job_id: str = Query(...),
-    payload: Dict | None = Body(default=None),
-):
+@router.post("/episodes/jobs/{job_id}/cancel")
+async def cancel_episode_job(job_id: str):
+    job = load_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    changed = _request_job_cancel(job_id)
+    _write_episode_status(
+        job["episode_id"],
+        "cancel_requested",
+        job_id,
+        cancel_requested=True,
+    )
+    return {
+        "status": "cancel_requested",
+        "job_id": job_id,
+        "episode_id": job["episode_id"],
+        "changed": changed,
+    }
+
+
+def _generate_script_sync(job_id: str, payload: Dict | None = None) -> Dict:
+    _job_cancel_event(job_id, reset=True)
     job = load_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -309,18 +377,61 @@ async def generate_script(
     if not draft:
         raise HTTPException(status_code=404, detail="Episode draft not found")
 
+    _write_episode_status(job["episode_id"], "generating_script", job_id)
     generation_config = dict(draft["config"])
     if payload and payload.get("personality_settings"):
         generation_config["personality_settings"] = payload["personality_settings"]
     generation_config["source_context"] = build_source_context(job["episode_id"])
     generation_config["require_llm"] = True
     generation_config["generation_nonce"] = f"{job['episode_id']}-{uuid4().hex}"
+    generation_config["_cancel_event"] = _job_cancel_event(job_id)
 
-    # script_feed mode: use provided_script directly, skip AI generation
-    if generation_config.get("generation_mode") == "script_feed" and generation_config.get("provided_script"):
-        script = _sanitize_script(generation_config["provided_script"])
-        for line in script:
-            line.setdefault("generated_by", "script_feed")
+    try:
+        _raise_if_cancelled(job_id)
+        # script_feed mode: use provided_script directly, skip AI generation
+        if generation_config.get("generation_mode") == "script_feed" and generation_config.get("provided_script"):
+            script = _sanitize_script(generation_config["provided_script"])
+            for line in script:
+                line.setdefault("generated_by", "script_feed")
+            _raise_if_cancelled(job_id)
+            save_script(job["episode_id"], script)
+            return {
+                "status": "script_ready",
+                "job_id": job_id,
+                "episode_id": job["episode_id"],
+                "script": script,
+                "word_count": sum(len(line["text"].split()) for line in script),
+            }
+
+        # Default to ~150 wpm toward a 40-minute optimal length when not provided
+        if not generation_config.get("target_word_count"):
+            target_duration = generation_config.get("target_duration") or 2400
+            generation_config["target_word_count"] = int((target_duration / 60) * 150)
+
+        try:
+            script = _get_worker().generate_script(generation_config)
+            _raise_if_cancelled(job_id)
+            # Guard against silent template failures: if >30% of lines contain
+            # unresolved [unknown] placeholders the generator returned bad output.
+            unknown_lines = sum(1 for line in script if "[unknown]" in line.get("text", ""))
+            if not script or (len(script) > 0 and unknown_lines / len(script) > 0.3):
+                raise RuntimeError(f"Script quality check failed: {unknown_lines}/{len(script)} lines contain [unknown]")
+            target_minutes = int(
+                generation_config.get("target_duration_minutes")
+                or (generation_config.get("target_duration", 2400) // 60)
+                or 40
+            )
+            report = _QUALITY_GUARD.evaluate(script, target_minutes, generation_config.get("topic", ""))
+            if report.decision != QualityDecision.ACCEPT:
+                raise RuntimeError(f"Script quality check failed: {report.issues or report.warnings}")
+        except JobCancelled:
+            raise
+        except Exception as exc:
+            _write_episode_status(job["episode_id"], "script_failed", job_id, error=f"LLM script generation failed: {exc}")
+            raise HTTPException(status_code=502, detail=f"LLM script generation failed: {exc}") from exc
+        script = _sanitize_script(script)
+        _raise_if_cancelled(job_id)
+        script_meta = _assert_llm_script_publishable(script, require_llm=True)
         save_script(job["episode_id"], script)
         return {
             "status": "script_ready",
@@ -328,42 +439,27 @@ async def generate_script(
             "episode_id": job["episode_id"],
             "script": script,
             "word_count": sum(len(line["text"].split()) for line in script),
+            "writer_engine": script_meta.get("writer_engine"),
+            "fallback_used": script_meta.get("fallback_used"),
         }
+    except JobCancelled:
+        _write_episode_status(job["episode_id"], "script_cancelled", job_id, cancelled=True)
+        return {
+            "status": "cancelled",
+            "job_id": job_id,
+            "episode_id": job["episode_id"],
+            "message": "Script generation cancelled.",
+        }
+    finally:
+        _clear_job_cancel(job_id)
 
-    # Default to ~150 wpm toward a 40-minute optimal length when not provided
-    if not generation_config.get("target_word_count"):
-        target_duration = generation_config.get("target_duration") or 2400
-        generation_config["target_word_count"] = int((target_duration / 60) * 150)
 
-    try:
-        script = _get_worker().generate_script(generation_config)
-        # Guard against silent template failures: if >30% of lines contain
-        # unresolved [unknown] placeholders the generator returned bad output.
-        unknown_lines = sum(1 for line in script if "[unknown]" in line.get("text", ""))
-        if not script or (len(script) > 0 and unknown_lines / len(script) > 0.3):
-            raise RuntimeError(f"Script quality check failed: {unknown_lines}/{len(script)} lines contain [unknown]")
-        target_minutes = int(
-            generation_config.get("target_duration_minutes")
-            or (generation_config.get("target_duration", 2400) // 60)
-            or 40
-        )
-        report = _QUALITY_GUARD.evaluate(script, target_minutes, generation_config.get("topic", ""))
-        if report.decision != QualityDecision.ACCEPT:
-            raise RuntimeError(f"Script quality check failed: {report.issues or report.warnings}")
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"LLM script generation failed: {exc}") from exc
-    script = _sanitize_script(script)
-    script_meta = _assert_llm_script_publishable(script, require_llm=True)
-    save_script(job["episode_id"], script)
-    return {
-        "status": "script_ready",
-        "job_id": job_id,
-        "episode_id": job["episode_id"],
-        "script": script,
-        "word_count": sum(len(line["text"].split()) for line in script),
-        "writer_engine": script_meta.get("writer_engine"),
-        "fallback_used": script_meta.get("fallback_used"),
-    }
+@router.post("/episodes/generate-script")
+async def generate_script(
+    job_id: str = Query(...),
+    payload: Dict | None = Body(default=None),
+):
+    return await run_in_threadpool(_generate_script_sync, job_id, payload)
 
 
 def _run_produce_background(
@@ -379,6 +475,7 @@ def _run_produce_background(
     bridge_reachable_at_start: bool = False,
 ) -> None:
     """Heavy TTS work — runs in a thread so the event loop stays alive."""
+    cancel_event = _job_cancel_event(job_id)
     worker = _get_worker()
     if personality_settings:
         try:
@@ -386,15 +483,26 @@ def _run_produce_background(
         except Exception:
             pass
     try:
+        _raise_if_cancelled(job_id)
         production_result = worker.produce_episode(
             episode_id=episode_id,
             title=title,
             topic=topic,
             script_lines=script,
+            cancel_event=cancel_event,
         )
+        _raise_if_cancelled(job_id)
         audio_path = Path(production_result["audio_file"])
         production_mode = "worker"
+    except JobCancelled:
+        _write_episode_status(episode_id, "production_cancelled", job_id, cancelled=True)
+        _clear_job_cancel(job_id)
+        return
     except Exception as exc:
+        if cancel_event.is_set():
+            _write_episode_status(episode_id, "production_cancelled", job_id, cancelled=True)
+            _clear_job_cancel(job_id)
+            return
         audio_path = _create_placeholder_audio(episode_id, script)
         production_mode = "placeholder_fallback"
         production_result = {
@@ -464,6 +572,7 @@ def _run_produce_background(
         sponsor_text="Sponsored",
         media_cues=resolved_cues,
     )
+    _clear_job_cancel(job_id)
 
 
 @router.post("/episodes/produce")
@@ -475,6 +584,7 @@ async def produce_episode(
     job = load_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    _job_cancel_event(job_id, reset=True)
 
     detail = load_episode_detail(job["episode_id"])
     script = detail.get("script", [])

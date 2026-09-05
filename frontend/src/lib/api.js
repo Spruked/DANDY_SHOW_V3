@@ -184,6 +184,15 @@ export const api = {
       body: JSON.stringify(body),
     })
   },
+  cancelEpisodeJob: async (id) => {
+    let jobId = jobCache.get(id)
+    if (!jobId) {
+      const detail = await req(`/episodes/${encodeURIComponent(id)}`).catch(() => ({}))
+      jobId = detail.job_id
+    }
+    if (!jobId) throw new Error('No active job found for this episode')
+    return req(`/episodes/jobs/${encodeURIComponent(jobId)}/cancel`, { method: 'POST' })
+  },
   editScript: async (body) => {
     const normalized = await normalizeEditPayload(body)
     return req('/episodes/edit-script', { method: 'POST', body: JSON.stringify(normalized) })

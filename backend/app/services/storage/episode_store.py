@@ -243,10 +243,15 @@ def save_ad(episode_id: str, ad_payload: Dict[str, Any]) -> Dict[str, Any]:
 def list_ads(episode_id: str) -> List[Dict[str, Any]]:
     directory = ads_dir(episode_id)
     ads: List[Dict[str, Any]] = []
+
     for path in sorted(directory.glob("ad_*.json")):
+        if path.name.endswith("_assets.json"):
+            continue
+
         payload = load_json(path)
-        if payload:
+        if isinstance(payload, dict):
             ads.append(payload)
+
     return ads
 
 
@@ -489,6 +494,7 @@ def load_episode_detail(episode_id: str) -> Dict[str, Any]:
         "episode_id": episode_id,
         "config": config,
         "status": status.get("status", "new"),
+        "job_id": status.get("job_id"),
         "updated_at": status.get("updated_at"),
         "script": script.get("script", []),
         "metadata": metadata,
@@ -530,9 +536,11 @@ def list_episode_summaries() -> List[Dict[str, Any]]:
         episodes.append(
             {
                 "episode_id": path.name,
+                "config": config,
                 "title": config.get("title") or path.name,
                 "topic": config.get("topic", ""),
                 "status": status.get("status", "new"),
+                "job_id": status.get("job_id"),
                 "updated_at": status.get("updated_at"),
                 "has_script": bool(script.get("script")),
                 "line_count": metadata.get("line_count", len(script.get("script", []))),

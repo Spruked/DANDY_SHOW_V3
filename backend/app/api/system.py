@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict
-from urllib.error import URLError
-from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 import json
 
 from fastapi import APIRouter, Body, HTTPException
@@ -38,6 +38,59 @@ async def health() -> Dict:
         "dashboard_reference": config.get("dashboard", {}).get("ui_reference_source"),
         "tts_runtime": get_tts_runtime(),
         "qwen_tts_bridge": _qwen_bridge_status(),
+    }
+
+
+@router.post("/qwen-tts/probe")
+async def qwen_tts_probe(payload: Dict[str, Any] = Body(default_factory=dict)) -> Dict[str, Any]:
+    cfg = load_qwen_tts_config()
+    bridge_url = str(cfg.get("bridge_url") or "").rstrip("/")
+    if not cfg.get("enabled") or not bridge_url:
+        raise HTTPException(status_code=503, detail="Qwen TTS bridge is not enabled or configured")
+
+    speaker = str(payload.get("speaker") or "phil")
+    voice_map = cfg.get("voices", {})
+    instruction_map = cfg.get("instructions", {})
+    text = str(payload.get("text") or "Qwen CUDA studio probe is online.").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text is required")
+
+    output_dir = PROJECT_ROOT / "staging" / "qwen_studio"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / "qwen_studio_probe.mp3"
+    request_payload = {
+        "text": text,
+        "speaker": speaker,
+        "voice": payload.get("voice") or voice_map.get(speaker),
+        "emotion": payload.get("emotion") or "warm",
+        "instruction": payload.get("instruction") or instruction_map.get(speaker),
+        "language": payload.get("language") or "English",
+        "format": "mp3",
+        "output_path": str(output_path),
+    }
+    request = Request(
+        f"{bridge_url}/synthesize",
+        data=json.dumps(request_payload).encode("utf-8"),
+        method="POST",
+        headers={"Content-Type": "application/json"},
+    )
+
+    try:
+        timeout = float(cfg.get("timeouts", {}).get("synthesis_seconds", 180))
+        with urlopen(request, timeout=timeout) as response:
+            result = json.loads(response.read().decode("utf-8"))
+    except HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise HTTPException(status_code=exc.code, detail=detail) from exc
+    except (OSError, URLError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    produced = Path(result.get("audio_file") or result.get("path") or output_path)
+    return {
+        "ok": output_path.exists() or produced.exists(),
+        "output_path": str(output_path if output_path.exists() else produced),
+        "bytes": (output_path if output_path.exists() else produced).stat().st_size if (output_path.exists() or produced.exists()) else 0,
+        "bridge": result,
     }
 
 

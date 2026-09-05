@@ -453,10 +453,15 @@ class HardenedPodcastWorker:
         title: str,
         topic: str,
         script_lines: List[Dict[str, Any]],
+        cancel_event: Any | None = None,
     ) -> Dict[str, Any]:
         """Produce audio from script — unchanged logic, just called with validated script."""
         if not script_lines:
             raise ValueError("script_lines are required for production")
+
+        def raise_if_cancelled(stage: str) -> None:
+            if cancel_event is not None and cancel_event.is_set():
+                raise RuntimeError(f"Production cancelled during {stage}")
 
         episode_dir = self.base_path / "episodes" / episode_id
         episode_dir.mkdir(parents=True, exist_ok=True)
@@ -470,9 +475,12 @@ class HardenedPodcastWorker:
             raw_segments_dir = staging_dir / "segments"
             raw_segments_dir.mkdir(parents=True, exist_ok=True)
 
-            segment_payloads = self._synthesize_segments(script_lines, raw_segments_dir, episode_id)
+            raise_if_cancelled("startup")
+            segment_payloads = self._synthesize_segments(script_lines, raw_segments_dir, episode_id, cancel_event)
+            raise_if_cancelled("segment synthesis")
             raw_mix_path = staging_dir / f"{episode_id}_raw_mix.mp3"
             self._concatenate_segments(segment_payloads, raw_mix_path)
+            raise_if_cancelled("mixdown")
 
             # ── SFX injection ────────────────────────────────────────────
             sfx_cfg = self.project_config.get("sfx", {})
@@ -485,6 +493,7 @@ class HardenedPodcastWorker:
                     logger.info("SFX applied to %s", episode_id)
                 except Exception as exc:
                     logger.warning("SFX injection failed (continuing without): %s", exc)
+            raise_if_cancelled("sfx")
 
             processing_result: Dict[str, Any]
             try:
@@ -501,6 +510,7 @@ class HardenedPodcastWorker:
                     "compliant": False,
                     "warning": str(exc),
                 }
+            raise_if_cancelled("post-processing")
 
             # ── Intro / Outro wrap ──────────────────────────────────────
             io_cfg = self.project_config.get("intro_outro", {})
@@ -521,6 +531,7 @@ class HardenedPodcastWorker:
                 except Exception as exc:
                     logger.warning("Intro/outro wrap failed (episode audio kept clean): %s", exc)
                     processing_result["intro_outro"] = f"failed: {exc}"
+            raise_if_cancelled("intro/outro")
 
             transcript_payload = {
                 "episode_id": episode_id,
@@ -640,10 +651,18 @@ class HardenedPodcastWorker:
             chunks.append(current.rstrip(",;:"))
         return chunks
 
-    def _synthesize_segments(self, script_lines: List[Dict[str, Any]], output_dir: Path, episode_id: str) -> List[Dict[str, Any]]:
+    def _synthesize_segments(
+        self,
+        script_lines: List[Dict[str, Any]],
+        output_dir: Path,
+        episode_id: str,
+        cancel_event: Any | None = None,
+    ) -> List[Dict[str, Any]]:
         segments: List[Dict[str, Any]] = []
         segment_index = 0
         for idx, line in enumerate(script_lines, start=1):
+            if cancel_event is not None and cancel_event.is_set():
+                raise RuntimeError("Production cancelled during segment synthesis")
             speaker = self._normalize_speaker(str(line.get("speaker", "phil")))
             text = self._strip_spoken_speaker_prefix(
                 text=str(line.get("text", "")).strip(),
@@ -654,6 +673,8 @@ class HardenedPodcastWorker:
 
             chunks = self._split_for_tts(text)
             for chunk_idx, chunk_text in enumerate(chunks, start=1):
+                if cancel_event is not None and cancel_event.is_set():
+                    raise RuntimeError("Production cancelled during segment synthesis")
                 segment_index += 1
                 output_path = output_dir / f"{episode_id}_{segment_index:03d}_{speaker}.mp3"
                 engine_used = self._synthesize_line(

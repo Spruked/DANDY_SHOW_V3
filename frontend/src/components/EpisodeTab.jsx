@@ -24,6 +24,8 @@ export default function EpisodeTab() {
   const [loading, setLoading]       = useState(false)
   const [generating, setGenerating] = useState(false)
   const [producing, setProducing]   = useState(false)
+  const [stoppingGenerate, setStoppingGenerate] = useState(false)
+  const [stoppingProduce, setStoppingProduce]   = useState(false)
 
   const [showCreate,   setShowCreate]   = useState(false)
   const [showVersions, setShowVersions] = useState(false)
@@ -76,16 +78,23 @@ export default function EpisodeTab() {
   useEffect(() => { loadEpisodes() }, [])
 
   const selectEpisode = async (ep) => {
+    const id = ep.episode_id || ep.id
     setActiveEp(ep)
     setSelectedLine(null)
     setEditingLine(null)
     setScript(null)
     try {
-      const s = await api.getScript(ep.episode_id || ep.id)
+      const detail = await api.getEpisode(id)
+      setActiveEp({ ...ep, ...detail, config: detail.config || ep.config || {} })
+    } catch {
+      setActiveEp(ep)
+    }
+    try {
+      const s = await api.getScript(id)
       setScript(s)
     } catch { setScript(null) }
     try {
-      const a = await api.listAssets(ep.episode_id || ep.id)
+      const a = await api.listAssets(id)
       setAssets(Array.isArray(a) ? a : (a.assets || []))
     } catch { setAssets([]) }
   }
@@ -110,12 +119,29 @@ export default function EpisodeTab() {
     if (!activeEp) return
     setGenerating(true)
     try {
-      await api.generateScript(epId)
+      const result = await api.generateScript(epId)
+      if (result?.status === 'cancelled') {
+        showToast('Generation cancelled')
+        await selectEpisode(activeEp)
+        return
+      }
       showToast('Script generated ✓')
       await selectEpisode(activeEp)
     } catch (e) {
       showToast('Generate failed: ' + e.message.slice(0, 80))
     } finally { setGenerating(false) }
+  }
+
+  const handleStopGenerate = async () => {
+    if (!activeEp) return
+    setStoppingGenerate(true)
+    try {
+      await api.cancelEpisodeJob(epId)
+      showToast('Generate stop requested')
+      await selectEpisode(activeEp)
+    } catch (e) {
+      showToast('Stop generate failed: ' + e.message.slice(0, 80))
+    } finally { setStoppingGenerate(false) }
   }
 
   const handleProduce = async () => {
@@ -129,10 +155,23 @@ export default function EpisodeTab() {
     setProducing(true)
     try {
       await api.produce(epId)
+      await selectEpisode(activeEp)
       showToast('Production queued ✓  — watch logs/produce_demo.log')
     } catch (e) {
       showToast('Produce failed: ' + e.message.slice(0, 80))
     } finally { setProducing(false) }
+  }
+
+  const handleStopProduce = async () => {
+    if (!activeEp) return
+    setStoppingProduce(true)
+    try {
+      await api.cancelEpisodeJob(epId)
+      showToast('Production stop requested')
+      await selectEpisode(activeEp)
+    } catch (e) {
+      showToast('Stop produce failed: ' + e.message.slice(0, 80))
+    } finally { setStoppingProduce(false) }
   }
 
   const handleExport = async (format) => {
@@ -348,11 +387,17 @@ export default function EpisodeTab() {
             <button className="btn btn-gold" onClick={handleGenerate} disabled={!activeEp || generating}>
               <Zap size={11} /> {generating ? 'GEN…' : 'GENERATE'}
             </button>
+            <button className="btn btn-steel" onClick={handleStopGenerate} disabled={!activeEp || stoppingGenerate}>
+              <X size={11} /> {stoppingGenerate ? 'STOPPING' : 'STOP GEN'}
+            </button>
             <button className="btn btn-steel" onClick={() => setShowEditConfig(true)} disabled={!activeEp}>
               <Settings size={11} /> CONFIG
             </button>
             <button className="btn btn-solid" onClick={handleProduce} disabled={!activeEp || producing}>
               <Play size={11} /> {producing ? 'QUEUING…' : 'PRODUCE'}
+            </button>
+            <button className="btn btn-steel" onClick={handleStopProduce} disabled={!activeEp || stoppingProduce}>
+              <X size={11} /> {stoppingProduce ? 'STOPPING' : 'STOP PROD'}
             </button>
             <button className="btn btn-steel" onClick={() => setShowExport(true)} disabled={!activeEp}>
               <Download size={11} /> EXPORT
