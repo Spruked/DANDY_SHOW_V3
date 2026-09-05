@@ -1,10 +1,10 @@
-param(
+﻿param(
     [switch]$Restart,
     [switch]$NoBackend,
     [switch]$NoFrontend,
     [switch]$Reload,
     [int]$BackendPort = 8110,
-    [int]$FrontendPort = 5173
+    [int]$FrontendPort = 5188
 )
 
 $ErrorActionPreference = "Stop"
@@ -83,7 +83,7 @@ if (-not $NoFrontend) {
     $frontendCmd = @"
 Set-Location '$frontendDir';
 `$env:DANDY_API_TARGET = 'http://127.0.0.1:$BackendPort';
-npm run dev -- --host 127.0.0.1 --port $FrontendPort
+npm run dev -- --host 127.0.0.1 --port $FrontendPort --strictPort --strictPort
 "@
     Start-Process -FilePath "powershell" -ArgumentList @(
         "-NoProfile",
@@ -100,3 +100,4 @@ try {
 } catch {
     Write-Warning "Backend health check not ready yet."
 }
+
