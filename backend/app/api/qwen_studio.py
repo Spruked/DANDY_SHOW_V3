@@ -3,7 +3,6 @@ from __future__ import annotations
 import socket
 import subprocess
 import threading
-from pathlib import Path
 from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException
@@ -55,10 +54,6 @@ def _port_open(port: int, timeout: float = 0.20) -> bool:
         return False
 
 
-def _powershell() -> str:
-    return "powershell.exe"
-
-
 def _creation_flags() -> int:
     return int(getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
@@ -71,7 +66,6 @@ def _validate_scripts() -> None:
 
 
 def _launch_busy() -> bool:
-    global _launch_process
     if _launch_process is None:
         return False
     return _launch_process.poll() is None
@@ -132,20 +126,25 @@ def qwen_studio_start(mode: str) -> Dict[str, Any]:
         }
 
     with _launch_lock:
-        if _launch_busy() and _launch_mode == mode:
-            return {
-                "launch_requested": False,
-                "already_starting": True,
-                "mode": mode,
-                "status": _status_payload(),
-            }
+        if _launch_busy():
+            if _launch_mode == mode:
+                return {
+                    "launch_requested": False,
+                    "already_starting": True,
+                    "mode": mode,
+                    "status": _status_payload(),
+                }
+            raise HTTPException(
+                status_code=409,
+                detail=f"Qwen {_launch_mode or 'model'} is still loading. Wait for that switch to finish before selecting {mode}.",
+            )
 
         try:
             _launch_error = None
             _launch_mode = mode
             _launch_process = subprocess.Popen(
                 [
-                    _powershell(),
+                    "powershell.exe",
                     "-NoProfile",
                     "-ExecutionPolicy",
                     "Bypass",
@@ -182,7 +181,7 @@ def qwen_studio_stop() -> Dict[str, Any]:
     try:
         subprocess.Popen(
             [
-                _powershell(),
+                "powershell.exe",
                 "-NoProfile",
                 "-ExecutionPolicy",
                 "Bypass",
