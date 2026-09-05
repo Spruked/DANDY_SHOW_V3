@@ -2,7 +2,10 @@ param(
     [switch]$Restart,
     [switch]$NoBackend,
     [switch]$NoFrontend,
+    [switch]$NoQwen,
     [switch]$Reload,
+    [ValidateSet("custom", "clone", "design")]
+    [string]$QwenMode = "custom",
     [int]$BackendPort = 8110,
     [int]$FrontendPort = 5173
 )
@@ -12,6 +15,8 @@ $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $backendDir = Join-Path $root "backend"
 $frontendDir = Join-Path $root "frontend"
+$qwenRoot = Join-Path $root "secondary_systems\Dandy_Qwen_TTS_Ui"
+$qwenModeScript = Join-Path $qwenRoot "scripts\Start-QwenTTSMode.ps1"
 $ffmpegBin = Join-Path $root "staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin"
 $venvPython = Join-Path $root ".venv\Scripts\python.exe"
 $pythonCmd = if ($env:DANDY_PYTHON) {
@@ -31,6 +36,12 @@ $pythonArgs = if ($env:DANDY_PYTHON) {
     $backendBaseArgs
 } else {
     @("-3.12") + $backendBaseArgs
+}
+
+$QwenPorts = @{
+    custom = 8031
+    clone = 8032
+    design = 8033
 }
 
 function Stop-ByPort {
@@ -91,6 +102,26 @@ npm run dev -- --host 127.0.0.1 --port $FrontendPort
         "-Command", $frontendCmd
     ) | Out-Null
     Write-Host "Frontend launch requested on http://127.0.0.1:$FrontendPort"
+}
+
+if (-not $NoQwen) {
+    if (-not (Test-Path $qwenModeScript)) {
+        Write-Warning "Qwen launcher not found: $qwenModeScript"
+    } else {
+        $qwenPort = [int]$QwenPorts[$QwenMode]
+        $qwenListener = Get-NetTCPConnection -LocalPort $qwenPort -State Listen -ErrorAction SilentlyContinue
+        if ($qwenListener) {
+            Write-Host "Qwen $QwenMode already ready on http://127.0.0.1:$qwenPort"
+        } else {
+            Start-Process -FilePath "powershell" -WindowStyle Hidden -ArgumentList @(
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-File", $qwenModeScript,
+                "-Mode", $QwenMode
+            ) | Out-Null
+            Write-Host "Qwen $QwenMode launch requested on http://127.0.0.1:$qwenPort"
+        }
+    }
 }
 
 Start-Sleep -Seconds 2
