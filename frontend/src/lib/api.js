@@ -136,7 +136,6 @@ async function normalizeEditPayload(body) {
 }
 
 export const api = {
-  // ── Health ──────────────────────────────────────────────────────────
   health: () => req('/health'),
   writerStatus: () => req('/writer-status'),
   voices: async () => {
@@ -148,7 +147,6 @@ export const api = {
     return { voices, raw: data }
   },
 
-  // ── Episodes ─────────────────────────────────────────────────────────
   listEpisodes: () => req('/episodes'),
   createEpisode: async (body) => {
     const episodeId = String(body.episode_id || `ep_${Date.now()}`).trim()
@@ -175,7 +173,6 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  // ── Script ───────────────────────────────────────────────────────────
   getScript: (id) => req(`/episodes/${encodeURIComponent(id)}/script`),
   generateScript: async (id, body = {}) => {
     const jobId = await ensureJob(id)
@@ -197,13 +194,16 @@ export const api = {
     const normalized = await normalizeEditPayload(body)
     return req('/episodes/edit-script', { method: 'POST', body: JSON.stringify(normalized) })
   },
+  replaceScript: (id, text) =>
+    req(`/episodes/${encodeURIComponent(id)}/replace-script`, {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }),
   exportEpisode: (id, fmt) => req(`/episodes/${encodeURIComponent(id)}/export?format=${encodeURIComponent(fmt)}`),
 
-  // ── Versions ─────────────────────────────────────────────────────────
   getVersions: (id) => req(`/episodes/${encodeURIComponent(id)}/script-versions`),
   rollback: (id, version) => req(`/episodes/${encodeURIComponent(id)}/rollback?version=${encodeURIComponent(version)}`, { method: 'POST' }),
 
-  // ── Production ───────────────────────────────────────────────────────
   produce: async (id, body = {}) => {
     const jobId = await ensureJob(id)
     return req(`/episodes/produce?job_id=${encodeURIComponent(jobId)}`, {
@@ -213,13 +213,14 @@ export const api = {
   },
   produceStatus: () => Promise.resolve({ status: 'not_supported' }),
 
-  // ── Assets ───────────────────────────────────────────────────────────
   listAssets: (id) => req(`/episodes/${encodeURIComponent(id)}/assets`),
+  listAssetLibrary: (query = '', role = '') =>
+    req(`/asset-library?query=${encodeURIComponent(query)}&role=${encodeURIComponent(role)}`),
   uploadAsset: (id, formData) =>
     fetch(`${BASE}/episodes/${encodeURIComponent(id)}/assets`, { method: 'POST', body: formData }).then((r) => r.json()),
   assetUrl: (id, assetId) => `${BASE}/episodes/${encodeURIComponent(id)}/assets/${encodeURIComponent(assetId)}/file`,
+  libraryAssetUrl: (assetId) => `${BASE}/asset-library/${encodeURIComponent(assetId)}/file`,
 
-  // ── Media cues ───────────────────────────────────────────────────────
   addMediaCue: (id, body) =>
     req(`/episodes/${encodeURIComponent(id)}/media-cues`, {
       method: 'POST',
@@ -233,11 +234,9 @@ export const api = {
       }),
     }),
 
-  // ── Feedback ─────────────────────────────────────────────────────────
   submitFeedback: (id, text) =>
     req(`/episodes/${encodeURIComponent(id)}/customer-feedback`, { method: 'POST', body: JSON.stringify({ feedback: text }) }),
 
-  // ── Ads ──────────────────────────────────────────────────────────────
   listAds: async (id) => {
     const data = await req(`/episodes/${encodeURIComponent(id)}/ads`)
     const ads = Array.isArray(data) ? data : (data.ads || [])
@@ -297,7 +296,6 @@ export const api = {
   adAssetFileUrl: (epId, adId, assetId) =>
     `${BASE}/episodes/${encodeURIComponent(epId)}/ads/${encodeURIComponent(adId)}/assets/${encodeURIComponent(assetId)}/file`,
 
-  // ── Social ───────────────────────────────────────────────────────────
   socialPresets: async () => {
     const data = await req('/social/presets')
     return Array.isArray(data) ? data : (data.presets || [])
@@ -307,10 +305,8 @@ export const api = {
   listSocialExports: (id) => req(`/episodes/${encodeURIComponent(id)}/social`),
   socialDownloadUrl: (exportId) => `${BASE}/social/${encodeURIComponent(exportId)}/download`,
 
-  // ── Audio ────────────────────────────────────────────────────────────
   audioUrl: (id) => `${BASE}/audio/${encodeURIComponent(id)}/final.mp3`,
 
-  // ── Intro/Outro config ───────────────────────────────────────────────
   getIntroOutroConfig: () => req('/intro-outro-config'),
   saveIntroOutroConfig: (body) =>
     req('/intro-outro-config', { method: 'POST', body: JSON.stringify(body) }),
@@ -329,8 +325,6 @@ export const api = {
   },
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
-// ~160 words per minute average speech
 export function wordsToSeconds(text = '') {
   const words = text.trim().split(/\s+/).filter(Boolean).length
   return Math.round((words / 160) * 60)

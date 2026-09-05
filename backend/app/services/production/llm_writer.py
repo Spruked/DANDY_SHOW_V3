@@ -1,14 +1,15 @@
 """
-llm_writer.py — LLM script writer for Phil & Jim Dandy Show.
+llm_writer.py — direct local LLM script writer for Phil & Jim Dandy Show.
 
-Routes script generation through the substrate governance bridge
-(http://127.0.0.1:5199/query) with role "dandy_scriptwriter".
+Dandy script generation goes straight to the local llama.cpp OpenAI-compatible
+endpoint. The former substrate governance hop was intentionally removed from
+the hot path because Dandy is a single-operator creative studio and the extra
+network probe added latency without adding useful authority.
 
 The LLM writes dialogue within a brief supplied by the system (topic, key
 points, stage, primary source). Bryan is the final decision maker on what
-ships. The validator (ScriptQualityGuard) is the quality gate, not the LLM.
-
-Falls back to the SKG path if the bridge is unavailable.
+ships. ScriptQualityGuard and the short-segment acceptance filters remain the
+deterministic quality controls.
 """
 
 import json
@@ -22,11 +23,9 @@ from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
-_BRIDGE_URL = os.getenv("DANDY_LLM_BRIDGE_URL", "http://127.0.0.1:5199/query")
 _LLAMACPP_BASE_URL = os.getenv("DANDY_LLAMACPP_BASE_URL", "http://127.0.0.1:40343/v1")
 _LLAMACPP_MODEL = os.getenv("DANDY_LLAMACPP_MODEL", "local")
-_ROLE = "dandy_scriptwriter"
-_TIMEOUT = 120  # matches governance config timeout_seconds
+_TIMEOUT = 120
 
 _STAGES: Dict[str, Dict] = {
     "opening": {
@@ -51,7 +50,6 @@ _STAGES: Dict[str, Dict] = {
     },
 }
 
-# Matches: PHIL [excited]: text, JIM [dry]: text, or PHIL: text.
 _LINE_RE = re.compile(r"^(PHIL|JIM)(?:\s*\[([^\]]{2,20})\])?:\s*(.{8,})$", re.IGNORECASE)
 _SPEAKER_MAP = {"phil": "Phil", "jim": "Jim"}
 _PAUSE_MAP = {"Phil": 0.35, "Jim": 0.55}
@@ -67,23 +65,6 @@ def _post_json(url: str, payload: Dict, timeout: int = _TIMEOUT) -> Dict:
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode())
-
-
-def _call_governance_bridge(prompt: str) -> Optional[str]:
-    payload = json.dumps({"role": _ROLE, "prompt": prompt}).encode()
-    req = urllib.request.Request(
-        _BRIDGE_URL,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
-            body = json.loads(resp.read().decode())
-            return body.get("text", "")
-    except Exception as exc:
-        logger.warning("LLM governance bridge call failed: %s", exc)
-        return None
 
 
 def _call_llamacpp(prompt: str) -> Optional[str]:
@@ -116,9 +97,7 @@ def _call_llamacpp(prompt: str) -> Optional[str]:
 
 
 def _call_bridge(prompt: str) -> Tuple[Optional[str], str]:
-    governance = _call_governance_bridge(prompt)
-    if governance:
-        return governance, "governance_bridge"
+    """Compatibility name retained for callers; there is no governance hop."""
     llamacpp = _call_llamacpp(prompt)
     if llamacpp:
         return llamacpp, "llamacpp"
@@ -142,7 +121,7 @@ def _parse_response(text: str, generated_by: str) -> List[Dict]:
                 "emotional_state": {"primary": emotion},
                 "pause_after": _PAUSE_MAP.get(speaker, 0.45),
                 "timestamp": datetime.now().isoformat(),
-                "generated_by": generated_by or "llm_writer",
+                "generated_by": generated_by or "llamacpp",
             }
         )
     return lines
@@ -174,7 +153,7 @@ def _build_prompt(
         else f"- {topic}"
     )
     history_block = (
-        "\n".join(history_lines[-20:])
+        "\n".join(history_lines[-24:])
         if history_lines
         else "(none yet — this is the opening)"
     )
@@ -197,9 +176,8 @@ PRODUCTION BRIEF:
 - Topic and key points below are the source of truth — stay within them
 - Stage goal: {stage_info["goal"]}
 - Do not invent facts outside the source material
-- Do not repeat any line already in the conversation
 - Generation ID: {nonce}
-- This is a fresh script pass. Write new dialogue for this request.
+- Continue FORWARD from the conversation so far. Never restart the discussion.
 - Use the persona/SKG rulebook as constraints only; do not quote or copy template lines from it.
 
 TOPIC: {topic}
@@ -217,9 +195,12 @@ Write exactly {n_exchanges} back-and-forth exchanges ({n_exchanges * 2} lines to
 Phil speaks first in each exchange.
 
 RULES:
-- Do NOT repeat any phrase, sentence, or idea already in the conversation above
+- Do NOT repeat any phrase, sentence, claim, example, question, or idea already in the conversation above
+- Do NOT summarize earlier turns unless the stage is closing
+- Do NOT restart with the basic definition after it has already been established
 - Do NOT reuse canned fallback, seed, expander, or SKG template language
-- Each line must advance with a new angle, specific example, or honest challenge
+- Each line must advance with a new angle, specific example, consequence, distinction, or honest challenge
+- Finish every sentence and thought; never end on a dangling fragment
 - No explanations, no headers, no stage labels — just the dialogue lines
 
 OUTPUT FORMAT:
@@ -239,12 +220,7 @@ def generate_segment(
     persona_brief: str = "",
     generation_nonce: Optional[str] = None,
 ) -> List[Dict]:
-    """
-    Generate one conversation segment via the governed LLM bridge.
-
-    Returns a list of line dicts (speaker, text, emotional_state, pause_after, timestamp).
-    Returns [] if the bridge is unreachable or the response is unparseable.
-    """
+    """Generate one forward-only conversation stage directly through llama.cpp."""
     stage_info = _STAGES.get(stage, _STAGES["expansion"])
     n = n_exchanges or stage_info["n"]
     prompt = _build_prompt(
@@ -273,36 +249,35 @@ def generate_segment(
 
 
 def writer_status() -> Dict[str, object]:
-    governance_ok = False
     llamacpp_ok = False
-    try:
-        bridge_root = _BRIDGE_URL.rsplit("/", 1)[0] + "/"
-        req = urllib.request.Request(bridge_root, method="GET")
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            governance_ok = resp.status < 500
-    except Exception:
-        governance_ok = False
-
+    model_name = None
+    model_meta: Dict[str, object] = {}
     try:
         req = urllib.request.Request(f"{_LLAMACPP_BASE_URL}/models", method="GET")
         with urllib.request.urlopen(req, timeout=3) as resp:
             llamacpp_ok = resp.status < 500
+            body = json.loads(resp.read().decode("utf-8"))
+            entries = body.get("data") or body.get("models") or []
+            if entries:
+                first = entries[0]
+                if isinstance(first, dict):
+                    model_name = first.get("id") or first.get("name") or first.get("model")
+                    model_meta = first.get("meta") or first.get("details") or {}
     except Exception:
         llamacpp_ok = False
 
-    active = "governance_bridge" if governance_ok else "llamacpp" if llamacpp_ok else "offline"
     return {
-        "bridge_reachable": bool(governance_ok or llamacpp_ok),
-        "active_writer": "llm_bridge" if governance_ok or llamacpp_ok else "offline",
-        "writer_backend": active,
-        "bridge_url": _BRIDGE_URL,
+        "bridge_reachable": llamacpp_ok,
+        "active_writer": "llamacpp" if llamacpp_ok else "offline",
+        "writer_backend": "llamacpp" if llamacpp_ok else "offline",
         "llamacpp_url": _LLAMACPP_BASE_URL,
-        "warning": None
-        if governance_ok or llamacpp_ok
-        else "LLM writer offline - generation will fail closed; SKG is persona guidance only.",
+        "model": model_name,
+        "model_meta": model_meta,
+        "governance_bridge": "removed_from_dandy_hot_path",
+        "warning": None if llamacpp_ok else "Local llama.cpp writer is offline; script generation will fail closed.",
     }
 
 
 def check_bridge() -> bool:
-    """Return True if any configured LLM writer backend is reachable."""
+    """Compatibility helper: True only when the direct llama.cpp writer is reachable."""
     return bool(writer_status()["bridge_reachable"])

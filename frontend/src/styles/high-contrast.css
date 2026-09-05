@@ -1,0 +1,35 @@
+/* High-contrast text pass.
+
+The original --steel token is also used for borders, icons and scrollbars, so
+it stays gray. This layer changes only text that was rendered with that muted
+steel color. Disabled controls still communicate disabled state through opacity.
+*/
+:root {
+  --text-bright: #f7f9fc;
+}
+
+.nav-logo-sub,
+.tab-btn:not(.active),
+.nav-status,
+.section-label,
+.ep-num,
+.line-num,
+.stat-label,
+.badge-steel,
+.field-label,
+.empty-msg,
+.sys-card-title {
+  color: var(--text-bright) !important;
+}
+
+/* Many Dandy panels use small inline mono labels with var(--steel). Keep those
+   readable everywhere without changing the steel border/icon design token. */
+[style*="color: var(--steel)"] {
+  color: var(--text-bright) !important;
+}
+
+.ds-input::placeholder,
+.ds-textarea::placeholder {
+  color: var(--text-bright) !important;
+  opacity: 1;
+}

@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "role": "secondary",
+  "role": "selectable",
   "bridge_url": "http://127.0.0.1:8020",
   "operator_ui_url": "http://127.0.0.1:7861",
   "custom_voice_url": "http://127.0.0.1:8031",
@@ -36,8 +36,8 @@
   "production": {
     "enabled": true,
     "explicit_selection_enabled": true,
-    "use_as_secondary_fallback": true,
-    "fallback_provider": "edge",
+    "use_as_secondary_fallback": false,
+    "fallback_provider": "none",
     "store_outputs_under_episode": true
   }
 }
