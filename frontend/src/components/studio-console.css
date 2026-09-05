@@ -1,0 +1,590 @@
+/* Dandy Studio V2 — scoped production-console layout and Qwen workspace */
+
+/* Improve the main Dandy navigation everywhere without changing the brand accents. */
+.top-nav .tab-btn {
+  color: #f7f9fc !important;
+  font-size: .68rem !important;
+  font-weight: 500;
+}
+.top-nav .tab-btn:hover { color: #ffffff !important; }
+.top-nav .tab-btn.active { color: var(--gold) !important; }
+.top-nav .nav-status {
+  color: #e5eaf1 !important;
+  font-size: .58rem !important;
+}
+
+.dandy-studio-v2 {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.studio-v2-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #0e1319;
+  border-bottom: 1px solid #29323d;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.studio-v2-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 15px;
+  border: 1px solid #384453;
+  border-radius: 7px;
+  background: #151b22;
+  color: #f4f7fb;
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s, transform .15s;
+}
+
+.studio-v2-tab:hover {
+  border-color: #667587;
+  background: #1a222c;
+  color: #fff;
+}
+
+.studio-v2-tab.active {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold-hi);
+  box-shadow: inset 0 -2px 0 var(--gold);
+}
+
+.studio-v2-body {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Existing StudioTab, re-housed as a real workspace instead of an accordion. */
+/* -------------------------------------------------------------------------- */
+
+.legacy-studio,
+.legacy-studio > .tab-body {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* StudioConsole owns major navigation; hide StudioTab's duplicate pill row. */
+.legacy-studio > .tab-body > div:nth-child(2) {
+  display: none !important;
+}
+
+/* Keep the live status/control bar, but make it readable. */
+.legacy-studio > .tab-body > div:nth-child(1) {
+  padding: 9px 16px !important;
+  gap: 11px !important;
+  background: #10161d !important;
+}
+
+/* Bright secondary copy in Studio only. Accent colors remain untouched. */
+.legacy-studio [style*="color: var(--steel)"] {
+  color: #edf2f8 !important;
+  font-weight: 500;
+}
+
+/* The original console used extremely small .38-.60rem labels. Raise the
+   minimum visual size while preserving the relative hierarchy. */
+.legacy-studio [style*="font-size: .38rem"],
+.legacy-studio [style*="font-size: 0.38rem"],
+.legacy-studio [style*="font-size: .4rem"],
+.legacy-studio [style*="font-size: 0.4rem"],
+.legacy-studio [style*="font-size: .42rem"],
+.legacy-studio [style*="font-size: 0.42rem"] {
+  font-size: .56rem !important;
+}
+
+.legacy-studio [style*="font-size: .44rem"],
+.legacy-studio [style*="font-size: 0.44rem"],
+.legacy-studio [style*="font-size: .46rem"],
+.legacy-studio [style*="font-size: 0.46rem"],
+.legacy-studio [style*="font-size: .48rem"],
+.legacy-studio [style*="font-size: 0.48rem"] {
+  font-size: .60rem !important;
+}
+
+.legacy-studio [style*="font-size: .5rem"],
+.legacy-studio [style*="font-size: 0.5rem"],
+.legacy-studio [style*="font-size: .52rem"],
+.legacy-studio [style*="font-size: 0.52rem"],
+.legacy-studio [style*="font-size: .54rem"],
+.legacy-studio [style*="font-size: 0.54rem"],
+.legacy-studio [style*="font-size: .55rem"],
+.legacy-studio [style*="font-size: 0.55rem"] {
+  font-size: .64rem !important;
+}
+
+.legacy-studio [style*="font-size: .6rem"],
+.legacy-studio [style*="font-size: 0.6rem"] {
+  font-size: .70rem !important;
+}
+
+/* Main legacy view grid. */
+.legacy-studio > .tab-body > div:nth-child(3) {
+  padding: 15px !important;
+  gap: 14px !important;
+  align-content: start !important;
+}
+
+/* Audio Mix: mixer gets the width it actually needs; monitoring and recording
+   chain become the second row. */
+.legacy-audio > .tab-body > div:nth-child(3) {
+  grid-template-columns: minmax(0, 1fr) minmax(430px, .95fr) !important;
+}
+
+.legacy-audio > .tab-body > div:nth-child(3) > div:nth-child(1) {
+  grid-column: 1 / -1 !important;
+}
+
+.legacy-audio > .tab-body > div:nth-child(3) > div:nth-child(2) {
+  grid-column: 1 !important;
+}
+
+.legacy-audio > .tab-body > div:nth-child(3) > div:nth-child(3) {
+  grid-column: 2 !important;
+}
+
+/* Main Audio panels are work surfaces, not accordion navigation. */
+.legacy-audio > .tab-body > div:nth-child(3) > div:nth-child(-n+3) > button:first-child {
+  pointer-events: none;
+  padding: 10px 14px !important;
+  background: rgba(255,255,255,.012) !important;
+}
+
+.legacy-audio > .tab-body > div:nth-child(3) > div:nth-child(-n+3) > button:first-child > svg:last-child {
+  display: none;
+}
+
+.legacy-audio > .tab-body > div:nth-child(3) > div:nth-child(-n+3) > div:last-child {
+  padding: 3px 14px 15px !important;
+}
+
+/* OBS / Cameras / Tools are full production pages, not tiny auto-fit cards. */
+.legacy-obs > .tab-body > div:nth-child(3),
+.legacy-cams > .tab-body > div:nth-child(3),
+.legacy-automate > .tab-body > div:nth-child(3) {
+  grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Qwen integrated workspace                                                  */
+/* -------------------------------------------------------------------------- */
+
+.qwen-console {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 14% -10%, rgba(88,166,255,.12), transparent 34%),
+    radial-gradient(circle at 85% -12%, rgba(212,175,55,.10), transparent 30%),
+    #090d12;
+  color: #f7f9fc;
+}
+
+.qwen-console-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid #26313d;
+  background: rgba(14,19,25,.94);
+  flex-shrink: 0;
+}
+
+.qwen-eyebrow {
+  color: #75b7ff;
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  font-weight: 600;
+  letter-spacing: .13em;
+  margin-bottom: 3px;
+}
+
+.qwen-title {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  letter-spacing: .09em;
+  line-height: 1.05;
+}
+
+.qwen-subtitle {
+  margin-top: 5px;
+  color: #dbe4ee;
+  font-size: .72rem;
+  max-width: 760px;
+}
+
+.qwen-engine-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qwen-active-model {
+  min-width: 175px;
+  padding: 7px 10px;
+  border: 1px solid #354253;
+  border-radius: 7px;
+  background: #111820;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.qwen-active-model span {
+  color: #aeb9c7;
+  font-family: var(--font-mono);
+  font-size: .52rem;
+  letter-spacing: .1em;
+}
+
+.qwen-active-model strong {
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  letter-spacing: .04em;
+}
+
+.studio-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 7px 11px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: .60rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  cursor: pointer;
+}
+
+.studio-action:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.studio-action.primary {
+  border: 1px solid var(--blue);
+  background: rgba(88,166,255,.13);
+  color: #9bcdff;
+}
+
+.studio-action.secondary {
+  border: 1px solid #465364;
+  background: #121920;
+  color: #f2f5f9;
+}
+
+.studio-action.danger {
+  border: 1px solid var(--red);
+  background: rgba(248,81,73,.08);
+  color: #ff7b74;
+}
+
+.qwen-error {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  border-bottom: 1px solid rgba(248,81,73,.35);
+  background: rgba(248,81,73,.09);
+  color: #ff8d87;
+  font-family: var(--font-mono);
+  font-size: .62rem;
+}
+
+.qwen-mode-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #26313d;
+  background: #0c1117;
+  flex-shrink: 0;
+}
+
+.qwen-mode-card {
+  border: 1px solid #34404e;
+  border-radius: 7px;
+  background: #121820;
+  padding: 8px 10px;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.qwen-mode-card:hover,
+.qwen-mode-card.active {
+  border-color: #5aa7ff;
+  background: #131f2c;
+}
+
+.qwen-mode-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: .64rem;
+  font-weight: 600;
+}
+
+.qwen-mode-port {
+  margin-top: 3px;
+  color: #99a8b8;
+  font-family: var(--font-mono);
+  font-size: .52rem;
+}
+
+.qwen-status-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: .50rem;
+  letter-spacing: .05em;
+  white-space: nowrap;
+}
+
+.qwen-status-light.ready { color: #64d675; }
+.qwen-status-light.busy { color: var(--gold-hi); }
+.qwen-status-light.offline { color: #ff7770; }
+
+.qwen-tab-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-height: 40px;
+  padding: 0 14px;
+  border-bottom: 1px solid #2b3744;
+  background: #10161d;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.qwen-tab {
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #e7edf5;
+  font-family: var(--font-mono);
+  font-size: .64rem;
+  font-weight: 600;
+  letter-spacing: .07em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.qwen-tab:hover { color: #fff; }
+.qwen-tab.active {
+  color: #7ebcff;
+  border-bottom-color: #58a6ff;
+  background: rgba(88,166,255,.05);
+}
+
+.qwen-workspace {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: #080c11;
+}
+
+.qwen-native-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 680px;
+  border: 0;
+  background: #fff;
+}
+
+.qwen-loading-panel {
+  min-height: 430px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 30px;
+  text-align: center;
+  color: #f7f9fc;
+}
+
+.qwen-loading-panel > svg { color: #68afff; }
+.qwen-loading-panel h3 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: .08em;
+}
+.qwen-loading-panel p {
+  max-width: 660px;
+  color: #d3dde8;
+  font-size: .76rem;
+}
+
+.voice-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
+  gap: 14px;
+  padding: 18px;
+}
+
+.voice-lab-card {
+  min-height: 210px;
+  padding: 20px;
+  border: 1px solid #354150;
+  border-radius: 10px;
+  background: #111820;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.voice-lab-card.phil { border-top: 3px solid var(--phil); }
+.voice-lab-card.jim { border-top: 3px solid var(--jim); }
+.voice-lab-kicker {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .11em;
+  color: #fff;
+}
+.voice-lab-card.phil .voice-lab-kicker { color: var(--phil); }
+.voice-lab-card.jim .voice-lab-kicker { color: var(--jim); }
+.voice-lab-card h3 {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: .07em;
+}
+.voice-lab-card p {
+  color: #e0e7ef;
+  font-size: .76rem;
+  line-height: 1.65;
+  max-width: 680px;
+}
+
+.voice-lab-wide {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #364453;
+  border-radius: 8px;
+  background: #10171f;
+  color: #79baff;
+}
+.voice-lab-wide div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.voice-lab-wide strong {
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: .64rem;
+  letter-spacing: .08em;
+}
+.voice-lab-wide span {
+  color: #dfe7ef;
+  font-size: .72rem;
+}
+
+.qwen-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 18px;
+}
+
+.qwen-tool-card {
+  padding: 14px;
+  border: 1px solid #354150;
+  border-radius: 8px;
+  background: #111820;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.qwen-tool-card > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.qwen-tool-card strong {
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: .66rem;
+}
+.qwen-tool-card span {
+  color: #d6dee8;
+  font-size: .64rem;
+  overflow-wrap: anywhere;
+}
+.qwen-tool-note {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border-left: 3px solid var(--blue);
+  background: rgba(88,166,255,.07);
+  color: #e1e9f2;
+  font-size: .74rem;
+}
+
+@media (max-width: 1100px) {
+  .legacy-audio > .tab-body > div:nth-child(3) {
+    grid-template-columns: 1fr !important;
+  }
+  .legacy-audio > .tab-body > div:nth-child(3) > div:nth-child(1),
+  .legacy-audio > .tab-body > div:nth-child(3) > div:nth-child(2),
+  .legacy-audio > .tab-body > div:nth-child(3) > div:nth-child(3) {
+    grid-column: 1 !important;
+  }
+  .qwen-console-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .qwen-engine-actions { justify-content: flex-start; }
+}
+
+@media (max-width: 820px) {
+  .studio-v2-nav { gap: 6px; }
+  .studio-v2-tab { padding: 7px 10px; font-size: .62rem; }
+  .qwen-mode-strip,
+  .voice-lab-grid,
+  .qwen-tools-grid {
+    grid-template-columns: 1fr;
+  }
+  .voice-lab-wide,
+  .qwen-tool-note { grid-column: 1; }
+}
