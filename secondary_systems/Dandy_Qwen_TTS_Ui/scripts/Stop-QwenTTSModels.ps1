@@ -9,11 +9,11 @@ $stopped = @{}
 foreach ($port in $Ports) {
     Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
         ForEach-Object {
-            $pid = [int]$_.OwningProcess
-            if (-not $stopped.ContainsKey($pid)) {
-                Write-Output "Stopping Qwen listener process $pid on port $port"
-                Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
-                $stopped[$pid] = $true
+            $processId = [int]$_.OwningProcess
+            if (-not $stopped.ContainsKey($processId)) {
+                Write-Output "Stopping Qwen listener process $processId on port $port"
+                Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+                $stopped[$processId] = $true
             }
         }
 }
@@ -28,11 +28,11 @@ Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
         $_.CommandLine -match 'Qwen3-TTS-12Hz-1\.7B-(CustomVoice|Base|VoiceDesign)'
     } |
     ForEach-Object {
-        $pid = [int]$_.ProcessId
-        if (-not $stopped.ContainsKey($pid)) {
-            Write-Output "Stopping loading Qwen process $pid"
-            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
-            $stopped[$pid] = $true
+        $processId = [int]$_.ProcessId
+        if (-not $stopped.ContainsKey($processId)) {
+            Write-Output "Stopping loading Qwen process $processId"
+            Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+            $stopped[$processId] = $true
         }
     }
 
