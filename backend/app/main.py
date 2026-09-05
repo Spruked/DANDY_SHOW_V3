@@ -10,6 +10,7 @@ from .api.social import router as social_router
 from .api.social_slideshow import router as slideshow_router
 from .api.social_adcards import router as adcards_router
 from .api.system import router as system_router
+from .api.qwen_studio import router as qwen_studio_router
 from .api.conversation import router as conversation_router
 from .api.ads import router as ads_router
 from .api.obs import router as obs_router
@@ -56,6 +57,8 @@ def create_app() -> FastAPI:
 
     app.include_router(system_router)
     app.include_router(system_router, prefix="/api")
+    app.include_router(qwen_studio_router)
+    app.include_router(qwen_studio_router, prefix="/api")
     app.include_router(library_router)
     app.include_router(library_router, prefix="/api")
     app.include_router(assets_router)
