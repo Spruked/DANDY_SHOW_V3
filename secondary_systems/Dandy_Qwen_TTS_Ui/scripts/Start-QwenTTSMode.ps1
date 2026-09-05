@@ -68,7 +68,9 @@ $Args = @(
     "--port", "$Port",
     "--device", "cuda:0",
     "--dtype", "float16",
-    "--flash-attn"
+    "--flash-attn",
+    "--concurrency", "1",
+    "--no-share"
 )
 
 $Process = Start-Process `
