@@ -5,14 +5,14 @@ import EpisodeTab from './components/EpisodeTab'
 import AdTab      from './components/AdTab'
 import SocialTab  from './components/SocialTab'
 import SystemTab  from './components/SystemTab'
-import StudioTab  from './components/StudioTab'
+import StudioConsole from './components/StudioConsole'
 import { api }    from './lib/api'
 
 const TABS = [
   { id: 'episodes', label: 'EPISODES',  icon: Radio,    component: EpisodeTab },
   { id: 'ads',      label: 'ADS',       icon: Mic2,     component: AdTab      },
   { id: 'social',   label: 'SOCIAL',    icon: Image,    component: SocialTab  },
-  { id: 'studio',   label: 'STUDIO',    icon: Sliders,  component: StudioTab  },
+  { id: 'studio',   label: 'STUDIO',    icon: Sliders,  component: StudioConsole },
   { id: 'system',   label: 'SYSTEM',    icon: Settings, component: SystemTab  },
 ]
 
