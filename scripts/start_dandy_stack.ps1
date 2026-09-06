@@ -71,7 +71,7 @@ if (-not $NoBackend) {
 Set-Location '$backendDir';
 & '$pythonCmd' @($backendArgsLiteral)
 "@
-    Start-Process -FilePath "powershell" -ArgumentList @(
+    Start-Process -FilePath "powershell" -WindowStyle Hidden -ArgumentList @(
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
         "-Command", $backendCmd
@@ -85,7 +85,7 @@ Set-Location '$frontendDir';
 `$env:DANDY_API_TARGET = 'http://127.0.0.1:$BackendPort';
 npm.cmd run dev -- --host 127.0.0.1 --port $FrontendPort --strictPort
 "@
-    Start-Process -FilePath "powershell" -ArgumentList @(
+    Start-Process -FilePath "powershell" -WindowStyle Hidden -ArgumentList @(
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
         "-Command", $frontendCmd

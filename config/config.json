@@ -20,14 +20,22 @@
     "minimal_redesign": true
   },
   "tts": {
-    "primary_engine": "kokoro",
+    "primary_engine": "qwen",
     "fallback_engine": "none",
     "preferred_device": "cuda",
     "fallback_device": "cpu",
     "allow_cpu_fallback": true,
     "kokoro_repo_path": "./backend/app/services/tts/kokoro-tts",
     "voices_config": "./config/voices.json",
-    "allowed_engines": ["kokoro", "qwen"]
+    "allowed_engines": ["kokoro", "qwen", "voice_forge"],
+    "voice_forge_voice_map": {
+      "phil": "phil",
+      "jim": "jim",
+      "host": "bryan",
+      "guest": "cali",
+      "announcer_male": "bryan",
+      "announcer_female": "cali"
+    }
   },
   "production": {
     "default_target_duration_seconds": 2400,

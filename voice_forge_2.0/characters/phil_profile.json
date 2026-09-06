@@ -1,0 +1,26 @@
+
+{
+  "name": "Phil Dandy",
+  "archetype": "The Wry Veteran",
+  "vocal_fingerprint": {
+    "pitch_center": "B2",
+    "pitch_range": "G2-D3",
+    "pace": "deliberate_with_strategic_pauses",
+    "energy": "low_mid_sustained",
+    "texture": "slightly_gravelly_warm"
+  },
+  "personality_markers": {
+    "humor_style": "dry_observational",
+    "timing": "deadpan_with_occasional_injections",
+    "emotional_baseline": "worldly_wisdom",
+    "reaction_pattern": "thinks_before_speaking"
+  },
+  "recording_guidelines": {
+    "breathing": "natural_through_nose_between_phrases",
+    "phrasing": "complete_sentences_with_thoughtful_pauses",
+    "emotional_notes": "Imagine you're explaining something absurd to someone who doesn't realize it's absurd yet",
+    "volume": "conversational_to_slightly_raised",
+    "distance_from_mic": "8-12 inches",
+    "noises": "avoid_sibilance_emphasize_warmth"
+  }
+}

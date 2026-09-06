@@ -2,6 +2,8 @@
 
 _Generated: 2026-04-16 15:09_
 
+> Current runtime note (2026-09-06): this historical map is not the lockfile. The validated Python versions are in `requirements.txt`; current production is Windows CUDA Qwen 3 TTS through `8020` to `8031`, with local llama.cpp writing at `8009/v1`. Voice Forge is optional and guarded until its local XTTS dependencies and minted embeddings exist. No cloud fallback or mixer integration is active.
+
 ## Python Packages
 
 | Package | Version | Purpose |
@@ -13,13 +15,11 @@ _Generated: 2026-04-16 15:09_
 | `pillow` | 12.2.0 | Image rendering — slideshow frames, ad cards |
 | `ffmpeg-python` | 0.2.0 | FFmpeg bindings — audio/video processing |
 | `pydub` | 0.25.1 | Audio segment manipulation |
-| `edge-tts` | 7.2.8 | Cloud TTS fallback (Microsoft Edge voices) |
 | `torch` | 2.11.0 | PyTorch — Kokoro TTS inference engine |
 | `torchaudio` | 2.11.0 | Audio tensor operations for Kokoro |
 | `numpy` | 2.4.4 | Numerical operations — audio processing |
 | `networkx` | 3.6.1 | Graph utilities — production dependency tracking |
 | `sentence-transformers` | 5.4.1 | Semantic similarity — script analysis |
-| `voicemeeter-api` | 2.7.2 | Voicemeeter real-time mixer integration |
 
 ## Node / Frontend Packages
 
@@ -38,9 +38,10 @@ _Generated: 2026-04-16 15:09_
 |---|---|---|
 | FFmpeg | Audio/video encoding — must be on PATH | Required |
 | OBS Studio | Live stream / recording control via WebSocket | Optional — Studio tab |
-| Voicemeeter | Real-time audio mixer | Optional — Studio tab |
-| Kokoro TTS | Local neural TTS engine (primary voice) | Required for TTS |
-| CUDA / GPU | Accelerates Kokoro inference | Optional — falls back to CPU |
+| Qwen 3 TTS | Windows CUDA CustomVoice through local bridge `8020` | Current production engine |
+| Kokoro TTS | Local WSL sidecar | Explicit alternative |
+| Voice Forge 2.0 | Repository-owned local XTTS source | Guarded until assets are minted |
+| llama.cpp | Windows local Qwen writer at `8009/v1` | Required for AI script generation |
 
 ## Internal Module Map
 
@@ -52,7 +53,6 @@ _Generated: 2026-04-16 15:09_
 | `backend/app/api/social_adcards.py` ✓ | Ad card CRUD + render endpoints |
 | `backend/app/api/ads.py` ✓ | Ad script generation endpoints |
 | `backend/app/api/assets.py` ✓ | Episode asset upload/management |
-| `backend/app/api/mixer.py` ✓ | Voicemeeter mixer proxy |
 | `backend/app/api/obs.py` ✓ | OBS WebSocket proxy |
 | `backend/app/services/production/worker.py` ✓ | TTS synthesis + audio post-processing |
 | `backend/app/services/production/dandy_harmonizer.py` ✓ | Script generation (Phil/Jim AI engine) |

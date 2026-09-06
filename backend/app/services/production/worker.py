@@ -16,14 +16,12 @@ Drop-in replacement: update your imports to use HardenedPodcastWorker
 instead of MergedDandyPodcastWorker.
 """
 
-import asyncio
 import json
 import logging
 import re
 import shutil
 import subprocess
 import tempfile
-import threading
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -92,18 +90,24 @@ class HardenedPodcastWorker:
             from backend.app.services.production.personality_loader import load_personality
 
         self.base_path = Path(base_path or PROJECT_ROOT).resolve()
+        AudioSegment.converter = self._ffmpeg_binary()
         self.project_config = load_project_config()
         self.voices_config = load_voices_config()
         self.qwen_tts_config = load_qwen_tts_config()
         self.runtime = WorkerRuntime(
             primary_engine=self.project_config.get("tts", {}).get("primary_engine", "kokoro"),
-            fallback_engine=self.project_config.get("tts", {}).get("fallback_engine", "edge"),
+            fallback_engine=self.project_config.get("tts", {}).get("fallback_engine", "none"),
             device=self.project_config.get("tts", {}).get("preferred_device", "cpu"),
         )
         self.post_processor = FFmpegPostProcessor(self.base_path, logger)
         self.quality_guard = ScriptQualityGuard()
         self.script_expander = ScriptExpander()
         self._init_skg_systems()
+
+    def _ffmpeg_binary(self) -> str:
+        """Use the project-pinned Windows FFmpeg when it is available."""
+        bundled = self.base_path / "staging" / "ffmpeg" / "ffmpeg-master-latest-win64-gpl" / "bin" / "ffmpeg.exe"
+        return str(bundled) if bundled.is_file() else "ffmpeg"
 
     def _init_skg_systems(self) -> None:
         try:
@@ -721,6 +725,9 @@ class HardenedPodcastWorker:
                 raise RuntimeError("Qwen TTS is selected but disabled")
             if self._try_qwen_bridge(text, speaker, emotion, output_path):
                 return "qwen"
+        elif selected == "voice_forge":
+            if self._try_voice_forge(text, speaker, output_path):
+                return "voice_forge"
         else:
             raise RuntimeError(f"Unsupported production TTS engine '{selected}'")
         raise RuntimeError(f"Selected TTS engine '{selected}' did not produce audio")
@@ -766,6 +773,17 @@ class HardenedPodcastWorker:
         if not output_path.exists():
             raise RuntimeError("Qwen bridge did not create an output file")
         return True
+
+    def _try_voice_forge(self, text: str, speaker: str, output_path: Path) -> bool:
+        from ..tts.voice_forge_wrapper import synthesize
+
+        voice_map = self.project_config.get("tts", {}).get("voice_forge_voice_map", {})
+        character = str(voice_map.get(speaker, speaker)).strip().lower()
+        wav_path = output_path.with_suffix(".wav")
+        synthesize(character, text, wav_path)
+        self._export_direct_mp3(wav_path, output_path)
+        wav_path.unlink(missing_ok=True)
+        return output_path.exists() and output_path.stat().st_size > 0
 
     # ── WSL path helpers ────────────────────────────────────────────────
     _WSL_PYTHON = "/home/bryan/.venvs/gpu/bin/python"
@@ -813,7 +831,7 @@ class HardenedPodcastWorker:
             raise RuntimeError("WSL Kokoro did not produce output file")
 
         convert_cmd = [
-            "ffmpeg", "-y", "-i", str(wav_path),
+            self._ffmpeg_binary(), "-y", "-i", str(wav_path),
             "-codec:a", "libmp3lame", "-q:a", "2", str(output_path),
         ]
         subprocess.run(convert_cmd, check=True, capture_output=True)
@@ -821,32 +839,6 @@ class HardenedPodcastWorker:
 
         logger.debug("WSL-TTS OK: %s → %s", speaker, output_path.name)
         return True
-
-    def _synthesize_edge(self, text: str, speaker: str, output_path: Path) -> None:
-        import edge_tts
-
-        voice_payload = self.voices_config.get(speaker, {})
-        voice_name = voice_payload.get("fallback_voice") or voice_payload.get("primary_voice") or "en-US-GuyNeural"
-
-        async def _run():
-            communicate = edge_tts.Communicate(text, voice_name)
-            await communicate.save(str(output_path))
-
-        error: list[Exception] = []
-
-        def _runner() -> None:
-            try:
-                asyncio.run(_run())
-            except Exception as exc:
-                error.append(exc)
-
-        thread = threading.Thread(target=_runner, daemon=True)
-        thread.start()
-        thread.join()
-        if error:
-            raise error[0]
-        if not output_path.exists():
-            raise RuntimeError("Edge TTS did not create an output file")
 
     def _resolve_speed(self, speaker: str, emotion: str) -> float:
         defaults = self.voices_config.get(speaker, {}).get("defaults", {})
@@ -861,10 +853,10 @@ class HardenedPodcastWorker:
         voice_payload = self.voices_config.get(speaker, {})
         if engine_used == "kokoro":
             return str(voice_payload.get("primary_voice", ""))
-        if engine_used == "edge":
-            return str(voice_payload.get("fallback_voice") or voice_payload.get("primary_voice") or "")
         if engine_used == "qwen":
             return str(self.qwen_tts_config.get("voices", {}).get(speaker, ""))
+        if engine_used == "voice_forge":
+            return str(self.project_config.get("tts", {}).get("voice_forge_voice_map", {}).get(speaker, speaker))
         return ""
 
     def _concatenate_segments(self, segments: List[Dict[str, Any]], output_path: Path) -> None:
@@ -885,7 +877,7 @@ class HardenedPodcastWorker:
                     handle.write(f"file '{silence_file.resolve().as_posix()}'\n")
 
             cmd = [
-                "ffmpeg", "-y", "-f", "concat", "-safe", "0",
+                self._ffmpeg_binary(), "-y", "-f", "concat", "-safe", "0",
                 "-i", str(concat_list),
                 "-c:a", "libmp3lame", "-q:a", "2",
                 str(output_path),
@@ -899,7 +891,7 @@ class HardenedPodcastWorker:
                     generated_file.unlink()
 
     def _probe_duration_seconds(self, audio_path: Path) -> float:
-        cmd = ["ffmpeg", "-i", str(audio_path)]
+        cmd = [self._ffmpeg_binary(), "-i", str(audio_path)]
         try:
             result = subprocess.run(cmd, capture_output=True, text=True)
             output = f"{result.stdout}\n{result.stderr}"
@@ -915,7 +907,7 @@ class HardenedPodcastWorker:
 
     def _export_direct_mp3(self, input_path: Path, output_path: Path) -> None:
         cmd = [
-            "ffmpeg", "-y", "-i", str(input_path),
+            self._ffmpeg_binary(), "-y", "-i", str(input_path),
             "-c:a", "libmp3lame", "-q:a", "2",
             str(output_path),
         ]

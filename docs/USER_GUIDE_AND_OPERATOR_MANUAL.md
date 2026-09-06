@@ -1,26 +1,26 @@
 # Dandy Studio User Manual
 
+> Current runtime authority (2026-09-06): use frontend `5188` and backend `8110`. Scripts use Windows llama.cpp at `8009/v1`; production uses Windows CUDA Qwen 3 TTS through bridge `8020` to CustomVoice `8031`; direct Qwen operator UI is `7861`. The Studio tab is OBS-only and Dandy renders audio directly. Historical mixer controls and ports elsewhere in this document are retired.
+
 ## 1. Runtime and entry points
-- Frontend: `http://127.0.0.1:5173`
-- Backend: `http://127.0.0.1:8010`
-- Backend health: `http://127.0.0.1:8010/health`
+- Frontend: `http://127.0.0.1:5188`
+- Backend: `http://127.0.0.1:8110`
+- Backend health: `http://127.0.0.1:8110/health`
 - Frontend source of truth: `frontend/src/`
 - Backend API routes: `backend/app/api/`
 
 ## 2. Startup sequence
 1. Start the backend:
 ```powershell
-cd backend
-$env:PATH="C:\Users\bryan\Downloads\dandy_merge\Phil_and_Jim_Dandy_Show\staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin;$env:PATH"
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8010 --reload
+powershell -ExecutionPolicy Bypass -File scripts/start_dandy_stack.ps1 -Restart
 ```
 2. Start the frontend:
 ```powershell
 cd frontend
 npm install
-npm run dev -- --host 0.0.0.0 --port 5173
+npm.cmd run dev -- --host 127.0.0.1 --port 5188 --strictPort
 ```
-3. Open `http://127.0.0.1:5173`.
+3. Open `http://127.0.0.1:5188`.
 
 ## 3. Top navigation bar
 The top bar is present on every page.
@@ -37,8 +37,8 @@ The top bar is present on every page.
 
 ### Right side backend indicator
 - `checking...`: startup state while health probe is running.
-- `:8010 online`: backend is reachable.
-- `:8010 offline`: backend probe failed.
+- `online`: backend is reachable through the active Vite proxy.
+- `offline`: backend probe failed.
 
 ## 4. EPISODES page
 This page has three columns: episode list, script workspace, and right-side utilities.
@@ -525,6 +525,10 @@ Tiles:
 ## 8. SYSTEM page
 This page is a diagnostic dashboard.
 
+### Current TTS note
+- TTS uses the operator-selected local engine only: Kokoro or Qwen.
+- There is no Edge/cloud fallback. A synthesis failure is surfaced as a failed production job and does not publish substitute audio.
+
 ### Top header
 - Refresh icon: reruns backend health and voice discovery
 
@@ -546,7 +550,6 @@ Read-only voice inventory blocks for:
 - Jim
 - Announcer (Male)
 - Announcer (Female)
-- Edge Backup
 
 Badges and text indicate engine, role, and whether the voice is currently registered.
 
@@ -556,7 +559,7 @@ Read-only system notes:
 - Kokoro runtime note
 - checkpoint path
 - ffmpeg path
-- Edge TTS fallback note
+- selected local TTS engine
 
 ### Production Notes card
 Read-only operator notes:

@@ -2,6 +2,8 @@
 
 Current production-oriented local layout.
 
+> Current authority (2026-09-06): repository root is `Dandy/`. The legacy mixer service is removed; `backend/app/services/tts/` includes the guarded Voice Forge adapter and `voice_forge_2.0/` is first-party source.
+
 ## Current root baseline
 - `phil_dandy_skg.py`
 - `Jim_dandy_skg.py`
@@ -11,7 +13,7 @@ These are the active SKG modules loaded by backend personality wiring.
 ## Active structure
 
 ```text
-Phil_and_Jim_Dandy_Show/
+Dandy/
 ├── phil_dandy_skg.py
 ├── Jim_dandy_skg.py
 ├── archive/

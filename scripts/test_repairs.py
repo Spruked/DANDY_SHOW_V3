@@ -116,11 +116,9 @@ class RepairTests(unittest.TestCase):
         worker.qwen_tts_config = {"enabled": True}
         worker._try_kokoro = Mock(side_effect=RuntimeError("unavailable"))
         worker._try_qwen_bridge = Mock()
-        worker._synthesize_edge = Mock()
         with self.assertRaises(RuntimeError):
             worker._synthesize_line("text", "phil", "neutral", self.root / "new.mp3")
         worker._try_qwen_bridge.assert_not_called()
-        worker._synthesize_edge.assert_not_called()
         worker.project_config["tts"]["primary_engine"] = "qwen"
         self.assertEqual(worker._synthesize_line("text", "phil", "neutral", self.root / "new.mp3"), "qwen")
 

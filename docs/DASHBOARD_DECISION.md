@@ -10,7 +10,7 @@
   - script lifecycle and episode production
   - ad generation and insertion controls
   - social export actions and retrieval
-  - OBS + Voicemeeter operations in Studio tab
+  - OBS-only live controls in Studio tab; episode, ads, and social tabs remain the primary production workflow
 
 ## Merge rule
 - We should preserve this dashboard's workflow and control density as much as possible.

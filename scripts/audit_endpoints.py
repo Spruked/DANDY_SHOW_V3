@@ -49,14 +49,6 @@ def collect_frontend_routes() -> set[str]:
                 used.add(f"/api{route}")
 
     studio_text = FRONTEND_STUDIO_FILE.read_text(encoding="utf-8")
-    if "mixerRequest('/status')" in studio_text:
-        used.update(
-            {
-                "/api/mixer/status",
-                "/api/mixer/channel",
-                "/api/mixer/master",
-            }
-        )
     if "obsRequest('/status')" in studio_text:
         used.update(
             {

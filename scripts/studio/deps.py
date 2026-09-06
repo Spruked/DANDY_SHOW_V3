@@ -28,13 +28,11 @@ PYTHON_PACKAGES = [
     ("pillow",              "Image rendering — slideshow frames, ad cards"),
     ("ffmpeg-python",       "FFmpeg bindings — audio/video processing"),
     ("pydub",               "Audio segment manipulation"),
-    ("edge-tts",            "Cloud TTS fallback (Microsoft Edge voices)"),
     ("torch",               "PyTorch — Kokoro TTS inference engine"),
     ("torchaudio",          "Audio tensor operations for Kokoro"),
     ("numpy",               "Numerical operations — audio processing"),
     ("networkx",            "Graph utilities — production dependency tracking"),
     ("sentence-transformers","Semantic similarity — script analysis"),
-    ("voicemeeter-api",     "Voicemeeter real-time mixer integration"),
 ]
 
 NODE_PACKAGES = [
@@ -49,7 +47,6 @@ NODE_PACKAGES = [
 EXTERNAL_SERVICES = [
     ("FFmpeg",          "Audio/video encoding — must be on PATH",           "Required"),
     ("OBS Studio",      "Live stream / recording control via WebSocket",     "Optional — Studio tab"),
-    ("Voicemeeter",     "Real-time audio mixer",                             "Optional — Studio tab"),
     ("Kokoro TTS",      "Local neural TTS engine (primary voice)",           "Required for TTS"),
     ("CUDA / GPU",      "Accelerates Kokoro inference",                      "Optional — falls back to CPU"),
 ]
@@ -61,7 +58,6 @@ INTERNAL_MODULES = [
     ("backend/app/api/social_adcards.py",   "Ad card CRUD + render endpoints"),
     ("backend/app/api/ads.py",              "Ad script generation endpoints"),
     ("backend/app/api/assets.py",           "Episode asset upload/management"),
-    ("backend/app/api/mixer.py",            "Voicemeeter mixer proxy"),
     ("backend/app/api/obs.py",              "OBS WebSocket proxy"),
     ("backend/app/services/production/worker.py",               "TTS synthesis + audio post-processing"),
     ("backend/app/services/production/dandy_harmonizer.py",     "Script generation (Phil/Jim AI engine)"),

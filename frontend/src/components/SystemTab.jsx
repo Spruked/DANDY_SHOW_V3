@@ -116,6 +116,7 @@ export default function SystemTab() {
   const backendOk = health?.ok
   const selectedTts = String(health?.tts_runtime?.primary_engine || 'kokoro').toLowerCase()
   const qwen = health?.qwen_tts_bridge || {}
+  const voiceForge = health?.voice_forge || {}
 
   return (
     <div className="tab-body">
@@ -179,6 +180,7 @@ export default function SystemTab() {
                 <select className="ds-select" value={selectedTts} disabled={savingTts} onChange={e => setProductionTts(e.target.value)}>
                   <option value="kokoro">Kokoro — Default</option>
                   <option value="qwen">Qwen — Explicit Selection</option>
+                  <option value="voice_forge" disabled={!voiceForge.ready}>Voice Forge — Local XTTS (requires minted assets)</option>
                 </select>
               </Field>
               <div className="font-mono" style={{ fontSize: '.55rem', color: 'var(--bone)', lineHeight: 1.7 }}>
@@ -190,6 +192,7 @@ export default function SystemTab() {
             <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <Badge type="gold">{selectedTts} selected</Badge>
               <Badge type={qwen.status === 'ok' ? 'green' : 'steel'}>Qwen bridge: {qwen.status || 'unknown'}</Badge>
+              <Badge type={voiceForge.ready ? 'green' : 'steel'}>Voice Forge: {voiceForge.ready ? 'ready' : 'not ready'}</Badge>
             </div>
           </div>
 

@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# PyInstaller
+/*.spec
+
+# Unit test / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python logger files
+*.log
+
+# Byte-compiled / optimized
+*.pyc
+*.pyo
+*.pyd
+
+# Torch / model artifacts
+*.pt
+*.pth
+*.ckpt
+
+# Large folders and runtime artifacts
+output/generated/
+embeddings/
+.local/share/tts/
+
+# Audio samples (do not commit large raw samples)
+samples/*/*.wav

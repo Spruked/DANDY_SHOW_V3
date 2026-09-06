@@ -1,0 +1,27 @@
+
+
+{
+  "name": "Jim Dandy",
+  "archetype": "The Enthusiastic Instigator",
+  "vocal_fingerprint": {
+    "pitch_center": "D3",
+    "pitch_range": "C3-F3",
+    "pace": "quick_witted_rapid_fire",
+    "energy": "high_variable",
+    "texture": "clear_precise_precise_enunciation"
+  },
+  "personality_markers": {
+    "humor_style": "punchline_driven_sarcastic",
+    "timing": "hits_the_joke_hard",
+    "emotional_baseline": "enthusiastic_slightly_manic",
+    "reaction_pattern": "interrupts_with_insight"
+  },
+  "recording_guidelines": {
+    "breathing": "quick_in_through_mouth_before_punchlines",
+    "phrasing": "short_punchy_clauses",
+    "emotional_notes": "You're slightly ahead of the conversation, eager to drop the perfect line",
+    "volume": "animated_varies_significantly",
+    "distance_from_mic": "6-10 inches_with_movement",
+    "noises": "embrace vocal energy, don't over-filter"
+  }
+}

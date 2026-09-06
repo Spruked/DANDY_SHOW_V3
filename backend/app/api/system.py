@@ -11,10 +11,11 @@ from ..core.settings import load_project_config, load_qwen_tts_config, load_voic
 from ..services.production import llm_writer
 from ..services.storage.asset_library import library_summary
 from ..services.tts.kokoro_wrapper import get_tts_runtime
+from ..services.tts.voice_forge_wrapper import voice_forge_status
 
 
 router = APIRouter(tags=["system"])
-_ALLOWED_TTS_ENGINES = {"kokoro", "qwen"}
+_ALLOWED_TTS_ENGINES = {"kokoro", "qwen", "voice_forge"}
 
 
 def _qwen_bridge_status() -> Dict[str, Any]:
@@ -42,6 +43,7 @@ async def health() -> Dict:
         "script_writer": llm_writer.writer_status(),
         "tts_runtime": get_tts_runtime(),
         "qwen_tts_bridge": _qwen_bridge_status(),
+        "voice_forge": voice_forge_status(),
         "asset_library": library_summary(),
     }
 
@@ -130,7 +132,7 @@ async def set_tts_engine(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
     if selected not in _ALLOWED_TTS_ENGINES:
         raise HTTPException(
             status_code=400,
-            detail="Dandy production TTS must be either 'kokoro' or 'qwen'. No fallback engine is permitted.",
+            detail="Dandy production TTS must be 'kokoro', 'qwen', or 'voice_forge'. No fallback engine is permitted.",
         )
 
     cfg_path = CONFIG_ROOT / "config.json"
@@ -138,7 +140,7 @@ async def set_tts_engine(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
     tts = dict(data.get("tts", {}))
     tts["primary_engine"] = selected
     tts["fallback_engine"] = "none"
-    tts["allowed_engines"] = ["kokoro", "qwen"]
+    tts["allowed_engines"] = ["kokoro", "qwen", "voice_forge"]
     data["tts"] = tts
     cfg_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     load_project_config.cache_clear()
@@ -146,7 +148,7 @@ async def set_tts_engine(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
     return {
         "saved": True,
         "selected_engine": selected,
-        "allowed_engines": ["kokoro", "qwen"],
+        "allowed_engines": ["kokoro", "qwen", "voice_forge"],
         "fallback_engine": None,
     }
 
@@ -163,7 +165,7 @@ async def voices() -> Dict:
 
     return {
         "kokoro": kokoro,
-        "allowed_engines": ["kokoro", "qwen"],
+        "allowed_engines": ["kokoro", "qwen", "voice_forge"],
         "fallback_engine": None,
         "source": "config/voices.json",
     }

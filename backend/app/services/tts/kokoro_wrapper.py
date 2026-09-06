@@ -1,7 +1,5 @@
 from typing import Dict
 
-import torch
-
 from ...core.settings import load_project_config, load_voices_config
 
 
@@ -13,7 +11,7 @@ def get_tts_runtime() -> Dict[str, str]:
         "primary_engine": selected,
         "fallback_engine": "none",
         "device": "unverified",
-        "runtime": "wsl_kokoro" if selected == "kokoro" else "qwen_bridge",
-        "backend_device": "cuda" if torch.cuda.is_available() else "cpu",
+        "runtime": "wsl_kokoro" if selected == "kokoro" else ("qwen_bridge" if selected == "qwen" else "voice_forge_xtts"),
+        "backend_device": "managed_by_selected_engine",
         "voices_defined": str(len(voices)),
     }

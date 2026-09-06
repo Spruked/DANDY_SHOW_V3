@@ -2,10 +2,12 @@
 
 Private local-first studio for episode scripting, ad insertion, production, and social package export.
 
+> Current runtime (2026-09-06): frontend `5188`; backend `8110`; local llama.cpp writer `8009/v1`; Windows Qwen 3 TTS bridge `8020` to CustomVoice `8031`; Qwen operator UI `7861`. Production uses only the selected local engine, with no cloud fallback. Voice Forge is integrated but remains unavailable until local Coqui XTTS and real minted embeddings are present.
+
 ## Stack
 - **Frontend**: React 18 + Vite 8.0 + Tailwind CSS (`frontend/`) — Node v24.14.0
 - **Backend**: FastAPI + Uvicorn, Python 3.12 (`backend/app/`)
-- **Audio**: FFmpeg (Windows) + Kokoro TTS via WSL2 GPU sidecar + Edge TTS fallback
+- **Audio**: Windows FFmpeg + selected local engine: Windows CUDA Qwen 3 TTS (current), Kokoro WSL sidecar, or guarded local Voice Forge XTTS
 - **TTS voices**: Phil → `am_michael` · Jim → `am_liam` · Announcer → `am_eric` (all Kokoro, always)
 - **GPU**: RTX 3050, `torch 2.5.1+cu121`, WSL2 Ubuntu-24.04 at `/home/bryan/.venvs/gpu`
 - **Storage**: JSON flat-files under `episodes/{id}/` (config, script, status, ads, assets)
@@ -14,7 +16,7 @@ Private local-first studio for episode scripting, ad insertion, production, and 
 - **Episodes**: draft → generate (5 000-word min) → edit → produce → export · rollback versions · feedback · asset uploads · media cues · **EDIT CONFIG** (saves title/topic/description/key points/intensity to config.json)
 - **Ads**: preset catalog + per-episode ad generation + ad audio fetch · insert-line positions persist across sessions
 - **Social**: presets + package generation + slideshow/adcard builders + export listing/download
-- **Studio**: Voicemeeter + OBS control panel wiring
+- **Studio**: OBS control panel; Dandy renders audio directly to local files
 - **System**: health checks, voice inventory, runtime status · **Intro/Outro settings** (enable toggle, music file, timing, voice, preview)
 
 ## SKG system
@@ -33,7 +35,7 @@ Windows FastAPI backend
   └─ FFmpeg (Windows): WAV → MP3
 ```
 - WSL worker: `/home/bryan/wsl_tts_worker.py` (also at `backend/app/services/production/wsl_tts_worker.py`)
-- Fallback: Edge TTS (CPU, Windows) used only if WSL subprocess fails
+- A TTS failure is reported to the episode job; it does not invoke a cloud fallback or publish substitute audio
 - First run per voice downloads the voice model (~500 KB) from HuggingFace
 
 ## Run locally
@@ -50,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File scripts/start_dandy_stack.ps1 -Restart
 cd backend
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8110
 ```
-3. **Frontend** on `:5173` (proxies `/api` and `/ws` to `:8110`)
+3. **Frontend** on `:5188` (proxies `/api`, `/ws`, and `/renders` to `:8110`)
 ```bash
 cd frontend
 npm install
@@ -79,10 +81,10 @@ cd frontend && npm run build
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/api/episodes` | List all episodes |
-| POST | `/api/episodes` | Create episode |
+| POST | `/api/episodes/create` | Create episode and generation job |
 | PATCH | `/api/episodes/{id}/config` | Save episode config |
-| POST | `/api/episodes/{id}/generate` | Generate script via SKG (5 000-word min) |
-| POST | `/api/episodes/{id}/produce` | Queue production (Kokoro via WSL GPU) |
+| POST | `/api/episodes/generate-script?job_id={id}` | Generate a script through the local writer |
+| POST | `/api/episodes/produce?job_id={id}` | Queue production with the selected local TTS engine |
 | GET | `/api/voices` | Voice inventory |
 | GET | `/api/intro-outro-config` | Intro/Outro settings |
 | POST | `/api/intro-outro-config` | Save Intro/Outro settings |

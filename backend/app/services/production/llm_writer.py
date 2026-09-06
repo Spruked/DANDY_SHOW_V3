@@ -23,7 +23,7 @@ from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
-_LLAMACPP_BASE_URL = os.getenv("DANDY_LLAMACPP_BASE_URL", "http://127.0.0.1:40343/v1")
+_LLAMACPP_BASE_URL = os.getenv("DANDY_LLAMACPP_BASE_URL", "http://127.0.0.1:8009/v1")
 _LLAMACPP_MODEL = os.getenv("DANDY_LLAMACPP_MODEL", "local")
 _TIMEOUT = 120
 

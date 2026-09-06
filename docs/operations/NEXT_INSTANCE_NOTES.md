@@ -1,30 +1,30 @@
-# Dandy Studio - Next Instance Notes (2026-04-04)
+# Dandy Studio - Current Runtime Notes (2026-09-06)
+
+> Supersession: the active Dandy root is `C:\dev\Desktop\The Real Dandy\Dandy`; current ports are backend `8110`, frontend `5188`, llama.cpp `8009/v1`, Qwen bridge `8020`, CustomVoice `8031`, and Qwen UI `7861`. Historical `8010`, `5173`, governance-bridge, and mixer notes below are retained only as dated history.
 
 ## Runtime baseline
-- Backend target port: `8010`
-- Frontend path: `frontend/` (Vite dev server `5173`, proxy to `8010`)
+- Backend target port: `8110`
+- Frontend path: `frontend/` (Vite dev server `5188`, proxy to `8110`)
 - SKG runtime files in use:
   - `./phil_dandy_skg.py`
   - `./Jim_dandy_skg.py`
 
 ## Backend startup
 ```powershell
-cd backend
-$env:PATH="C:\Users\bryan\Downloads\dandy_merge\Phil_and_Jim_Dandy_Show\staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin;$env:PATH"
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8010 --reload
+powershell -ExecutionPolicy Bypass -File scripts/start_dandy_stack.ps1 -Restart
 ```
 
 ## Frontend startup
 ```powershell
 cd frontend
 npm install
-npm run dev
+npm.cmd run dev -- --host 127.0.0.1 --port 5188 --strictPort
 ```
 
 ## Health checks
 ```powershell
-curl http://127.0.0.1:8010/health
-curl http://127.0.0.1:8010/api/voices
+curl.exe http://127.0.0.1:8110/health
+curl.exe http://127.0.0.1:8110/api/voices
 cd frontend; npm run build
 ```
 

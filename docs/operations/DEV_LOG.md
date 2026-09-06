@@ -1,5 +1,16 @@
 # Dandy Studio Dev Log
 
+## 2026-09-06 - Windows-native Qwen Studio and Voice Forge integration
+
+Scope: `C:\dev\Desktop\The Real Dandy\Dandy`
+
+- Repaired Dandy's local llama.cpp writer target to `http://127.0.0.1:8009/v1`; health reports the loaded Qwen 2.5 1.5B GGUF model.
+- Wired the existing Windows CUDA Qwen 3 TTS stack: bridge `8020`, CustomVoice `8031`, and operator UI `7861`. The bridge now uses the active Dandy root and `R:\Services\qwen_tts_312` runtime.
+- Selected Qwen as production TTS. A bridge probe generated `staging/qwen_studio/qwen_studio_probe.mp3` successfully after first-run warm-up.
+- Added `voice_forge_2.0/` as first-party source and added a guarded Dandy adapter. It remains disabled until Coqui XTTS and non-placeholder minted embeddings are local.
+- Removed the mixer backend, dependency, routes, polling, controls, and macros. Studio is now OBS-only; episode creation, production, and social exports remain the primary workflow.
+- Validation: 14 repair tests passed; endpoint audit found `37` frontend routes, `112` backend routes, and `0` unmatched; `npm.cmd run build` passed.
+
 ## 2026-08-08 - Repo Context Scan
 
 Scope: `S:\The Real Dandy\All things Dandy\Dandy`

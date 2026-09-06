@@ -88,11 +88,6 @@ print("\n[ OBS (graceful) ]")
 check("obs-status",        "GET", "/obs/status",   expected=(200, 503, 500))
 check("obs-scenes",        "GET", "/obs/scenes",   expected=(200, 503, 500))
 
-# --- Mixer (optional hardware) ---
-print("\n[ Mixer (graceful) ]")
-check("mixer-status",      "GET", "/mixer/status", expected=(200, 503, 500))
-check("mixer-state",       "GET", "/mixer/state",  expected=(200, 503, 500))
-check("mixer-levels",      "GET", "/mixer/levels", expected=(200, 503, 500))
 
 # --- API-prefix aliases (spot-check) ---
 print("\n[ /api prefix aliases ]")
@@ -100,7 +95,6 @@ check("api/health",        "GET", "/api/health")
 check("api/episodes",      "GET", "/api/episodes")
 check("api/ads-catalog",   "GET", "/api/ads/catalog")
 check("api/social-presets","GET", "/api/social/presets")
-check("api/mixer-status",  "GET", "/api/mixer/status", expected=(200, 503, 500))
 
 # --- Production POST (422 expected without valid body — means route exists) ---
 print("\n[ Production routes (route-existence check) ]")
