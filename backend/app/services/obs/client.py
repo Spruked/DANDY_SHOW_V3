@@ -35,7 +35,7 @@ class OBSClient:
         config = load_project_config().get("obs", {})
         host = str(config.get("host") or os.getenv("OBS_HOST") or "127.0.0.1")
         port = int(config.get("port") or os.getenv("OBS_PORT") or 4455)
-        password = str(config.get("password") or os.getenv("OBS_PASSWORD") or "")
+        password = str(os.getenv("OBS_PASSWORD") or config.get("password") or "")
         timeout_seconds = float(config.get("timeout_seconds") or os.getenv("OBS_TIMEOUT_SECONDS") or 2.5)
         return cls(host=host, port=port, password=password, timeout_seconds=timeout_seconds)
 

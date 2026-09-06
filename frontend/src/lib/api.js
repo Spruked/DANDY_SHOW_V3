@@ -42,17 +42,17 @@ async function ensureJob(episodeId) {
   const cached = jobCache.get(episodeId)
   if (cached) return cached
 
-  let detail = {}
-  try {
-    detail = await req(`/episodes/${encodeURIComponent(episodeId)}`)
-  } catch {
-    detail = {}
+  const detail = await req(`/episodes/${encodeURIComponent(episodeId)}`)
+  if (detail.job_id) {
+    jobCache.set(episodeId, detail.job_id)
+    return detail.job_id
   }
 
   const config = detail.config || {}
   const title = config.title || detail.title || episodeId
   const topic = (config.topic || detail.topic || title || episodeId).trim()
   const payload = {
+    ...config,
     episode_id: episodeId,
     title,
     topic: topic || title || episodeId,
@@ -199,7 +199,10 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ text }),
     }),
-  exportEpisode: (id, fmt) => req(`/episodes/${encodeURIComponent(id)}/export?format=${encodeURIComponent(fmt)}`),
+  exportEpisode: async (id, fmt) => {
+    const data = await req(`/episodes/${encodeURIComponent(id)}/export?format=${encodeURIComponent(fmt)}`)
+    return fmt === 'json' ? data : data.content
+  },
 
   getVersions: (id) => req(`/episodes/${encodeURIComponent(id)}/script-versions`),
   rollback: (id, version) => req(`/episodes/${encodeURIComponent(id)}/rollback?version=${encodeURIComponent(version)}`, { method: 'POST' }),
@@ -216,8 +219,11 @@ export const api = {
   listAssets: (id) => req(`/episodes/${encodeURIComponent(id)}/assets`),
   listAssetLibrary: (query = '', role = '') =>
     req(`/asset-library?query=${encodeURIComponent(query)}&role=${encodeURIComponent(role)}`),
-  uploadAsset: (id, formData) =>
-    fetch(`${BASE}/episodes/${encodeURIComponent(id)}/assets`, { method: 'POST', body: formData }).then((r) => r.json()),
+  uploadAsset: async (id, formData) => {
+    const res = await fetch(`${BASE}/episodes/${encodeURIComponent(id)}/assets`, { method: 'POST', body: formData })
+    if (!res.ok) throw new Error(await res.text())
+    return res.json()
+  },
   assetUrl: (id, assetId) => `${BASE}/episodes/${encodeURIComponent(id)}/assets/${encodeURIComponent(assetId)}/file`,
   libraryAssetUrl: (assetId) => `${BASE}/asset-library/${encodeURIComponent(assetId)}/file`,
 

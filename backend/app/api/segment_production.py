@@ -15,6 +15,7 @@ from fastapi import APIRouter, BackgroundTasks, Body, HTTPException, Query
 
 from .production import (
     _assert_llm_script_publishable,
+    _job_cancel_event,
     _run_produce_background,
     _sanitize_script,
     _script_as_text,
@@ -83,6 +84,7 @@ async def produce_segment_or_legacy(
     writer_online_at_start = writer_engine in {"llm_bridge", "governance_bridge", "llamacpp"}
     target_minutes = max(1, min(15, round(target_duration / 60)))
 
+    _job_cancel_event(job_id, reset=True)
     save_json(
         episode_dir(job["episode_id"]) / "status.json",
         {

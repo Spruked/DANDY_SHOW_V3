@@ -19,6 +19,7 @@ logs/*.log
 # Local environment
 .env
 .env.*
+config/obs.local.json
 *.pid
 
 # Generated runtime data

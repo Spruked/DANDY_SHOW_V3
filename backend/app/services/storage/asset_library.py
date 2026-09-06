@@ -59,6 +59,8 @@ def _asset_type(path: Path) -> str:
 
 
 def _role_for(path: Path, fixed_role: Optional[str]) -> str:
+    if fixed_role and _asset_type(path) == "document":
+        return "document"
     if fixed_role:
         return fixed_role
     try:

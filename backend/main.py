@@ -8,7 +8,7 @@ if __name__ == "__main__":
     import uvicorn
 
     host = os.getenv("DANDY_HOST", "127.0.0.1")
-    port = int(os.getenv("DANDY_PORT", "8010"))
+    port = int(os.getenv("DANDY_PORT", "8110"))
 
     # Exclude heavy write dirs from watchfiles so a produce job is never
     # killed by uvicorn reloading mid-TTS.

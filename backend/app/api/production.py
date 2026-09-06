@@ -9,7 +9,6 @@ from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Body
 from pydantic import BaseModel
-from pydub import AudioSegment
 from starlette.concurrency import run_in_threadpool
 
 from ..core.paths import PROJECT_ROOT
@@ -53,6 +52,8 @@ class JobCancelled(RuntimeError):
 def _job_cancel_event(job_id: str, *, reset: bool = False) -> threading.Event:
     with _CANCEL_LOCK:
         event = _CANCEL_EVENTS.get(job_id)
+        if event is not None and reset:
+            raise HTTPException(status_code=409, detail="This job is already running")
         if event is None or reset:
             event = threading.Event()
             _CANCEL_EVENTS[job_id] = event
@@ -63,8 +64,7 @@ def _request_job_cancel(job_id: str) -> bool:
     with _CANCEL_LOCK:
         event = _CANCEL_EVENTS.get(job_id)
         if event is None:
-            event = threading.Event()
-            _CANCEL_EVENTS[job_id] = event
+            raise HTTPException(status_code=409, detail="This job is not running in the current backend process")
         already_set = event.is_set()
         event.set()
         return not already_set
@@ -98,15 +98,6 @@ def writer_status():
     from ..services.production import llm_writer
 
     return llm_writer.writer_status()
-
-    from ..services.production.communication_layer import _is_bridge_reachable
-    bridge_ok = _is_bridge_reachable()
-    return {
-        "bridge_reachable": bridge_ok,
-        "active_writer": "llm_bridge" if bridge_ok else "skg_fallback",
-        "bridge_url": "http://127.0.0.1:5199",
-        "warning": None if bridge_ok else "LLM bridge offline — production will use SKG fallback.",
-    }
 
 
 class EditScriptRequest(BaseModel):
@@ -172,25 +163,21 @@ def _script_as_text(script: List[Dict]) -> str:
 
 
 def _script_as_srt(script: List[Dict]) -> str:
+    def timestamp(seconds: int) -> str:
+        hours, remainder = divmod(seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d},000"
+
     rows = []
     for idx, line in enumerate(script, start=1):
         start_seconds = (idx - 1) * 4
         end_seconds = start_seconds + 4
-        start = f"00:00:{start_seconds:02d},000"
-        end = f"00:00:{end_seconds:02d},000"
+        start = timestamp(start_seconds)
+        end = timestamp(end_seconds)
         speaker = str(line.get("speaker", "speaker")).upper()
         text = line.get("text", "")
         rows.append(f"{idx}\n{start} --> {end}\n{speaker}: {text}\n")
     return "\n".join(rows)
-
-
-def _create_placeholder_audio(episode_id: str, script: List[Dict]) -> Path:
-    target_dir = episode_dir(episode_id)
-    output_path = target_dir / "audio.mp3"
-    word_count = max(1, sum(len(line.get("text", "").split()) for line in script))
-    duration_ms = max(5000, min(60000, word_count * 350))
-    AudioSegment.silent(duration=duration_ms).export(output_path, format="mp3")
-    return output_path
 
 
 def _estimate_minutes(script: List[Dict], wpm: int = 160) -> float:
@@ -328,9 +315,14 @@ def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings:
 
 
 def _get_worker() -> MergedDandyPodcastWorker:
+    from ..core.settings import load_project_config, load_voices_config, load_qwen_tts_config
+
     global _WORKER
     if _WORKER is None:
         _WORKER = MergedDandyPodcastWorker(PROJECT_ROOT)
+    _WORKER.project_config = load_project_config()
+    _WORKER.voices_config = load_voices_config()
+    _WORKER.qwen_tts_config = load_qwen_tts_config()
     return _WORKER
 
 
@@ -368,7 +360,6 @@ async def cancel_episode_job(job_id: str):
 
 
 def _generate_script_sync(job_id: str, payload: Dict | None = None) -> Dict:
-    _job_cancel_event(job_id, reset=True)
     job = load_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -377,8 +368,9 @@ def _generate_script_sync(job_id: str, payload: Dict | None = None) -> Dict:
     if not draft:
         raise HTTPException(status_code=404, detail="Episode draft not found")
 
+    _job_cancel_event(job_id, reset=True)
     _write_episode_status(job["episode_id"], "generating_script", job_id)
-    generation_config = dict(draft["config"])
+    generation_config = dict(load_episode_detail(job["episode_id"]).get("config") or draft["config"])
     if payload and payload.get("personality_settings"):
         generation_config["personality_settings"] = payload["personality_settings"]
     generation_config["source_context"] = build_source_context(job["episode_id"])
@@ -462,7 +454,25 @@ async def generate_script(
     return await run_in_threadpool(_generate_script_sync, job_id, payload)
 
 
-def _run_produce_background(
+def _run_produce_background(episode_id: str, job_id: str, **kwargs) -> None:
+    """Record real failures and always release this job's cancellation state."""
+    event = _job_cancel_event(job_id)
+    try:
+        _produce_background(episode_id=episode_id, job_id=job_id, **kwargs)
+    except Exception as exc:
+        cancelled = isinstance(exc, JobCancelled) or event.is_set()
+        _write_episode_status(
+            episode_id,
+            "production_cancelled" if cancelled else "production_failed",
+            job_id,
+            error=str(exc),
+            cancelled=cancelled,
+        )
+    finally:
+        _clear_job_cancel(job_id)
+
+
+def _produce_background(
     episode_id: str,
     job_id: str,
     script: list,
@@ -493,27 +503,11 @@ def _run_produce_background(
         )
         _raise_if_cancelled(job_id)
         audio_path = Path(production_result["audio_file"])
+        if not audio_path.is_file() or audio_path.stat().st_size == 0:
+            raise RuntimeError("Production returned no audio file")
         production_mode = "worker"
-    except JobCancelled:
-        _write_episode_status(episode_id, "production_cancelled", job_id, cancelled=True)
-        _clear_job_cancel(job_id)
-        return
-    except Exception as exc:
-        if cancel_event.is_set():
-            _write_episode_status(episode_id, "production_cancelled", job_id, cancelled=True)
-            _clear_job_cancel(job_id)
-            return
-        audio_path = _create_placeholder_audio(episode_id, script)
-        production_mode = "placeholder_fallback"
-        production_result = {
-            "episode_id": episode_id,
-            "audio_file": str(audio_path),
-            "transcript": script,
-            "metadata": {
-                "warning": str(exc),
-                "processing": {"processing_chain": "placeholder_fallback"},
-            },
-        }
+    except Exception:
+        raise
 
     script_meta = {
         **calculate_script_provenance(script),
@@ -525,6 +519,7 @@ def _run_produce_background(
         episode_dir(episode_id) / "status.json",
         {
             "status": "produced",
+            "job_id": job_id,
             "updated_at": produced_at,
             "production_mode": production_mode,
             "audio_file": str(audio_path),
@@ -561,18 +556,26 @@ def _run_produce_background(
     for cue in load_media_cues(episode_id).get("cues", []):
         asset = load_asset(episode_id, cue.get("asset_id", ""))
         resolved_cues.append({**cue, "asset": asset or {}})
-    export_social_package(
-        episode_id=episode_id,
-        title=title,
-        topic=topic,
-        script_text=script_text,
-        script_lines=script,
-        audio_path=audio_path,
-        destination=social_destination,
-        sponsor_text="Sponsored",
-        media_cues=resolved_cues,
-    )
-    _clear_job_cancel(job_id)
+    try:
+        export_social_package(
+            episode_id=episode_id,
+            title=title,
+            topic=topic,
+            script_text=script_text,
+            script_lines=script,
+            audio_path=audio_path,
+            destination=social_destination,
+            sponsor_text="Sponsored",
+            media_cues=resolved_cues,
+        )
+    except Exception as exc:
+        # Audio completion and social rendering are separate outcomes.
+        _write_episode_status(
+            episode_id, "produced", job_id,
+            production_mode=production_mode, audio_file=str(audio_path),
+            **script_meta,
+            social_export_error=str(exc),
+        )
 
 
 @router.post("/episodes/produce")
@@ -584,7 +587,6 @@ async def produce_episode(
     job = load_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
-    _job_cancel_event(job_id, reset=True)
 
     detail = load_episode_detail(job["episode_id"])
     script = detail.get("script", [])
@@ -625,6 +627,7 @@ async def produce_episode(
     bridge_was_reachable = writer_engine == "llm_bridge"
 
     # Mark as producing immediately so the UI can show progress
+    _job_cancel_event(job_id, reset=True)
     save_json(
         episode_dir(job["episode_id"]) / "status.json",
         {
@@ -667,7 +670,7 @@ async def edit_script(payload: EditScriptRequest):
     script = script_data.get("script", [])
 
     if payload.edit_type == "modify_line":
-        if payload.line_index is None or payload.line_index >= len(script):
+        if payload.line_index is None or not 0 <= payload.line_index < len(script):
             raise HTTPException(status_code=400, detail="Invalid line index")
         if not payload.new_content:
             raise HTTPException(status_code=400, detail="new_content is required")
@@ -682,25 +685,17 @@ async def edit_script(payload: EditScriptRequest):
         script.insert(insert_at, new_line)
         script = _reindex(script)
     elif payload.edit_type == "remove_line":
-        if payload.line_index is None or payload.line_index >= len(script):
+        if payload.line_index is None or not 0 <= payload.line_index < len(script):
             raise HTTPException(status_code=400, detail="Invalid line index")
         script.pop(payload.line_index)
         script = _reindex(script)
     elif payload.edit_type == "reorder_lines":
-        if not payload.new_order:
-            raise HTTPException(status_code=400, detail="new_order is required")
-        script = [script[i] for i in payload.new_order if 0 <= i < len(script)]
+        if payload.new_order is None or sorted(payload.new_order) != list(range(len(script))):
+            raise HTTPException(status_code=400, detail="new_order must contain every line index exactly once")
+        script = [script[i] for i in payload.new_order]
         script = _reindex(script)
     elif payload.edit_type == "expand_script":
-        addition = {
-            "speaker": "phil",
-            "text": "This expanded section is a placeholder for the next production import step.",
-            "emotion": "warm",
-            "pause_after": 0.5,
-            "generated_by": "api_expander",
-        }
-        script.append(addition)
-        script = _reindex(script)
+        raise HTTPException(status_code=400, detail="Inline expansion is unavailable; use Generate or edit the script directly")
     elif payload.edit_type == "adjust_tone":
         tone = payload.tone_adjustment or "adjusted"
         for line in script:

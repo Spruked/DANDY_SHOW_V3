@@ -83,7 +83,7 @@ if (-not $NoFrontend) {
     $frontendCmd = @"
 Set-Location '$frontendDir';
 `$env:DANDY_API_TARGET = 'http://127.0.0.1:$BackendPort';
-npm run dev -- --host 127.0.0.1 --port $FrontendPort --strictPort --strictPort
+npm.cmd run dev -- --host 127.0.0.1 --port $FrontendPort --strictPort
 "@
     Start-Process -FilePath "powershell" -ArgumentList @(
         "-NoProfile",

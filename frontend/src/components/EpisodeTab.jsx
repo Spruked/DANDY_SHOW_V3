@@ -101,6 +101,32 @@ export default function EpisodeTab() {
   }
 
   const epId = activeEp?.episode_id || activeEp?.id
+  const jobRunning = generating || producing || activeEp?.job_active === true
+
+  useEffect(() => {
+    if (!epId) return
+    let stopped = false
+    let timer
+    const poll = async () => {
+      try {
+        const detail = await api.getEpisode(epId)
+        if (!stopped) {
+          setActiveEp(prev => ({ ...prev, ...detail }))
+          setEpisodes(prev => prev.map(ep => (ep.episode_id || ep.id) === epId ? { ...ep, ...detail } : ep))
+        }
+      } catch { /* Leave the last known state visible during connection failures. */ }
+      if (!stopped) timer = setTimeout(poll, 3000)
+    }
+    timer = setTimeout(poll, 3000)
+    return () => { stopped = true; clearTimeout(timer) }
+  }, [epId])
+
+  const handleStop = async () => {
+    try {
+      await api.cancelEpisodeJob(epId)
+      showToast('Stop requested; the current synthesis call may need to finish')
+    } catch (e) { showToast('Stop failed: ' + e.message.slice(0, 150)) }
+  }
   const lines = script?.lines || script?.script || []
   const philLines = lines.filter(l => (l.speaker || '').toUpperCase() === 'PHIL').length
   const jimLines  = lines.filter(l => (l.speaker || '').toUpperCase() === 'JIM').length
@@ -110,7 +136,7 @@ export default function EpisodeTab() {
   const runtimeSec  = wordsToSeconds(allText)
   const runtimeMin  = runtimeSec / 60
   const configuredTargetSeconds = Number(activeEp?.config?.target_duration || activeEp?.target_duration || 600)
-  const targetMinutes = Math.max(1, Math.min(15, Math.round(configuredTargetSeconds / 60)))
+  const targetMinutes = Math.max(1, Math.round(configuredTargetSeconds / 60))
   const targetOk = runtimeMin >= targetMinutes * 0.75 && runtimeMin <= targetMinutes * 1.25
 
   const visibleAssets = assets.filter((a) => {
@@ -161,6 +187,7 @@ export default function EpisodeTab() {
       a.href = URL.createObjectURL(blob)
       a.download = `episode_${epId}.${format}`
       a.click()
+      URL.revokeObjectURL(a.href)
       showToast(`Exported as .${format}`)
       setShowExport(false)
     } catch (e) { showToast('Export failed: ' + e.message.slice(0, 60)) }
@@ -346,10 +373,11 @@ export default function EpisodeTab() {
             </div>}
           </div>
           <div className="gap-row" style={{ flexWrap: 'wrap' }}>
-            <button className="btn btn-gold" onClick={handleGenerate} disabled={!activeEp || generating}><Zap size={11} /> {generating ? 'GEN…' : 'GENERATE'}</button>
+            <button className="btn btn-gold" onClick={handleGenerate} disabled={!activeEp || jobRunning}><Zap size={11} /> {generating ? 'GEN…' : 'GENERATE'}</button>
             <button className="btn btn-steel" onClick={() => setShowEditConfig(true)} disabled={!activeEp}><Settings size={11} /> CONFIG</button>
             <button className="btn btn-steel" onClick={openScriptOverride} disabled={!activeEp}><FileText size={11} /> SCRIPT OVERRIDE</button>
-            <button className="btn btn-solid" onClick={handleProduce} disabled={!activeEp || producing}><Play size={11} /> {producing ? 'QUEUING…' : 'PRODUCE'}</button>
+            <button className="btn btn-solid" onClick={handleProduce} disabled={!activeEp || jobRunning}><Play size={11} /> {producing ? 'QUEUING…' : 'PRODUCE'}</button>
+            {jobRunning && <button className="btn btn-steel" onClick={handleStop}><X size={11} /> STOP</button>}
             <button className="btn btn-steel" onClick={() => setShowExport(true)} disabled={!activeEp}><Download size={11} /> EXPORT</button>
             <button className="btn btn-steel" onClick={loadVersions} disabled={!activeEp}><History size={11} /> VERSIONS</button>
             <button className="btn btn-steel" onClick={() => setShowFeedback(true)} disabled={!activeEp}><MessageSquare size={11} /> FEEDBACK</button>
@@ -378,6 +406,11 @@ export default function EpisodeTab() {
           </div>
         })()}
 
+        {activeEp && <div role="status" style={{ padding: '6px 14px', fontSize: '.75rem' }}>
+          {activeEp.status}
+          {activeEp.error && <div role="alert">{activeEp.error}</div>}
+          {activeEp.social_export_error && <div role="alert">Audio produced; social export failed: {activeEp.social_export_error}</div>}
+        </div>}
         {activeEp && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 6, padding: '8px 14px', borderBottom: '1px solid var(--rim)', flexShrink: 0 }}>
           <StatBox val={lines.length} label="Lines" />
           <StatBox val={philLines} label="Phil" />

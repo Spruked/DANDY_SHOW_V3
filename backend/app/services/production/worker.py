@@ -496,15 +496,17 @@ class HardenedPodcastWorker:
             raise_if_cancelled("sfx")
 
             processing_result: Dict[str, Any]
+            # Build in staging; failed retries must preserve the published audio.
+            candidate_audio_path = staging_dir / "audio.mp3"
             try:
                 processing_result = self.post_processor.process_episode(
                     input_file=raw_mix_path,
-                    output_file=final_audio_path,
+                    output_file=candidate_audio_path,
                     voice_profile="phil_jim_mix",
                 )
             except Exception as exc:
                 logger.warning("Post-processing failed; exporting direct MP3 fallback: %s", exc)
-                self._export_direct_mp3(raw_mix_path, final_audio_path)
+                self._export_direct_mp3(raw_mix_path, candidate_audio_path)
                 processing_result = {
                     "processing_chain": "direct_mp3_fallback",
                     "compliant": False,
@@ -514,24 +516,25 @@ class HardenedPodcastWorker:
 
             # ── Intro / Outro wrap ──────────────────────────────────────
             io_cfg = self.project_config.get("intro_outro", {})
-            if io_cfg.get("enabled", False) and final_audio_path.exists():
+            if io_cfg.get("enabled", False) and candidate_audio_path.exists():
                 try:
-                    wrapped_path = episode_dir / "audio_wrapped.mp3"
+                    wrapped_path = staging_dir / "audio_wrapped.mp3"
                     wrap_episode_audio(
-                        episode_audio_path=final_audio_path,
+                        episode_audio_path=candidate_audio_path,
                         output_path=wrapped_path,
                         cfg=io_cfg,
                         base_path=self.base_path,
                         topic=topic,
                     )
-                    final_audio_path.unlink()
-                    wrapped_path.rename(final_audio_path)
+                    wrapped_path.replace(candidate_audio_path)
                     processing_result["intro_outro"] = "wrapped"
                     logger.info("Intro/outro applied to %s", episode_id)
                 except Exception as exc:
-                    logger.warning("Intro/outro wrap failed (episode audio kept clean): %s", exc)
-                    processing_result["intro_outro"] = f"failed: {exc}"
+                    raise RuntimeError(f"Intro/outro wrap failed: {exc}") from exc
             raise_if_cancelled("intro/outro")
+            if not candidate_audio_path.is_file() or candidate_audio_path.stat().st_size == 0:
+                raise RuntimeError("Production did not create audio")
+            candidate_audio_path.replace(final_audio_path)
 
             transcript_payload = {
                 "episode_id": episode_id,
@@ -709,29 +712,18 @@ class HardenedPodcastWorker:
 
     def _synthesize_line(self, text: str, speaker: str, emotion: str, output_path: Path) -> str:
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        errors: List[str] = []
-
-        if self.qwen_tts_config.get("enabled") and self.qwen_tts_config.get("production", {}).get("enabled", True):
-            try:
-                if self._try_qwen_bridge(text, speaker, emotion, output_path):
-                    return "qwen"
-            except Exception as exc:
-                errors.append(f"qwen:{exc}")
-
-        if self.runtime.primary_engine == "kokoro":
-            try:
-                if self._try_kokoro(text, speaker, emotion, output_path):
-                    return "kokoro"
-            except Exception as exc:
-                errors.append(f"kokoro:{exc}")
-
-        try:
-            self._synthesize_edge(text, speaker, output_path)
-            return "edge"
-        except Exception as exc:
-            errors.append(f"edge:{exc}")
-
-        raise RuntimeError("; ".join(errors) or "All TTS engines failed")
+        selected = str(self.project_config.get("tts", {}).get("primary_engine", "kokoro")).strip().lower()
+        if selected == "kokoro":
+            if self._try_kokoro(text, speaker, emotion, output_path):
+                return "kokoro"
+        elif selected == "qwen":
+            if not self.qwen_tts_config.get("enabled"):
+                raise RuntimeError("Qwen TTS is selected but disabled")
+            if self._try_qwen_bridge(text, speaker, emotion, output_path):
+                return "qwen"
+        else:
+            raise RuntimeError(f"Unsupported production TTS engine '{selected}'")
+        raise RuntimeError(f"Selected TTS engine '{selected}' did not produce audio")
 
     def _try_qwen_bridge(self, text: str, speaker: str, emotion: str, output_path: Path) -> bool:
         bridge_url = str(self.qwen_tts_config.get("bridge_url") or "").rstrip("/")

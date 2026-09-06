@@ -71,7 +71,16 @@ async def episode_script(episode_id: str) -> Dict:
 
 @router.get("/episodes/{episode_id}")
 async def episode_detail(episode_id: str) -> Dict:
-    return load_episode_detail(episode_id)
+    from .production import _CANCEL_EVENTS, _CANCEL_LOCK
+
+    detail = load_episode_detail(episode_id)
+    with _CANCEL_LOCK:
+        detail["job_active"] = detail.get("job_id") in _CANCEL_EVENTS
+    if not detail["job_active"] and detail.get("status") in {"producing", "generating_script", "cancel_requested"}:
+        detail["previous_status"] = detail["status"]
+        detail["status"] = "interrupted"
+        detail["error"] = "No active job exists in this backend process. The saved job was interrupted; retry when ready."
+    return detail
 
 
 @router.patch("/episodes/{episode_id}/config")

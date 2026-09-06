@@ -79,6 +79,8 @@ def _load_music(music_file: str, base_path: Path) -> AudioSegment:
 
 
 def _clip(music: AudioSegment, start_ms: int, duration_ms: int) -> AudioSegment:
+    if start_ms < 0 or start_ms >= len(music) or duration_ms <= 0:
+        raise ValueError("Music clip start must be within the file and duration must be positive")
     end_ms = start_ms + duration_ms
     clipped = music[start_ms:end_ms]
     if len(clipped) < duration_ms:
@@ -158,7 +160,7 @@ def build_intro(cfg: Dict[str, Any], base_path: Path, output_path: Path) -> Path
     duck_start = int(intro_cfg.get("duck_start_ms", 4000))
     duck_db = float(intro_cfg.get("duck_db", -18))
     announcer_text = str(intro_cfg.get("announcer_text", DEFAULT_CONFIG["intro"]["announcer_text"]))
-    announcer_voice = str(intro_cfg.get("announcer_voice", "am_eric"))
+    announcer_voice = str(intro_cfg.get("announcer_voice") or "am_eric")
     silence_after = int(intro_cfg.get("silence_after_ms", 800))
     pause_ms = int(intro_cfg.get("pause_duration_ms", 700))
 
@@ -201,7 +203,7 @@ def build_outro(
     fade_out = int(outro_cfg.get("music_fade_out_ms", 3000))
     announcer_text = str(outro_cfg.get("announcer_text", DEFAULT_CONFIG["outro"]["announcer_text"]))
     announcer_text = announcer_text.replace("{topic}", topic or "their next topic")
-    announcer_voice = str(outro_cfg.get("announcer_voice", "am_eric"))
+    announcer_voice = str(outro_cfg.get("announcer_voice") or "am_eric")
     silence_before = int(outro_cfg.get("silence_before_ms", 600))
     pause_ms = int(outro_cfg.get("pause_duration_ms", 700))
 

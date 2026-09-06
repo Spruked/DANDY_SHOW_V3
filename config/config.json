@@ -139,7 +139,7 @@
   "obs": {
     "host": "127.0.0.1",
     "port": 4455,
-    "password": "5Fxn3K1EsgjQH4TO",
+    "password": "",
     "timeout_seconds": 2.5
   }
 }

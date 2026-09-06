@@ -14,8 +14,8 @@ const KNOWN_VOICES = [
 
 const PROXIES = [
   { name: 'Backend API',     url: '/api', note: 'FastAPI through the active Vite proxy' },
-  { name: 'Vite Dev Server', url: 'http://localhost:5173', note: 'Frontend and /api proxy' },
-  { name: 'WebSocket',       url: 'ws://localhost:5173/ws', note: 'Production progress stream' },
+  { name: 'Vite Dev Server', url: window.location.origin, note: 'Frontend and /api proxy' },
+  { name: 'WebSocket', url: window.location.origin.replace(/^http/, 'ws') + '/ws', note: 'WebSocket connection; production status is polled' },
 ]
 
 const displayValue = (value) => (
@@ -188,7 +188,7 @@ export default function SystemTab() {
               </div>
             </div>
             <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Badge type="gold">Kokoro primary</Badge>
+              <Badge type="gold">{selectedTts} selected</Badge>
               <Badge type={qwen.status === 'ok' ? 'green' : 'steel'}>Qwen bridge: {qwen.status || 'unknown'}</Badge>
             </div>
           </div>

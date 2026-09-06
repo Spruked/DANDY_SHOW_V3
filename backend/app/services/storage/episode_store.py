@@ -507,6 +507,8 @@ def load_episode_detail(episode_id: str) -> Dict[str, Any]:
         "audio": audio_path,
         "has_audio": bool(audio_path and Path(audio_path).exists()),
         "production_mode": status.get("production_mode"),
+        "error": status.get("error"),
+        "social_export_error": status.get("social_export_error"),
         "assets": assets,
         "assets_count": len(assets),
         "media_cues": media_cues.get("cues", []),

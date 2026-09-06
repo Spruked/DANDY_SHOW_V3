@@ -7,8 +7,9 @@ const wsTarget = process.env.DANDY_WS_TARGET || apiTarget.replace(/^http/i, 'ws'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173,
+    port: 5188,
     proxy: {
+      '/renders': { target: apiTarget, changeOrigin: true },
       '/api': {
         target: apiTarget,
         changeOrigin: true,

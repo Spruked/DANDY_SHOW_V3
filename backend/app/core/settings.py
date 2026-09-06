@@ -14,7 +14,11 @@ def _load_json(path: Path) -> Dict[str, Any]:
 
 @lru_cache(maxsize=1)
 def load_project_config() -> Dict[str, Any]:
-    return _load_json(CONFIG_ROOT / "config.json")
+    config = _load_json(CONFIG_ROOT / "config.json")
+    local_obs = _load_json(CONFIG_ROOT / "obs.local.json")
+    if local_obs:
+        config["obs"] = {**config.get("obs", {}), **local_obs}
+    return config
 
 
 @lru_cache(maxsize=1)

@@ -1250,10 +1250,10 @@ export default function StudioTab() {
         <SectionCard title="QUICK HEALTH COMMANDS" icon={Activity} accent="var(--green)" defaultOpen={false}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {[
-              { label: 'Backend health',      cmd: 'curl http://127.0.0.1:5173/api/health' },
-              { label: 'Voice list',          cmd: 'curl http://127.0.0.1:5173/api/voices' },
+              { label: 'Backend health',      cmd: `curl.exe ${window.location.origin}/api/health` },
+              { label: 'Voice list',          cmd: `curl.exe ${window.location.origin}/api/voices` },
               { label: 'OBS WebSocket check', cmd: 'curl http://localhost:4455' },
-              { label: 'Mixer API status',    cmd: 'curl http://127.0.0.1:5173/api/mixer/status' },
+              { label: 'Mixer API status',    cmd: `curl.exe ${window.location.origin}/api/mixer/status` },
               { label: 'Audio device list',   cmd: 'python -m sounddevice' },
               { label: 'ffprobe audio',       cmd: 'ffprobe episodes/demo_podcast_gen/audio.mp3' },
               { label: 'Produce offline',     cmd: 'python staging/produce_demo.py' },
