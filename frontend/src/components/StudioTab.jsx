@@ -737,7 +737,7 @@ export default function StudioTab() {
         background: 'var(--surface)', borderBottom: '1px solid var(--rim)', flexShrink: 0, flexWrap: 'wrap',
       }}>
         <span style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', color: 'var(--gold)', letterSpacing: '.12em', marginRight: 8 }}>
-          STUDIO CONTROL
+          DANDY SHOW V3
         </span>
         <StatusPill ok={mixerConnected} label={mixerConnected ? `VOICEMEETER ${mixerKind.toUpperCase()}` : 'VOICEMEETER'} />
         <StatusPill ok={obs.connected} label="OBS WS" />
