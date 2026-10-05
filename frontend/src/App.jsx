@@ -1,12 +1,12 @@
 // App.jsx — Dandy Studio root
 import { useState, useEffect } from 'react'
-import { Mic2, Radio, Image, Settings, Sliders } from 'lucide-react'
+import { Mic2, Radio, Image, Settings, Sliders, Trash2 } from 'lucide-react'
 import EpisodeTab from './components/EpisodeTab'
 import AdTab      from './components/AdTab'
 import SocialTab  from './components/SocialTab'
 import SystemTab  from './components/SystemTab'
 import StudioConsole from './components/StudioConsole'
-import { api }    from './lib/api'
+import { api, req } from './lib/api'
 
 const TABS = [
   { id: 'episodes', label: 'EPISODES',  icon: Radio,    component: EpisodeTab },
@@ -20,6 +20,7 @@ export default function App() {
   const [activeTab, setActiveTab]     = useState('studio')
   const [backendOk, setBackendOk]     = useState(null)   // null = checking
   const [episodeId, setEpisodeId] = useState(null)
+  const [deletingEpisode, setDeletingEpisode] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -28,6 +29,20 @@ export default function App() {
     const interval = setInterval(check, 30000)
     return () => { active = false; clearInterval(interval) }
   }, [])
+
+  const deleteSelectedEpisode = async () => {
+    if (!episodeId || deletingEpisode) return
+    if (!window.confirm(`Delete episode ${episodeId}?\n\nThis removes the episode folder, draft, and matching job records. This cannot be undone.`)) return
+    setDeletingEpisode(true)
+    try {
+      await req(`/episodes/${encodeURIComponent(episodeId)}`, { method: 'DELETE' })
+      setEpisodeId(null)
+      window.location.reload()
+    } catch (error) {
+      window.alert(`Delete failed: ${error.message}`)
+      setDeletingEpisode(false)
+    }
+  }
 
   const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || EpisodeTab
 
@@ -54,6 +69,23 @@ export default function App() {
         </div>
 
         <div className="nav-status">
+          {activeTab === 'episodes' && episodeId && (
+            <button
+              className="btn btn-sm"
+              type="button"
+              onClick={deleteSelectedEpisode}
+              disabled={deletingEpisode}
+              title={`Delete episode ${episodeId}`}
+              style={{
+                marginRight: 12,
+                border: '1px solid rgba(239,68,68,.65)',
+                color: '#f87171',
+                background: 'rgba(127,29,29,.18)',
+              }}
+            >
+              <Trash2 size={11} /> {deletingEpisode ? 'DELETING…' : 'DELETE EPISODE'}
+            </button>
+          )}
           <span style={{ color: 'var(--gold)', marginRight: 10, letterSpacing: '.08em' }}>DANDY STUDIO V3</span>
           <div className={`status-dot${backendOk === true ? ' ok' : backendOk === false ? ' err' : ''}`} />
           <span>
