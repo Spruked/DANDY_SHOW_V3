@@ -4,6 +4,7 @@
 // Right: timing + snap-to-script + export options
 
 import { useEffect, useState, useCallback } from "react";
+import { req } from "../lib/api";
 
 const EMPTY_SLIDE = () => ({
   id: `slide_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
@@ -26,34 +27,63 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
   const [slides, setSlides] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [dirty, setDirty] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [rendering, setRendering] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [aspect, setAspect] = useState("16:9");
   const [format, setFormat] = useState("mp4");
 
-  // Load existing slideshow.json for this episode
   useEffect(() => {
-    if (!episode?.id) return;
-    fetch(`/api/social/slideshow/load?episode_id=${episode.id}`)
-      .then((r) => r.json())
-      .then((d) => {
-        setSlides(d.slides || []);
-        setSelectedId(d.slides?.[0]?.id || null);
-      });
+    let cancelled = false;
+    const load = async () => {
+      if (!episode?.id) {
+        setSlides([]);
+        setSelectedId(null);
+        setDirty(false);
+        return;
+      }
+      setLoading(true);
+      setError("");
+      setNotice("");
+      try {
+        const data = await req(`/social/slideshow/load?episode_id=${encodeURIComponent(episode.id)}`);
+        if (cancelled) return;
+        const nextSlides = data.slides || [];
+        setSlides(nextSlides);
+        setSelectedId(nextSlides[0]?.id || null);
+        setDirty(false);
+      } catch (e) {
+        if (!cancelled) setError(`Could not load slideshow: ${e.message}`);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, [episode?.id]);
 
   const selected = slides.find((s) => s.id === selectedId);
+  const backgroundAsset = (assetSlots || []).find((a) => a.filename === selected?.background);
+  const backgroundUrl = backgroundAsset?.preview_url || "";
+
+  const flash = (message) => {
+    setNotice(message);
+    setError("");
+  };
 
   const updateSelected = useCallback(
     (patch) => {
-      setSlides((prev) =>
-        prev.map((s) => (s.id === selectedId ? { ...s, ...patch } : s))
-      );
+      setSlides((prev) => prev.map((s) => (s.id === selectedId ? { ...s, ...patch } : s)));
       setDirty(true);
+      setNotice("");
     },
     [selectedId]
   );
 
   const updateSelectedStyle = (patch) => {
+    if (!selected) return;
     updateSelected({ style: { ...selected.style, ...patch } });
   };
 
@@ -62,81 +92,124 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
     setSlides((prev) => [...prev, s]);
     setSelectedId(s.id);
     setDirty(true);
+    setNotice("");
   };
 
   const duplicateSlide = () => {
     if (!selected) return;
-    const copy = { ...selected, id: `slide_${Date.now()}` };
+    const copy = { ...selected, style: { ...selected.style }, id: `slide_${Date.now()}_${Math.floor(Math.random() * 1000)}` };
     const idx = slides.findIndex((s) => s.id === selectedId);
     setSlides((prev) => [...prev.slice(0, idx + 1), copy, ...prev.slice(idx + 1)]);
     setSelectedId(copy.id);
     setDirty(true);
+    setNotice("");
   };
 
   const deleteSlide = () => {
     if (!selected) return;
-    setSlides((prev) => prev.filter((s) => s.id !== selectedId));
-    setSelectedId(slides[0]?.id || null);
+    setSlides((prev) => {
+      const idx = prev.findIndex((s) => s.id === selectedId);
+      const next = prev.filter((s) => s.id !== selectedId);
+      const nextSelected = next[Math.min(Math.max(idx, 0), next.length - 1)]?.id || null;
+      setSelectedId(nextSelected);
+      return next;
+    });
     setDirty(true);
+    setNotice("");
   };
 
   const moveSlide = (id, dir) => {
     setSlides((prev) => {
       const idx = prev.findIndex((s) => s.id === id);
       const swap = idx + dir;
-      if (swap < 0 || swap >= prev.length) return prev;
+      if (idx < 0 || swap < 0 || swap >= prev.length) return prev;
       const next = [...prev];
       [next[idx], next[swap]] = [next[swap], next[idx]];
       return next;
     });
     setDirty(true);
+    setNotice("");
   };
 
   const autoGenerateFromScript = async () => {
-    const res = await fetch(
-      `/api/social/slideshow/auto-generate?episode_id=${episode.id}`,
-      { method: "POST" }
-    );
-    const data = await res.json();
-    setSlides(data.slides || []);
-    setSelectedId(data.slides?.[0]?.id || null);
-    setDirty(true);
+    if (!episode?.id) return;
+    setError("");
+    setNotice("");
+    try {
+      const data = await req(`/social/slideshow/auto-generate?episode_id=${encodeURIComponent(episode.id)}`, { method: "POST" });
+      const nextSlides = data.slides || [];
+      setSlides(nextSlides);
+      setSelectedId(nextSlides[0]?.id || null);
+      setDirty(true);
+      flash(`Generated ${nextSlides.length} slide${nextSlides.length === 1 ? "" : "s"}.`);
+    } catch (e) {
+      setError(`Auto-generate failed: ${e.message}`);
+    }
   };
 
-  const saveDeck = async () => {
-    await fetch("/api/social/slideshow/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ episode_id: episode.id, slides }),
-    });
-    setDirty(false);
+  const saveDeck = async ({ quiet = false } = {}) => {
+    if (!episode?.id) throw new Error("Select an episode first");
+    setSaving(true);
+    setError("");
+    try {
+      await req("/social/slideshow/save", {
+        method: "POST",
+        body: JSON.stringify({ episode_id: episode.id, slides }),
+      });
+      setDirty(false);
+      if (!quiet) flash("Slideshow saved.");
+      return true;
+    } catch (e) {
+      setError(`Save failed: ${e.message}`);
+      throw e;
+    } finally {
+      setSaving(false);
+    }
   };
 
   const renderDeck = async () => {
+    if (!episode?.id || slides.length === 0) return;
     setRendering(true);
+    setError("");
+    setNotice("");
     try {
-      if (dirty) await saveDeck();
-      const res = await fetch("/api/social/slideshow/render", {
+      if (dirty) await saveDeck({ quiet: true });
+      const data = await req("/social/slideshow/render", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ episode_id: episode.id, aspect, format }),
       });
-      const data = await res.json();
-      if (data.download_url) window.open(data.download_url, "_blank");
+      if (!data.download_url) throw new Error("Renderer completed without a download URL");
+      flash("Slideshow rendered.");
+      window.open(data.download_url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      setError(`Render failed: ${e.message}`);
     } finally {
       setRendering(false);
     }
   };
 
+  const snapSelectedToScript = async () => {
+    if (!episode?.id || !selected) return;
+    setError("");
+    try {
+      const data = await req(`/social/slideshow/snap?episode_id=${encodeURIComponent(episode.id)}&slide_id=${encodeURIComponent(selected.id)}`, { method: "POST" });
+      if (data.start == null || data.end == null) throw new Error("No script timing was returned");
+      updateSelected({ start: data.start, end: data.end });
+      flash("Slide timing snapped to script.");
+    } catch (e) {
+      setError(`Snap failed: ${e.message}`);
+    }
+  };
+
   return (
     <div className="slideshow-builder">
-      {/* LEFT PANEL — slide list */}
       <div className="panel panel-left">
         <div className="panel-header">
           <span>SLIDES ({slides.length})</span>
-          <button onClick={addSlide} title="Add slide">+</button>
+          <button onClick={addSlide} title="Add slide" disabled={!episode?.id}>+</button>
         </div>
 
+        {loading && <div className="preview-empty">Loading slideshow…</div>}
         <div className="slide-list">
           {slides.map((s, i) => (
             <div
@@ -148,7 +221,7 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
               <span className="slide-title">{s.title || "Untitled"}</span>
               <div className="slide-actions">
                 <button onClick={(e) => { e.stopPropagation(); moveSlide(s.id, -1); }}>▲</button>
-                <button onClick={(e) => { e.stopPropagation(); moveSlide(s.id,  1); }}>▼</button>
+                <button onClick={(e) => { e.stopPropagation(); moveSlide(s.id, 1); }}>▼</button>
               </div>
             </div>
           ))}
@@ -157,14 +230,15 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
         <div className="panel-footer">
           <button onClick={duplicateSlide} disabled={!selected}>Duplicate</button>
           <button onClick={deleteSlide} disabled={!selected}>Delete</button>
-          <button onClick={autoGenerateFromScript} className="btn-auto">
+          <button onClick={autoGenerateFromScript} className="btn-auto" disabled={!episode?.id || loading}>
             Auto-generate from script
           </button>
         </div>
       </div>
 
-      {/* CENTER PANEL — live preview + editor */}
       <div className="panel panel-center">
+        {error && <div style={{ color: "var(--red)", marginBottom: 8 }}>{error}</div>}
+        {notice && <div style={{ color: "var(--green)", marginBottom: 8 }}>{notice}</div>}
         {!selected ? (
           <div className="preview-empty">Select or add a slide to begin</div>
         ) : (
@@ -173,7 +247,7 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
               className="slide-preview"
               style={{
                 aspectRatio: aspect === "9:16" ? "9/16" : aspect === "1:1" ? "1/1" : "16/9",
-                backgroundImage: selected.background ? `url(/assets/${selected.background})` : "none",
+                backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : "none",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 color: selected.style.color,
@@ -201,7 +275,7 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
                 <select value={selected.background} onChange={(e) => updateSelected({ background: e.target.value })}>
                   <option value="">— none —</option>
                   {(assetSlots || []).map((a) => (
-                    <option key={a.id} value={a.filename}>{a.name}</option>
+                    <option key={a.id} value={a.filename} disabled={a.available === false}>{a.name}{a.available === false ? " (missing)" : ""}</option>
                   ))}
                 </select>
               </label>
@@ -238,7 +312,6 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
         )}
       </div>
 
-      {/* RIGHT PANEL — timing + export */}
       <div className="panel panel-right">
         <div className="panel-header">TIMING</div>
         {selected && (
@@ -254,14 +327,7 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
             <div className="duration-readout">
               Duration: {(selected.end - selected.start).toFixed(1)}s
             </div>
-
-            <button onClick={async () => {
-              const res = await fetch(`/api/social/slideshow/snap?episode_id=${episode.id}&slide_id=${selected.id}`, { method: "POST" });
-              const data = await res.json();
-              if (data.start != null) updateSelected({ start: data.start, end: data.end });
-            }}>
-              Snap to script
-            </button>
+            <button onClick={snapSelectedToScript}>Snap to script</button>
           </>
         )}
 
@@ -281,10 +347,10 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
         </label>
 
         <div className="export-actions">
-          <button onClick={saveDeck} disabled={!dirty}>
-            {dirty ? "Save" : "Saved ✓"}
+          <button onClick={() => saveDeck()} disabled={!dirty || saving || !episode?.id}>
+            {saving ? "Saving…" : dirty ? "Save" : "Saved ✓"}
           </button>
-          <button className="btn-render" onClick={renderDeck} disabled={rendering || slides.length === 0}>
+          <button className="btn-render" onClick={renderDeck} disabled={rendering || saving || slides.length === 0 || !episode?.id}>
             {rendering ? "Rendering..." : "⚡ Render"}
           </button>
         </div>
