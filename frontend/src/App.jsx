@@ -36,7 +36,7 @@ export default function App() {
 
       {/* ── Top nav ── */}
       <nav className="top-nav">
-        <div className="nav-logo">
+        <div className="nav-logo" title="Dandy Studio V3">
           <div className="nav-logo-mark">D</div>
         </div>
 
@@ -54,6 +54,7 @@ export default function App() {
         </div>
 
         <div className="nav-status">
+          <span style={{ color: 'var(--gold)', marginRight: 10, letterSpacing: '.08em' }}>DANDY STUDIO V3</span>
           <div className={`status-dot${backendOk === true ? ' ok' : backendOk === false ? ' err' : ''}`} />
           <span>
             {backendOk === null  ? 'checking…' :
