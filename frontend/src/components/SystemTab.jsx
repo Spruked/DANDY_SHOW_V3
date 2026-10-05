@@ -3,6 +3,7 @@ import { RefreshCw, Play, Save } from 'lucide-react'
 import { api, req } from '../lib/api'
 import { Badge, Spinner, Toast, Field } from './ui'
 import { useToast } from '../hooks/useToast'
+import AudioAssetPicker from './AudioAssetPicker'
 
 const CHECK_NAMES = {
   writer: 'Writer / Loaded Model', kokoro: 'Kokoro WSL Runtime', qwen_bridge: 'Qwen TTS Bridge',
@@ -138,7 +139,7 @@ export default function SystemTab() {
         {ioLoading && <Spinner />}
         {ioCfg && <>
           <Field label="Apply intro and outro"><select className="ds-select" value={ioCfg.enabled ? 'yes' : 'no'} onChange={e => setIo('enabled', e.target.value === 'yes')}><option value="yes">Enabled</option><option value="no">Disabled</option></select></Field>
-          <Field label="Theme music file"><input className="ds-input" value={ioCfg.music_file || ''} onChange={e => setIo('music_file', e.target.value)} /></Field>
+          <AudioAssetPicker label="Theme music / jingle / SFX" value={ioCfg.music_file || ''} onChange={value => setIo('music_file', value)} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
             {['intro', 'outro'].map(section => <div key={section}>
               <div className="section-head"><span>{section.toUpperCase()}</span><button className="btn btn-steel btn-sm" onClick={() => previewSection(section)} disabled={!!ioPreviewing}>{ioPreviewing === section ? <Spinner /> : <Play size={12} />} PREVIEW SAVED SETTINGS</button></div>
