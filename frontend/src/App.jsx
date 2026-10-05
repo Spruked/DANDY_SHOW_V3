@@ -1,19 +1,21 @@
 // App.jsx — Dandy Studio root
 import { useState, useEffect } from 'react'
-import { Mic2, Radio, Image, Settings, Sliders } from 'lucide-react'
+import { Mic2, Radio, Image, Settings, Sliders, ListMusic } from 'lucide-react'
 import EpisodeTab from './components/EpisodeTab'
 import AdTab      from './components/AdTab'
 import SocialTab  from './components/SocialTab'
 import SystemTab  from './components/SystemTab'
 import StudioTab  from './components/StudioTab'
+import AssemblyTab from './components/AssemblyTab'
 import { api }    from './lib/api'
 
 const TABS = [
-  { id: 'episodes', label: 'EPISODES',  icon: Radio,    component: EpisodeTab },
-  { id: 'ads',      label: 'ADS',       icon: Mic2,     component: AdTab      },
-  { id: 'social',   label: 'SOCIAL',    icon: Image,    component: SocialTab  },
-  { id: 'studio',   label: 'STUDIO',    icon: Sliders,  component: StudioTab  },
-  { id: 'system',   label: 'SYSTEM',    icon: Settings, component: SystemTab  },
+  { id: 'episodes', label: 'EPISODES',  icon: Radio,     component: EpisodeTab },
+  { id: 'ads',      label: 'ADS',       icon: Mic2,      component: AdTab      },
+  { id: 'social',   label: 'SOCIAL',    icon: Image,     component: SocialTab  },
+  { id: 'assembly', label: 'ASSEMBLY',  icon: ListMusic, component: AssemblyTab },
+  { id: 'studio',   label: 'STUDIO',    icon: Sliders,   component: StudioTab  },
+  { id: 'system',   label: 'SYSTEM',    icon: Settings,  component: SystemTab  },
 ]
 
 export default function App() {
