@@ -38,9 +38,9 @@ def save_cards(req: SaveAdCardsRequest):
     return {"ok": True, "count": len(req.cards)}
 
 
-def _find_card(card_id: str) -> AdCard:
-    search_paths = list(EPISODES_ROOT.rglob("ad_cards.json"))
-    if GLOBAL_CARDS_PATH.exists():
+def _find_card(card_id: str, episode_id: str | None = None) -> AdCard:
+    search_paths = [_cards_path(episode_id)] if episode_id else list(EPISODES_ROOT.rglob("ad_cards.json"))
+    if not episode_id and GLOBAL_CARDS_PATH.exists():
         search_paths.append(GLOBAL_CARDS_PATH)
     for path in search_paths:
         try:
@@ -55,6 +55,6 @@ def _find_card(card_id: str) -> AdCard:
 
 @router.post("/render")
 def render(req: RenderAdCardRequest):
-    card = _find_card(req.card_id)
+    card = _find_card(req.card_id, req.episode_id)
     out = render_adcard_job(card=card, aspect=req.aspect, fmt=req.format)
     return {"ok": True, "download_url": out["url"], "path": out["path"]}

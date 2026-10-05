@@ -1,5 +1,5 @@
 // components/SocialTab.jsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Zap, Download, RefreshCw, Image } from 'lucide-react'
 import { api } from '../lib/api'
 import { Modal, Field, SectionHead, Spinner, Empty, Badge, Divider, Toast } from './ui'
@@ -19,7 +19,7 @@ const ASSET_SLOTS = [
   { key: 'logo',            label: 'Logo Mark',         desc: 'Main simplified mark' },
 ]
 
-export default function ExportsMode() {
+export default function ExportsMode({ episodeId, onEpisodeChange }) {
   const { toast, showToast } = useToast()
   const [episodes,  setEpisodes]  = useState([])
   const [activeEp,  setActiveEp]  = useState(null)
@@ -28,10 +28,13 @@ export default function ExportsMode() {
   const [generating, setGenerating] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedPreset, setSelectedPreset] = useState(null)
+  const [assetStatus, setAssetStatus] = useState([])
+  const selectionRequest = useRef(0)
 
   useEffect(() => {
     loadEpisodes()
     loadPresets()
+    fetch('/api/social/assets').then(r => { if (!r.ok) throw new Error('Asset check failed'); return r.json() }).then(data => setAssetStatus(data.assets || [])).catch(() => showToast('Asset availability could not be checked'))
   }, [])
 
   const loadEpisodes = async () => {
@@ -39,7 +42,7 @@ export default function ExportsMode() {
       const data = await api.listEpisodes()
       const list = Array.isArray(data) ? data : (data.episodes || [])
       setEpisodes(list)
-      if (list.length) selectEpisode(list[0])
+      if (list.length) selectEpisode(list.find(ep => (ep.episode_id || ep.id) === episodeId) || list[0])
     } catch { showToast('Could not load episodes') }
   }
 
@@ -51,11 +54,14 @@ export default function ExportsMode() {
   }
 
   const selectEpisode = async (ep) => {
+    const requestId = ++selectionRequest.current
     setActiveEp(ep)
+    setExports([])
+    onEpisodeChange?.(ep.episode_id || ep.id)
     try {
       const data = await api.listSocialExports(ep.episode_id || ep.id)
-      setExports(Array.isArray(data) ? data : (data.exports || []))
-    } catch { setExports([]) }
+      if (requestId === selectionRequest.current) setExports(Array.isArray(data) ? data : (data.exports || []))
+    } catch { if (requestId === selectionRequest.current) setExports([]) }
   }
 
   const epId = activeEp?.episode_id || activeEp?.id
@@ -65,7 +71,7 @@ export default function ExportsMode() {
     setGenerating(true)
     try {
       await api.generateSocial({ ...form, episode_id: epId })
-      showToast('Social export queued ✓')
+      showToast('Social export completed')
       setShowCreate(false)
       await selectEpisode(activeEp)
     } catch (e) {
@@ -140,6 +146,7 @@ export default function ExportsMode() {
                   <Download size={9} /> DOWNLOAD
                 </button>
               )}
+              {ex.post_text && <div style={{ marginTop: 10 }}><div className="field-label">Post copy</div><pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '.8rem' }}>{ex.post_text}</pre><button className="btn btn-steel btn-sm" onClick={() => navigator.clipboard.writeText(ex.post_text).then(() => showToast('Post copy copied')).catch(() => showToast('Clipboard unavailable; use the download link'))}>COPY POST</button>{ex.post_copy_url && <a className="btn btn-steel btn-sm" href={ex.post_copy_url} download>DOWNLOAD COPY</a>}</div>}
             </div>
           ))}
         </div>
@@ -152,7 +159,7 @@ export default function ExportsMode() {
           {ASSET_SLOTS.map(slot => (
             <div key={slot.key} style={{ marginBottom: 8 }}>
               <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--bone)', marginBottom: 2 }}>{slot.label}</div>
-              <div className="font-mono" style={{ fontSize: '.46rem', color: 'var(--steel)' }}>{slot.desc}</div>
+              <div className="font-mono" style={{ fontSize: '.46rem', color: 'var(--steel)' }}>{slot.desc} · {assetStatus.find(asset => asset.id === slot.key)?.available ? 'present' : 'missing / unverified'}</div>
             </div>
           ))}
         </div>
@@ -164,7 +171,9 @@ export default function ExportsMode() {
             <div
               key={i}
               className={`preset-card${selectedPreset === i ? ' selected' : ''}`}
-              onClick={() => setSelectedPreset(selectedPreset === i ? null : i)}
+              role="button" tabIndex={0}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedPreset(i); setShowCreate(true) } }}
+              onClick={() => { setSelectedPreset(i); setShowCreate(true) }}
             >
               <div style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--bone)', marginBottom: 3 }}>
                 {p.name || p.preset_id || `Preset ${i + 1}`}
@@ -180,6 +189,8 @@ export default function ExportsMode() {
       {showCreate && (
         <GenerateSocialModal
           presets={presets}
+          preset={presets[selectedPreset]}
+          assetStatus={assetStatus}
           onClose={() => setShowCreate(false)}
           onGenerate={handleGenerate}
           generating={generating}
@@ -191,15 +202,16 @@ export default function ExportsMode() {
   )
 }
 
-function GenerateSocialModal({ presets, onClose, onGenerate, generating }) {
+function GenerateSocialModal({ presets, preset, assetStatus, onClose, onGenerate, generating }) {
   const [form, setForm] = useState({
-    export_type: 'audiogram',
-    platform: 'instagram',
-    aspect_ratio: '1:1',
-    asset_slot: 'thumbnail_base',
+    export_type: preset?.export_type || 'audiogram',
+    platform: preset?.platform || 'instagram',
+    aspect_ratio: preset?.aspect_ratio || '1:1',
+    asset_slot: 'none',
     clip_start: 0,
     clip_duration: 60,
     quote_text: '',
+    post_text: '',
     show_waveform: true,
   })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -224,7 +236,7 @@ function GenerateSocialModal({ presets, onClose, onGenerate, generating }) {
           </Field>
           <Field label="Platform">
             <select className="ds-select" value={form.platform} onChange={e => set('platform', e.target.value)}>
-              {PLATFORMS.map(p => <option key={p}>{p}</option>)}
+              {[...new Set([...PLATFORMS, ...presets.map(p => p.platform)])].map(p => <option key={p}>{p}</option>)}
             </select>
           </Field>
           <Field label="Aspect Ratio">
@@ -234,7 +246,8 @@ function GenerateSocialModal({ presets, onClose, onGenerate, generating }) {
           </Field>
           <Field label="Asset Slot">
             <select className="ds-select" value={form.asset_slot} onChange={e => set('asset_slot', e.target.value)}>
-              {ASSET_SLOTS.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+              <option value="none">Plain background (no brand image)</option>
+              {ASSET_SLOTS.map(s => <option key={s.key} value={s.key}>{s.label}{assetStatus.find(asset => asset.id === s.key)?.available ? '' : ' — missing'}</option>)}
             </select>
           </Field>
         </div>
@@ -249,6 +262,8 @@ function GenerateSocialModal({ presets, onClose, onGenerate, generating }) {
         <Field label="Quote Text (for quote cards)">
           <textarea className="ds-textarea" style={{ minHeight: 64 }} value={form.quote_text} onChange={e => set('quote_text', e.target.value)} placeholder="Pull quote from episode…" />
         </Field>
+        <Field label="Post copy (optional; blank uses episode title and topic)"><textarea className="ds-textarea" value={form.post_text} onChange={e => set('post_text', e.target.value)} /></Field>
+        <div style={{ fontSize: '.72rem', color: 'var(--steel)' }}>Clip timing and waveform apply to video exports. Quote text appears on quote cards and as a video hook. Static exports do not require episode audio. Missing selected assets are a validation error.</div>
         <Field label="Options">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '.78rem', color: 'var(--bone)' }}>
             <input type="checkbox" checked={form.show_waveform} onChange={e => set('show_waveform', e.target.checked)} />

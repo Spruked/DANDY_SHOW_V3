@@ -46,7 +46,7 @@ async def produce_segment_or_legacy(
     config = detail.get("config", {}) or {}
     target_duration = int(config.get("target_duration") or 600)
 
-    if target_duration > 15 * 60:
+    if target_duration >= 15 * 60:
         return await legacy_produce_episode(
             background_tasks=background_tasks,
             job_id=job_id,

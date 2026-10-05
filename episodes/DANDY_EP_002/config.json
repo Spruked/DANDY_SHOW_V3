@@ -10,10 +10,10 @@
     "Literary reinterpretations and what they reveal",
     "Themes of legacy, distance, and connection"
   ],
-  "target_duration": 2400,
+  "target_duration": 480,
   "intensity": "medium",
   "generation_mode": "ai_generate",
   "provided_script": null,
   "expand_short_script": false,
-  "target_word_count": null
+  "target_word_count": 1240
 }

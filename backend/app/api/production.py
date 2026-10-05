@@ -3,6 +3,7 @@ from datetime import datetime
 from functools import partial
 from pathlib import Path
 import re
+import threading
 from typing import Dict, List, Optional
 from uuid import uuid4
 
@@ -40,6 +41,8 @@ from ..services.storage.episode_store import (
 router = APIRouter(tags=["production"])
 _WORKER: MergedDandyPodcastWorker | None = None
 _QUALITY_GUARD = ScriptQualityGuard()
+_GENERATION_LOCK = threading.Lock()
+_ACTIVE_GENERATION = None
 
 
 @router.get("/writer-status")
@@ -218,6 +221,33 @@ def _resolve_episode_audio_path(episode_id: str) -> Path | None:
 
 
 def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings: Dict | None = None) -> List[Dict]:
+    # Only saved, explicitly created ads. Never invent sponsors, change voices,
+    # duplicate a manual insertion, or add another spoken intro/outro here.
+    existing = {line.get("ad_id") for line in script if line.get("ad_id")}
+    available = [ad for ad in ads if ad.get("ad_id") not in existing]
+    result = []
+    elapsed = 0.0
+    next_break = 900.0
+    break_index = 0
+    previous_segment = None
+    for line in script:
+        segment = line.get("segment_index")
+        boundary = previous_segment is not None and segment is not None and segment != previous_segment and not line.get("is_ad")
+        has_sections = any(item.get("segment_index") is not None for item in script)
+        if (boundary or (not has_sections and elapsed >= next_break)) and available:
+            ad = available.pop(0)
+            result.extend({**ad_line, "ad_id": ad["ad_id"], "ad_line_index": index, "is_ad": True, "ad_break_index": break_index + 1}
+                          for index, ad_line in enumerate(ad.get("script", []), start=1))
+            break_index += 1; next_break += 900
+        result.append(dict(line))
+        if not line.get("is_ad"):
+            elapsed += len(str(line.get("text", "")).split()) / 155 * 60 + float(line.get("pause_after", 0) or 0)
+            if segment is not None:
+                previous_segment = segment
+    return _reindex(result)
+
+
+def _legacy_structure_unused(script: List[Dict], ads: List[Dict], ad_settings: Dict | None = None) -> List[Dict]:
     if len(script) < 4:
         return script
     ad_settings = ad_settings or {}
@@ -278,7 +308,9 @@ def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings:
 
 def _get_worker() -> MergedDandyPodcastWorker:
     global _WORKER
-    if _WORKER is None:
+    from ..core.settings import load_project_config, load_voices_config, load_qwen_tts_config
+    if (_WORKER is None or _WORKER.project_config != load_project_config()
+            or _WORKER.voices_config != load_voices_config() or _WORKER.qwen_tts_config != load_qwen_tts_config()):
         _WORKER = MergedDandyPodcastWorker(PROJECT_ROOT)
     return _WORKER
 
@@ -297,10 +329,22 @@ async def create_episode(payload: EpisodeCreateRequest):
 
 
 @router.post("/episodes/generate-script")
-async def generate_script(
+def generate_script(
     job_id: str = Query(...),
     payload: Dict | None = Body(default=None),
 ):
+    global _ACTIVE_GENERATION
+    if not _GENERATION_LOCK.acquire(blocking=False):
+        raise HTTPException(409, "A local script generation is already running; monitor its job before starting another")
+    _ACTIVE_GENERATION = job_id
+    try:
+        return _generate_script_impl(job_id, payload)
+    finally:
+        _ACTIVE_GENERATION = None
+        _GENERATION_LOCK.release()
+
+
+def _generate_script_impl(job_id, payload=None):
     job = load_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -309,12 +353,18 @@ async def generate_script(
     if not draft:
         raise HTTPException(status_code=404, detail="Episode draft not found")
 
-    generation_config = dict(draft["config"])
+    generation_config = dict(load_episode_detail(job["episode_id"]).get("config") or draft["config"])
     if payload and payload.get("personality_settings"):
         generation_config["personality_settings"] = payload["personality_settings"]
     generation_config["source_context"] = build_source_context(job["episode_id"])
     generation_config["require_llm"] = True
     generation_config["generation_nonce"] = f"{job['episode_id']}-{uuid4().hex}"
+    from ..services.storage.episode_store import JOBS_ROOT
+    def progress(state):
+        save_json(JOBS_ROOT / f"{job_id}.json", {**job, "status": "generating", "updated_at": datetime.now().isoformat(), **state})
+    progress({"started_at": datetime.now().isoformat(), "backend_pid": __import__('os').getpid()})
+    generation_config["_progress_callback"] = progress
+    generation_config["ad_break_duration_seconds"] = sum(float(ad.get("actual_duration_seconds") or ad.get("duration_seconds") or 0) for ad in load_episode_detail(job["episode_id"]).get("ads", []))
 
     # script_feed mode: use provided_script directly, skip AI generation
     if generation_config.get("generation_mode") == "script_feed" and generation_config.get("provided_script"):
@@ -351,10 +401,12 @@ async def generate_script(
         if report.decision != QualityDecision.ACCEPT:
             raise RuntimeError(f"Script quality check failed: {report.issues or report.warnings}")
     except Exception as exc:
+        save_json(JOBS_ROOT / f"{job_id}.json", {**job, "status": "failed", "updated_at": datetime.now().isoformat(), "error": str(exc)})
         raise HTTPException(status_code=502, detail=f"LLM script generation failed: {exc}") from exc
     script = _sanitize_script(script)
     script_meta = _assert_llm_script_publishable(script, require_llm=True)
     save_script(job["episode_id"], script)
+    save_json(JOBS_ROOT / f"{job_id}.json", {**job, "status": "script_ready", "updated_at": datetime.now().isoformat(), "word_count": sum(len(line["text"].split()) for line in script)})
     return {
         "status": "script_ready",
         "job_id": job_id,
@@ -395,17 +447,12 @@ def _run_produce_background(
         audio_path = Path(production_result["audio_file"])
         production_mode = "worker"
     except Exception as exc:
-        audio_path = _create_placeholder_audio(episode_id, script)
-        production_mode = "placeholder_fallback"
-        production_result = {
-            "episode_id": episode_id,
-            "audio_file": str(audio_path),
-            "transcript": script,
-            "metadata": {
-                "warning": str(exc),
-                "processing": {"processing_chain": "placeholder_fallback"},
-            },
-        }
+        save_json(episode_dir(episode_id) / "status.json", {
+            "status": "failed", "updated_at": datetime.now().isoformat(),
+            "job_id": job_id, "error": str(exc), "production_mode": "worker",
+            "fallback_used": False,
+        })
+        return
 
     script_meta = {
         **calculate_script_provenance(script),
@@ -482,19 +529,17 @@ async def produce_episode(
         raise HTTPException(status_code=400, detail="No script found. Generate script first.")
     script = _sanitize_script(script)
     require_llm = detail.get("config", {}).get("generation_mode") != "script_feed"
-    WORD_MIN = 5000
-    WORD_MAX = int(45 * 160)
+    target_seconds = int(detail.get("config", {}).get("target_duration") or 1800)
+    if not 900 <= target_seconds <= 2700:
+        raise HTTPException(422, "Episode target must be 15 to 45 minutes. Edit the episode configuration first.")
+    WORD_MIN = int(15 * 145)
+    WORD_MAX = int(45 * 165)
     est_words = sum(len(l.get("text", "").split()) for l in script)
     if est_words < WORD_MIN:
-        if require_llm:
-            raise HTTPException(
-                status_code=400,
-                detail=f"LLM-authored episode is too short for production and will not be template-expanded (got {est_words}, need {WORD_MIN}).",
-            )
-        script = _expand_script(script, WORD_MIN / 160)
+        raise HTTPException(400, f"Episode is too short ({est_words} words; minimum {WORD_MIN}). Add original content; no repetitive template expansion is used.")
     est_words = sum(len(l.get("text", "").split()) for l in script)
     if est_words > WORD_MAX:
-        script = _trim_script(script, 45.0)
+        raise HTTPException(400, "Episode exceeds the 45-minute word budget; edit the script before production. No content was silently trimmed.")
     est_words = sum(len(l.get("text", "").split()) for l in script)
     if est_words < WORD_MIN:
         raise HTTPException(status_code=400, detail=f"Episode must have at least {WORD_MIN} words after normalization (got {est_words}).")

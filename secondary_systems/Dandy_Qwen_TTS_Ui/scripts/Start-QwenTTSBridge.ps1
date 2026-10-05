@@ -13,8 +13,12 @@ $env:DANDY_SHOW_ROOT = $ShowRoot
 $env:DANDY_QWEN_BRIDGE_HOST = "0.0.0.0"
 $env:DANDY_QWEN_BRIDGE_PORT = "$Port"
 $env:DANDY_QWEN_BACKENDS = "http://127.0.0.1:8031,http://127.0.0.1:8032,http://127.0.0.1:8033"
-$env:DANDY_FFMPEG = Join-Path $ShowRoot "staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe"
-$env:DANDY_FFPROBE = Join-Path $ShowRoot "staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin\ffprobe.exe"
+if (-not $env:DANDY_FFMPEG) {
+    $env:DANDY_FFMPEG = Join-Path $ShowRoot "staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe"
+}
+if (-not $env:DANDY_FFPROBE) {
+    $env:DANDY_FFPROBE = Join-Path (Split-Path -Parent $env:DANDY_FFMPEG) "ffprobe.exe"
+}
 
 $Python = if ($env:DANDY_QWEN_PYTHON) {
     $env:DANDY_QWEN_PYTHON

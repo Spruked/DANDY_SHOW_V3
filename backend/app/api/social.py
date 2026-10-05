@@ -1,6 +1,11 @@
 from datetime import datetime
 import base64
 import json
+import math
+import os
+import shutil
+import subprocess
+from uuid import uuid4
 from pathlib import Path
 from typing import Any, Dict
 
@@ -11,9 +16,39 @@ from ..core.paths import PROJECT_ROOT
 from ..core.settings import load_project_config
 from ..services.social.package_builder import export_social_package
 from ..services.storage.episode_store import load_episode_detail, load_media_cues, load_asset
+from ..schemas.social_visual import SocialExportRequest
+from ..services.social.thumbnail_generator import generate_thumbnail
+from ..services.social.audiogram_generator import generate_audiogram
 
 
 router = APIRouter(tags=["social"])
+BRAND_SLOTS = ("thumbnail_base", "waveform_base", "alternate_cover", "character_logo", "segment_tech_talk", "logo")
+ASPECT_SIZES = {"16:9": (1280, 720), "1:1": (1080, 1080), "9:16": (1080, 1920), "4:5": (1080, 1350)}
+
+
+def _brand_path(filename):
+    if filename not in {f"{slot}.png" for slot in BRAND_SLOTS}:
+        raise HTTPException(400, "Unknown brand asset filename")
+    for base in (PROJECT_ROOT / "social" / "templates", PROJECT_ROOT / "social" / "assets"):
+        target = base / filename
+        if target.is_file():
+            return target
+    return None
+
+
+@router.get("/social/assets")
+def brand_assets_status():
+    return {"assets": [{"id": slot, "key": slot, "filename": f"{slot}.png", "name": slot.replace("_", " ").title(),
+                        "available": _brand_path(f"{slot}.png") is not None,
+                        "preview_url": f"/api/social/assets/{slot}.png"} for slot in BRAND_SLOTS]}
+
+
+@router.get("/social/assets/{filename}")
+def brand_asset_file(filename: str):
+    path = _brand_path(filename)
+    if not path:
+        raise HTTPException(404, "Brand image is missing from social/templates or social/assets")
+    return FileResponse(path)
 
 
 def _social_root(config: Dict[str, Any]) -> Path:
@@ -36,7 +71,7 @@ def _decode_export_id(export_id: str, root: Path) -> Path:
     except Exception as exc:
         raise HTTPException(status_code=400, detail="Invalid export id") from exc
     candidate = (root / rel).resolve()
-    if not str(candidate).startswith(str(root.resolve())):
+    if not candidate.is_relative_to(root.resolve()):
         raise HTTPException(status_code=400, detail="Invalid export id")
     return candidate
 
@@ -44,9 +79,6 @@ def _decode_export_id(export_id: str, root: Path) -> Path:
 def _shape_social_exports(episode_id: str, root: Path) -> list[Dict[str, Any]]:
     episode_dir = root / episode_id
     export_path = episode_dir / "social_export.json"
-    if not export_path.exists():
-        return []
-
     try:
         payload = json.loads(export_path.read_text(encoding="utf-8"))
     except Exception:
@@ -71,6 +103,8 @@ def _shape_social_exports(episode_id: str, root: Path) -> list[Dict[str, Any]]:
         if not file_path.exists() or not file_path.is_file():
             continue
 
+        if not file_path.resolve().is_relative_to(root.resolve()):
+            continue
         export_id = _encode_export_id(file_path, root)
         suffix = file_path.suffix.lower()
         is_image = suffix in {".png", ".jpg", ".jpeg", ".webp", ".gif"}
@@ -91,11 +125,19 @@ def _shape_social_exports(episode_id: str, root: Path) -> list[Dict[str, Any]]:
                 "sort_order": idx,
             }
         )
+    for manifest in episode_dir.glob("*/export.json"):
+        try:
+            item = json.loads(manifest.read_text(encoding="utf-8"))
+            path = Path(item["file_path"]).resolve()
+            if path.is_file() and path.is_relative_to(root.resolve()):
+                exports.append(item)
+        except (OSError, ValueError, KeyError):
+            continue
     return sorted(exports, key=lambda item: item.get("created_at", ""), reverse=True)
 
 
 @router.post("/episodes/{episode_id}/social-package")
-async def create_social_package_plan(episode_id: str) -> Dict:
+def create_social_package_plan(episode_id: str) -> Dict:
     detail = load_episode_detail(episode_id)
     if not detail.get("config") and not detail.get("script"):
         raise HTTPException(status_code=404, detail="Episode not found")
@@ -136,11 +178,79 @@ async def create_social_package_plan(episode_id: str) -> Dict:
 
 
 @router.post("/social/generate")
-async def generate_social_compat(payload: Dict[str, Any]) -> Dict:
-    episode_id = str(payload.get("episode_id") or "").strip()
-    if not episode_id:
-        raise HTTPException(status_code=400, detail="episode_id is required")
-    return await create_social_package_plan(episode_id)
+def generate_social_compat(payload: SocialExportRequest) -> Dict:
+    episode_id = payload.episode_id
+    if episode_id in {".", ".."}:
+        raise HTTPException(400, "Invalid episode id")
+    detail = load_episode_detail(episode_id)
+    if not detail.get("script") and not detail.get("config"):
+        raise HTTPException(404, "Episode not found")
+    config = detail.get("config", {})
+    title = config.get("title") or detail.get("title") or episode_id
+    topic = config.get("topic") or title
+    script_text = "\n".join(f"{line.get('speaker', 'speaker')}: {line.get('text', '')}" for line in detail.get("script", []))
+    if payload.export_type == "quote_card" and not payload.quote_text.strip():
+        raise HTTPException(422, "Quote cards require quote text")
+    background = None
+    if payload.asset_slot != "none":
+        background = _brand_path(f"{payload.asset_slot}.png")
+        if not background:
+            raise HTTPException(422, f"Selected asset {payload.asset_slot} is missing. Add its image or explicitly select Plain background.")
+    root = _social_root(load_project_config())
+    destination = root / episode_id / uuid4().hex[:12]
+    destination.mkdir(parents=True, exist_ok=True)
+    post_text = payload.post_text or f"{title}\n\n{topic}\n\n#PhilAndJimDandy"
+    copy_path = destination / "post_copy.txt"
+    copy_path.write_text(post_text, encoding="utf-8")
+    width, height = ASPECT_SIZES[payload.aspect_ratio]
+    if payload.export_type == "show_notes":
+        path = destination / "show_notes.txt"
+        path.write_text(f"{title}\nPlatform: {payload.platform}\n\n{post_text}\n\nTranscript\n{script_text}", encoding="utf-8")
+    elif payload.export_type in {"thumbnail", "quote_card"}:
+        output = generate_thumbnail(episode_id, payload.quote_text if payload.export_type == "quote_card" else title,
+                                    subtitle=title if payload.export_type == "quote_card" else topic,
+                                    background_image_path=str(background) if background else None, output_dir=destination,
+                                    config_overrides={"width": width, "height": height, "background_image_path": None, "logo_path": None,
+                                                      "output_format": "png", "wrap_text": True})
+        if not output:
+            raise HTTPException(500, "Image rendering failed; no completed export was recorded")
+        path = Path(output)
+    else:
+        from .production import _resolve_episode_audio_path
+        audio = _resolve_episode_audio_path(episode_id)
+        status_path = PROJECT_ROOT / "episodes" / episode_id / "status.json"
+        status = json.loads(status_path.read_text(encoding="utf-8")) if status_path.is_file() else {}
+        if not audio or status.get("production_mode") == "placeholder_fallback" or status.get("status") == "failed":
+            raise HTTPException(422, "Produce real episode audio before generating a video export")
+        ffprobe = os.getenv("DANDY_FFPROBE") or shutil.which("ffprobe")
+        ffmpeg = os.getenv("DANDY_FFMPEG") or shutil.which("ffmpeg")
+        if not ffprobe or not ffmpeg:
+            raise HTTPException(503, "FFmpeg and ffprobe are required")
+        probe = subprocess.run([ffprobe, "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(audio)],
+                               capture_output=True, text=True, timeout=10, check=True)
+        actual_duration = float(probe.stdout.strip())
+        if not math.isfinite(actual_duration) or payload.clip_start + payload.clip_duration > actual_duration + 0.05:
+            raise HTTPException(422, f"Requested clip exceeds the audio duration ({actual_duration:.2f}s); choose an in-range start and duration")
+        clip = destination / "clip.mp3"
+        subprocess.run([ffmpeg, "-y", "-ss", str(payload.clip_start), "-i", str(audio), "-t", str(payload.clip_duration), "-vn", "-c:a", "libmp3lame", str(clip)],
+                       capture_output=True, text=True, timeout=60, check=True)
+        path = destination / f"{payload.export_type}.mp4"
+        output = generate_audiogram(clip, path, title=title, background_image_path=str(background) if background else None,
+                                    hook_text=payload.quote_text,
+                                    config_overrides={"width": width, "height": height, "show_waveform": payload.show_waveform,
+                                                      "background_image_path": None, "logo_path": None})
+        if not output:
+            raise HTTPException(500, "Video renderer failed; no completed export was recorded")
+    if not path.is_file() or not path.stat().st_size:
+        raise HTTPException(500, "Renderer did not produce a non-empty file")
+    export_id = _encode_export_id(path, root)
+    item = {**payload.model_dump(), "export_id": export_id, "status": "done", "created_at": datetime.now().isoformat(),
+            "file_path": str(path), "download_url": f"/api/social/{export_id}/download",
+            "preview_url": f"/api/social/{export_id}/download" if path.suffix == ".png" else None,
+            "post_text": post_text, "post_copy_url": f"/api/social/{_encode_export_id(copy_path, root)}/download",
+            "width": width, "height": height}
+    (destination / "export.json").write_text(json.dumps(item, indent=2), encoding="utf-8")
+    return {"status": "exported", "export": item}
 
 
 @router.get("/social/presets")
@@ -167,7 +277,7 @@ async def social_presets() -> Dict:
                 "platform": name,
                 "export_type": "audiogram" if platform_config.get("type") == "video" else "thumbnail",
                 "aspect_ratio": (
-                    f"{platform_config.get('width', 1)}:{platform_config.get('height', 1)}"
+                    f"{platform_config['width'] // math.gcd(platform_config['width'], platform_config['height'])}:{platform_config['height'] // math.gcd(platform_config['width'], platform_config['height'])}"
                     if platform_config.get("width") and platform_config.get("height")
                     else ""
                 ),

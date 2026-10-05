@@ -17,7 +17,7 @@ const SPK_CLASS = {
 }
 const CUE_TYPES = ['sfx', 'ad', 'bumper', 'transition', 'intro', 'outro', 'music', 'voice']
 
-export default function EpisodeTab() {
+export default function EpisodeTab({ episodeId, onEpisodeChange }) {
   const { toast, showToast } = useToast()
   const [episodes, setEpisodes]     = useState([])
   const [activeEp, setActiveEp]     = useState(null)
@@ -70,7 +70,7 @@ export default function EpisodeTab() {
       const data = await api.listEpisodes()
       const list = Array.isArray(data) ? data : (data.episodes || [])
       setEpisodes(list)
-      if (list.length && !activeEp) selectEpisode(list[0])
+      if (list.length && !activeEp) selectEpisode(list.find(ep => (ep.episode_id || ep.id) === episodeId) || list[0])
     } catch {
       showToast('Could not load episodes - is the API proxy online?')
     } finally { setLoading(false) }
@@ -80,6 +80,7 @@ export default function EpisodeTab() {
 
   const selectEpisode = async (ep) => {
     const id = ep.episode_id || ep.id
+    onEpisodeChange?.(id)
     setActiveEp(ep)
     setSelectedLine(null)
     setEditingLine(null)
@@ -107,10 +108,10 @@ export default function EpisodeTab() {
   const hostLines = lines.filter(l => (l.speaker || '').toUpperCase() === 'HOST').length
   const adLines   = lines.filter(l => ['INTRO_MALE','INTRO_FEMALE'].includes((l.speaker||'').toUpperCase())).length
   const allText   = lines.map(l => l.text || l.line || '').join(' ')
-  const runtimeSec  = wordsToSeconds(allText)
+  const runtimeSec  = Math.round(wordsToSeconds(allText) + lines.reduce((sum, line) => sum + Number(line.pause_after || 0), 0))
   const runtimeMin  = runtimeSec / 60
-  const configuredTargetSeconds = Number(activeEp?.config?.target_duration || activeEp?.target_duration || 600)
-  const targetMinutes = Math.max(1, Math.min(15, Math.round(configuredTargetSeconds / 60)))
+  const configuredTargetSeconds = Number(activeEp?.config?.target_duration || activeEp?.target_duration || 1800)
+  const targetMinutes = Math.max(15, Math.min(45, Math.round(configuredTargetSeconds / 60)))
   const targetOk = runtimeMin >= targetMinutes * 0.75 && runtimeMin <= targetMinutes * 1.25
 
   const visibleAssets = assets.filter((a) => {
@@ -363,10 +364,11 @@ export default function EpisodeTab() {
           const isLlm = st?.active_writer === 'llamacpp' || st?.active_writer === 'llm_bridge'
           const isLoading = st === null
           const backend = st?.writer_backend
+            const modelName = String(st?.model || 'Local model').split(/[\\/]/).pop().replace(/\.gguf$/i, '')
           const bg = isLoading ? 'var(--rim)' : isLlm ? 'rgba(34,197,94,.12)' : 'rgba(234,179,8,.10)'
           const dot = isLoading ? '#6b7280' : isLlm ? '#22c55e' : '#eab308'
           const label = isLoading ? 'Script Engine: Checking…'
-            : isLlm && backend === 'llamacpp' ? 'Script Engine: llama.cpp / Qwen 2.5 Active'
+            : isLlm && backend === 'llamacpp' ? `Script Engine: llama.cpp / ${modelName} Active`
             : isLlm ? 'Script Engine: LLM Active'
             : 'Script Engine: Unavailable'
           return <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 14px', background: bg, borderBottom: '1px solid var(--rim)', flexShrink: 0 }}>
@@ -514,7 +516,7 @@ function EditConfigModal({ episode, onClose, onSaved, showToast }) {
     description: config.description || '',
     key_points: (Array.isArray(config.key_points) ? config.key_points : []).join('\n'),
     custom_instructions: config.custom_instructions || '',
-    target_minutes: Math.max(1, Math.min(15, Math.round((Number(config.target_duration) || 600) / 60))),
+    target_minutes: Math.max(15, Math.min(45, Math.round((Number(config.target_duration) || 1800) / 60))),
     intensity: config.intensity || 'medium',
   })
   const [busy, setBusy] = useState(false)
@@ -524,7 +526,7 @@ function EditConfigModal({ episode, onClose, onSaved, showToast }) {
     if (!form.title.trim()) { showToast('Title required'); return }
     setBusy(true)
     try {
-      const body = { ...form, target_duration: form.target_minutes * 60, target_word_count: form.target_minutes * 155, key_points: form.key_points.split('\n').map(s => s.trim()).filter(Boolean) }
+      const body = { ...form, target_duration: form.target_minutes * 60, target_word_count: form.target_minutes * 150, key_points: form.key_points.split('\n').map(s => s.trim()).filter(Boolean) }
       const res = await api.updateEpisodeConfig(epId, body)
       onSaved(res.config || body)
     } catch (e) { showToast('Save failed: ' + e.message.slice(0, 80)) }
@@ -537,16 +539,16 @@ function EditConfigModal({ episode, onClose, onSaved, showToast }) {
       <Field label="Description"><textarea className="ds-textarea" value={form.description} onChange={e => set('description', e.target.value)} /></Field>
       <Field label="Key Points (one per line)"><textarea className="ds-textarea" value={form.key_points} onChange={e => set('key_points', e.target.value)} placeholder={'Point 1\nPoint 2\nPoint 3'} /></Field>
       <Field label="Custom Instructions"><textarea className="ds-textarea" style={{ minHeight: 56 }} value={form.custom_instructions} onChange={e => set('custom_instructions', e.target.value)} placeholder="Special tone or format instructions…" /></Field>
-      <Field label={`Segment Length: ${form.target_minutes}m`}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>1m</span><input type="range" min={1} max={15} step={1} value={form.target_minutes} onChange={e => set('target_minutes', +e.target.value)} /><span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>15m</span></div></Field>
+      <Field label={`Episode Length: ${form.target_minutes}m`}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>15m</span><input type="range" min={15} max={45} step={1} value={form.target_minutes} onChange={e => set('target_minutes', +e.target.value)} /><span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>45m</span></div></Field>
     </div>
   </Modal>
 }
 
 function CreateEpisodeModal({ onClose, onCreated, showToast }) {
-  const [form, setForm] = useState({ episode_id: '', title: '', topic: '', description: '', key_points: '', custom_instructions: '', target_minutes: 10 })
+  const [form, setForm] = useState({ episode_id: '', title: '', topic: '', description: '', key_points: '', custom_instructions: '', target_minutes: 30 })
   const [busy, setBusy] = useState(false)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-  const targetWords = Math.round(form.target_minutes * 155)
+  const targetWords = Math.round(form.target_minutes * 150)
   const submit = async () => {
     if (!form.title.trim()) { showToast('Title required'); return }
     setBusy(true)
@@ -559,12 +561,12 @@ function CreateEpisodeModal({ onClose, onCreated, showToast }) {
   }
   return <Modal title="Create Segment" onClose={onClose} footer={<><button className="btn btn-steel" onClick={onClose}>CANCEL</button><button className="btn btn-solid" onClick={submit} disabled={busy}>{busy ? <Spinner size={11} /> : <Plus size={11} />} CREATE</button></>}>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}><Field label="Episode ID"><input className="ds-input" value={form.episode_id} onChange={e => set('episode_id', e.target.value)} placeholder="e.g. ep_042" /></Field><Field label="Title"><input className="ds-input" value={form.title} onChange={e => set('title', e.target.value)} placeholder="Segment title" /></Field></div>
-      <Field label="Main Topic"><input className="ds-input" value={form.topic} onChange={e => set('topic', e.target.value)} placeholder="What's this segment about?" /></Field>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}><Field label="Episode ID"><input className="ds-input" value={form.episode_id} onChange={e => set('episode_id', e.target.value)} placeholder="e.g. ep_042" /></Field><Field label="Title"><input className="ds-input" value={form.title} onChange={e => set('title', e.target.value)} placeholder="Episode title" /></Field></div>
+      <Field label="Main Topic"><input className="ds-input" value={form.topic} onChange={e => set('topic', e.target.value)} placeholder="What is this episode about?" /></Field>
       <Field label="Description"><textarea className="ds-textarea" value={form.description} onChange={e => set('description', e.target.value)} placeholder="Longer description / context…" /></Field>
       <Field label="Key Points (one per line)"><textarea className="ds-textarea" value={form.key_points} onChange={e => set('key_points', e.target.value)} placeholder={'Point 1\nPoint 2\nPoint 3'} /></Field>
       <Field label="Custom Instructions"><textarea className="ds-textarea" style={{ minHeight: 56 }} value={form.custom_instructions} onChange={e => set('custom_instructions', e.target.value)} placeholder="Any special tone/format instructions…" /></Field>
-      <Field label={`Segment Length: ${form.target_minutes}m (~${targetWords.toLocaleString()} words)`}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>1m</span><input type="range" min={1} max={15} step={1} value={form.target_minutes} onChange={e => set('target_minutes', +e.target.value)} /><span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>15m</span></div></Field>
+      <Field label={`Episode Length: ${form.target_minutes}m (~${targetWords.toLocaleString()} words)`}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>15m</span><input type="range" min={15} max={45} step={1} value={form.target_minutes} onChange={e => set('target_minutes', +e.target.value)} /><span className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>45m</span></div></Field>
     </div>
   </Modal>
 }

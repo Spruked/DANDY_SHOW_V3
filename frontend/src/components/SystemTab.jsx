@@ -1,322 +1,157 @@
-// components/SystemTab.jsx
-import { useState, useEffect } from 'react'
-import { RefreshCw, CheckCircle, XCircle, Mic, Cpu, Globe, Music, Play, Save } from 'lucide-react'
-import { api } from '../lib/api'
+import { useState, useEffect, useRef } from 'react'
+import { RefreshCw, Play, Save } from 'lucide-react'
+import { api, req } from '../lib/api'
 import { Badge, Spinner, Toast, Field } from './ui'
 import { useToast } from '../hooks/useToast'
 
-const KNOWN_VOICES = [
-  { id: 'am_michael', character: 'Phil',               engine: 'Kokoro', role: 'Host' },
-  { id: 'am_liam',    character: 'Jim',                engine: 'Kokoro', role: 'Host' },
-  { id: 'am_eric',    character: 'Host / Announcer',   engine: 'Kokoro', role: 'Host / Announcer' },
-  { id: 'bf_emma',    character: 'Guest / Announcer',  engine: 'Kokoro', role: 'Guest / Announcer' },
-]
-
-const PROXIES = [
-  { name: 'Backend API',     url: '/api', note: 'FastAPI through the active Vite proxy' },
-  { name: 'Vite Dev Server', url: 'http://localhost:5173', note: 'Frontend and /api proxy' },
-  { name: 'WebSocket',       url: 'ws://localhost:5173/ws', note: 'Production progress stream' },
-]
-
-const displayValue = (value) => (
-  value && typeof value === 'object' ? JSON.stringify(value) : String(value)
-)
-
+const CHECK_NAMES = {
+  writer: 'Writer / Loaded Model', kokoro: 'Kokoro WSL Runtime', qwen_bridge: 'Qwen TTS Bridge',
+  qwen_custom_voice: 'Qwen CustomVoice Service', qwen_operator_ui: 'Qwen Operator UI',
+  gpu: 'GPU / VRAM', resources: 'CPU / RAM / Backend Process', media_tools: 'Media Tools',
+  storage: 'Storage / Required Assets', production: 'Production / Generation Records',
+  obs: 'OBS / Streaming / Recording', mixer: 'Voicemeeter',
+}
+const bytes = value => typeof value === 'number' ? ((value / 1024 ** 3).toFixed(2) + ' GiB') : 'unverified'
+const clock = value => value ? new Date(value).toLocaleTimeString() : 'not checked'
+function probeWebSocket() {
+  return new Promise(resolve => {
+    const started = performance.now()
+    const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/system-monitor-' + crypto.randomUUID()
+    const socket = new WebSocket(url), token = crypto.randomUUID()
+    let done = false
+    const finish = (status, error) => {
+      if (done) return
+      done = true; clearTimeout(timer); socket.close()
+      resolve({ status, url, error, checked_at: new Date().toISOString(), latency_ms: Math.round(performance.now() - started), source: 'browser handshake + matching echo; not production progress' })
+    }
+    const timer = setTimeout(() => finish('unavailable', 'No matching echo within 4 seconds'), 4000)
+    socket.onopen = () => socket.send(token)
+    socket.onmessage = event => {
+      try { const data = JSON.parse(event.data); if (data.type === 'echo' && data.text === token) finish('ready') } catch { /* Ignore unrelated messages. */ }
+    }
+    socket.onerror = () => finish('unavailable', 'WebSocket connection failed')
+    socket.onclose = () => { if (!done) finish('unavailable', 'Connection closed before echo') }
+  })
+}
+function Summary({ name, check }) {
+  const data = check.data || {}
+  if (name === 'writer') return <><div>{data.model || 'No loaded model verified'}</div><div>{data.llamacpp_url}</div><div>Inference: {check.inference || 'unverified'}</div></>
+  if (name === 'gpu') return data.devices?.map(d => <div key={d.index}>{d.name}<br />VRAM {d.memory_used_mib} / {d.memory_total_mib} MiB · GPU {d.utilization_percent}% · {d.temperature_c} °C</div>)
+  if (name === 'resources') return <><div>CPU {data.cpu_percent ?? 'unverified'}% · RAM {data.ram_used_percent ?? 'unverified'}%</div><div>Available RAM: {bytes(data.ram_available_bytes)}</div><div>Backend PID {data.backend_pid} · RSS {bytes(data.backend_rss_bytes)}</div></>
+  if (name === 'storage') return <><div>Free disk: {bytes(data.disk_free_bytes)}</div><div>Intro/outro music: {data.music_exists ? 'present' : 'MISSING'}</div><div>Brand images: {data.brand_assets?.filter(a => a.available).length ?? 0} / {data.brand_assets?.length ?? 0} present</div></>
+  if (name === 'obs') return <><div>Scene: {data.scene_name || 'unverified'}</div><div>Streaming: {String(data.streaming)} · Recording: {String(data.recording)}</div><div>{check.cameras}</div></>
+  if (name === 'kokoro') return <><div>Device: {data.device || 'unverified'}</div><div>CUDA available: {String(data.cuda_available ?? 'unverified')}</div><div>Synthesis: {check.synthesis || 'unverified'}</div></>
+  if (name === 'media_tools') return Object.entries(data).map(([tool, value]) => <div key={tool}>{tool}: {value.status}<div>{value.path}</div></div>)
+  if (name === 'production') return <><div>{data.episodes?.length ?? 0} production records · {data.jobs?.length ?? 0} recent jobs</div><div>Live progress: {data.progress_telemetry}</div></>
+  return <div>{check.url || 'See measured details below'}</div>
+}
 export default function SystemTab() {
   const { toast, showToast } = useToast()
-  const [health, setHealth] = useState(null)
-  const [voices, setVoices] = useState([])
-  const [checking, setChecking] = useState(false)
-  const [savingTts, setSavingTts] = useState(false)
-
-  const [ioCfg, setIoCfg] = useState(null)
-  const [ioLoading, setIoLoading] = useState(false)
-  const [ioSaving, setIoSaving] = useState(false)
-  const [ioPreviewing, setIoPreviewing] = useState(null)
-  const [ioPreviewUrl, setIoPreviewUrl] = useState(null)
-
-  useEffect(() => { checkHealth(); loadIoConfig() }, [])
-
+  const [diagnostics, setDiagnostics] = useState(null), [network, setNetwork] = useState(null)
+  const [checking, setChecking] = useState(false), [error, setError] = useState('')
+  const [selectedTts, setSelectedTts] = useState(''), [savingTts, setSavingTts] = useState(false)
+  const [ioCfg, setIoCfg] = useState(null), [ioLoading, setIoLoading] = useState(false), [ioSaving, setIoSaving] = useState(false)
+  const [ioPreviewing, setIoPreviewing] = useState(null), [ioPreviewUrl, setIoPreviewUrl] = useState(null)
+  const [tick, setTick] = useState(Date.now())
+  const inFlight = useRef(false), mounted = useRef(true), controller = useRef(null), previewRef = useRef(null)
   const loadIoConfig = async () => {
     setIoLoading(true)
-    try {
-      const cfg = await api.getIntroOutroConfig()
-      setIoCfg(cfg)
-    } catch { showToast('Could not load intro/outro config') }
-    setIoLoading(false)
+    try { const cfg = await api.getIntroOutroConfig(); if (mounted.current) setIoCfg(cfg) }
+    catch (e) { if (mounted.current) showToast('Intro/outro load failed: ' + e.message) }
+    finally { if (mounted.current) setIoLoading(false) }
   }
-
-  const saveIoConfig = async () => {
-    if (!ioCfg) return
-    setIoSaving(true)
-    try {
-      await api.saveIntroOutroConfig(ioCfg)
-      showToast('Intro/outro config saved ✓')
-    } catch (e) { showToast('Save failed: ' + e.message.slice(0, 60)) }
-    setIoSaving(false)
-  }
-
-  const previewSection = async (section) => {
-    setIoPreviewing(section)
-    if (ioPreviewUrl) URL.revokeObjectURL(ioPreviewUrl)
-    setIoPreviewUrl(null)
-    try {
-      const url = await api.previewIntroOutro(section, 'the show')
-      setIoPreviewUrl(url)
-    } catch (e) { showToast(`Preview failed: ${e.message.slice(0, 100)}`) }
-    setIoPreviewing(null)
-  }
-
-  const setIo = (path, value) => {
-    setIoCfg(prev => {
-      const next = JSON.parse(JSON.stringify(prev))
-      const keys = path.split('.')
-      let obj = next
-      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]]
-      obj[keys[keys.length - 1]] = value
-      return next
-    })
-  }
-
   const checkHealth = async () => {
-    setChecking(true)
+    if (inFlight.current) return
+    inFlight.current = true; setChecking(true)
+    const activeController = new AbortController()
+    controller.current = activeController
+    const timeout = setTimeout(() => activeController.abort(), 20000)
     try {
-      const h = await api.health()
-      setHealth({ ok: true, ...h })
-    } catch (e) {
-      setHealth({ ok: false, error: e.message })
-    }
-    try {
-      const v = await api.voices()
-      setVoices(Array.isArray(v) ? v : (v.kokoro || v.voices || []))
-    } catch { setVoices([]) }
-    setChecking(false)
+      const [data, ws] = await Promise.all([req('/system/diagnostics', { signal: activeController.signal }), probeWebSocket()])
+      if (mounted.current) { setDiagnostics(data); setNetwork(ws); setSelectedTts(data.selected_tts); setError('') }
+    } catch (e) { if (mounted.current) setError(e.name === 'AbortError' ? 'Diagnostic timeout; previous readings are stale.' : e.message) }
+    finally { clearTimeout(timeout); inFlight.current = false; if (mounted.current) setChecking(false) }
   }
-
-  const setProductionTts = async (engine) => {
+  useEffect(() => {
+    mounted.current = true; checkHealth(); loadIoConfig()
+    req('/tts-engine').then(data => { if (mounted.current) setSelectedTts(data.selected_engine) }).catch(() => {})
+    const interval = setInterval(() => { setTick(Date.now()); if (!document.hidden) checkHealth() }, 15000)
+    return () => { mounted.current = false; clearInterval(interval); controller.current?.abort(); if (previewRef.current) URL.revokeObjectURL(previewRef.current) }
+  }, [])
+  const setProductionTts = async engine => {
     setSavingTts(true)
-    try {
-      const response = await fetch('/api/tts-engine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ engine }),
-      })
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({}))
-        throw new Error(payload.detail || `HTTP ${response.status}`)
-      }
-      showToast(`Production TTS set to ${engine.toUpperCase()} ✓`)
-      await checkHealth()
-    } catch (e) {
-      showToast('TTS selection failed: ' + e.message.slice(0, 90))
-    }
-    setSavingTts(false)
+    try { await req('/tts-engine', { method: 'POST', body: JSON.stringify({ engine }) }); setSelectedTts(engine); showToast('Production TTS: ' + engine); await checkHealth() }
+    catch (e) { showToast('TTS selection failed: ' + e.message) }
+    finally { setSavingTts(false) }
   }
-
-  const backendOk = health?.ok
-  const selectedTts = String(health?.tts_runtime?.primary_engine || 'kokoro').toLowerCase()
-  const qwen = health?.qwen_tts_bridge || {}
-
-  return (
-    <div className="tab-body">
-      <div className="pane-main" style={{ overflow: 'auto' }}>
-        <div className="section-head">
-          <span className="section-label">System Status</span>
-          <button className="icon-btn" onClick={checkHealth} title="Refresh" disabled={checking}>
-            <RefreshCw size={10} style={{ animation: checking ? 'spin .7s linear infinite' : 'none' }} />
-          </button>
-        </div>
-
-        <div className="sys-grid">
-          <div className="sys-card">
-            <div className="sys-card-title">Backend Health</div>
-            {checking && <Spinner size={18} />}
-            {!checking && health && (
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  {backendOk
-                    ? <CheckCircle size={18} style={{ color: 'var(--green)' }} />
-                    : <XCircle size={18} style={{ color: 'var(--red)' }} />}
-                  <span className="font-mono" style={{ fontSize: '.6rem', color: backendOk ? 'var(--green)' : 'var(--red)' }}>
-                    {backendOk ? 'ONLINE - /api' : 'OFFLINE'}
-                  </span>
-                </div>
-                {health.ok && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {Object.entries(health).filter(([k]) => k !== 'ok').map(([k, v]) => (
-                      <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                        <span className="font-mono" style={{ fontSize: '.52rem', color: 'var(--steel)' }}>{k}</span>
-                        <span className="font-mono" style={{ fontSize: '.52rem', color: 'var(--bone)', textAlign: 'right' }}>{displayValue(v)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {!health.ok && (
-                  <div className="font-mono" style={{ fontSize: '.55rem', color: 'var(--red)', marginTop: 6 }}>{health.error}</div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="sys-card">
-            <div className="sys-card-title">Network / Proxies</div>
-            {PROXIES.map((p, i) => (
-              <div key={i} style={{ marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <Globe size={11} style={{ color: 'var(--gold)', flexShrink: 0 }} />
-                  <span style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--bone)' }}>{p.name}</span>
-                </div>
-                <div className="font-mono" style={{ fontSize: '.52rem', color: 'var(--blue)', marginBottom: 2 }}>{p.url}</div>
-                <div className="font-mono" style={{ fontSize: '.48rem', color: 'var(--steel)' }}>{p.note}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="sys-card" style={{ gridColumn: '1 / -1' }}>
-            <div className="sys-card-title">Production TTS</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'end' }}>
-              <Field label="Selected Engine">
-                <select className="ds-select" value={selectedTts} disabled={savingTts} onChange={e => setProductionTts(e.target.value)}>
-                  <option value="kokoro">Kokoro — Default</option>
-                  <option value="qwen">Qwen — Explicit Selection</option>
-                </select>
-              </Field>
-              <div className="font-mono" style={{ fontSize: '.55rem', color: 'var(--bone)', lineHeight: 1.7 }}>
-                <div>Fallback engine: <strong>NONE</strong></div>
-                <div>Edge TTS: NOT USED</div>
-                <div>Browser voice: NOT USED</div>
-              </div>
-            </div>
-            <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Badge type="gold">Kokoro primary</Badge>
-              <Badge type={qwen.status === 'ok' ? 'green' : 'steel'}>Qwen bridge: {qwen.status || 'unknown'}</Badge>
-            </div>
-          </div>
-
-          <div className="sys-card" style={{ gridColumn: '1 / -1' }}>
-            <div className="sys-card-title">Kokoro Voice Registry</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
-              {KNOWN_VOICES.map((v, i) => {
-                const liveVoice = voices.find(lv => lv.id === v.id || lv.voice_id === v.id)
-                return (
-                  <div key={i} className="voice-row" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '8px 10px', border: '1px solid var(--rim)', borderRadius: 'var(--radius)', background: 'var(--bg)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
-                      <Mic size={13} style={{ color: 'var(--gold)', flexShrink: 0 }} />
-                      <span style={{ fontWeight: 600, fontSize: '.78rem', color: 'var(--bone)', flex: 1 }}>{v.character}</span>
-                      <Badge type="gold">{v.engine}</Badge>
-                    </div>
-                    <div className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)', marginTop: 4 }}>{v.id} · {v.role}</div>
-                    {liveVoice && <div className="font-mono" style={{ fontSize: '.46rem', color: 'var(--green)', marginTop: 3 }}>✓ registered</div>}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="sys-card">
-            <div className="sys-card-title">Hardware</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <Cpu size={14} style={{ color: 'var(--gold)' }} />
-              <span style={{ fontSize: '.78rem', color: 'var(--bone)' }}>RTX 3050 6GB GDDR6</span>
-            </div>
-            <div className="font-mono" style={{ fontSize: '.52rem', color: 'var(--steel)', lineHeight: 1.8 }}>
-              <div>Primary TTS: {health?.tts_runtime?.primary_engine || '--'}</div>
-              <div>Device: {health?.tts_runtime?.device || '--'}</div>
-              <div>Fallback: NONE</div>
-              <div>Voices defined: {health?.tts_runtime?.voices_defined || '--'}</div>
-              <div>ffmpeg: staging/ffmpeg/ffmpeg-master-latest-win64-gpl/bin</div>
-            </div>
-          </div>
-
-          <div className="sys-card">
-            <div className="sys-card-title">Production Notes</div>
-            <div className="font-mono" style={{ fontSize: '.52rem', color: 'var(--steel)', lineHeight: 2 }}>
-              <div style={{ color: 'var(--bone)' }}>Offline runner: <span style={{ color: 'var(--gold)' }}>python staging/produce_demo.py</span></div>
-              <div>Watch: <span style={{ color: 'var(--blue)' }}>logs/produce_demo.log</span></div>
-              <div>Audio: <span style={{ color: 'var(--blue)' }}>episodes/&lt;episode_id&gt;/audio.mp3</span></div>
-              <div>Selected TTS failure stops production. No alternate voice provider is substituted.</div>
-            </div>
-          </div>
-
-          <div className="sys-card" style={{ gridColumn: '1 / -1' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div className="sys-card-title" style={{ marginBottom: 0 }}>
-                <Music size={12} style={{ display: 'inline', marginRight: 6, color: 'var(--gold)' }} />
-                Intro / Outro Settings
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn btn-steel btn-sm" onClick={loadIoConfig} disabled={ioLoading}><RefreshCw size={10} /> RELOAD</button>
-                <button className="btn btn-solid btn-sm" onClick={saveIoConfig} disabled={ioSaving || !ioCfg}>{ioSaving ? <Spinner size={10} /> : <Save size={10} />} SAVE CONFIG</button>
-              </div>
-            </div>
-
-            {ioLoading && <Spinner size={18} />}
-            {!ioLoading && ioCfg && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <Field label="Enabled">
-                    <select className="ds-select" value={ioCfg.enabled ? 'yes' : 'no'} onChange={e => setIo('enabled', e.target.value === 'yes')}>
-                      <option value="yes">Yes — apply on every produce</option>
-                      <option value="no">No — skip intro/outro</option>
-                    </select>
-                  </Field>
-                  <Field label="Music File"><input className="ds-input" value={ioCfg.music_file || ''} onChange={e => setIo('music_file', e.target.value)} /></Field>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <div className="section-label">Intro</div>
-                      <button className="btn btn-steel btn-sm" onClick={() => previewSection('intro')} disabled={ioPreviewing === 'intro'}>{ioPreviewing === 'intro' ? <Spinner size={9} /> : <Play size={9} />} PREVIEW</button>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <Field label="Announcer Text"><textarea className="ds-textarea" style={{ minHeight: 52 }} value={ioCfg.intro?.announcer_text || ''} onChange={e => setIo('intro.announcer_text', e.target.value)} /></Field>
-                      <Field label="Announcer Voice (Kokoro)"><input className="ds-input" value={ioCfg.intro?.announcer_voice || ''} onChange={e => setIo('intro.announcer_voice', e.target.value)} /></Field>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                        <Field label="Clip Start (ms)"><input className="ds-input" type="number" value={ioCfg.intro?.clip_start_ms ?? 0} onChange={e => setIo('intro.clip_start_ms', +e.target.value)} /></Field>
-                        <Field label="Clip Duration (ms)"><input className="ds-input" type="number" value={ioCfg.intro?.clip_duration_ms ?? 14000} onChange={e => setIo('intro.clip_duration_ms', +e.target.value)} /></Field>
-                        <Field label="Music Fade In (ms)"><input className="ds-input" type="number" value={ioCfg.intro?.music_fade_in_ms ?? 1200} onChange={e => setIo('intro.music_fade_in_ms', +e.target.value)} /></Field>
-                        <Field label="Music Fade Out (ms)"><input className="ds-input" type="number" value={ioCfg.intro?.music_fade_out_ms ?? 2000} onChange={e => setIo('intro.music_fade_out_ms', +e.target.value)} /></Field>
-                        <Field label="Duck Start (ms)"><input className="ds-input" type="number" value={ioCfg.intro?.duck_start_ms ?? 4000} onChange={e => setIo('intro.duck_start_ms', +e.target.value)} /></Field>
-                        <Field label="Duck Level (dB)"><input className="ds-input" type="number" value={ioCfg.intro?.duck_db ?? -18} onChange={e => setIo('intro.duck_db', +e.target.value)} /></Field>
-                        <Field label="Silence After (ms)"><input className="ds-input" type="number" value={ioCfg.intro?.silence_after_ms ?? 800} onChange={e => setIo('intro.silence_after_ms', +e.target.value)} /></Field>
-                        <Field label="Pause Duration (ms)"><input className="ds-input" type="number" value={ioCfg.intro?.pause_duration_ms ?? 700} onChange={e => setIo('intro.pause_duration_ms', +e.target.value)} /></Field>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <div className="section-label">Outro</div>
-                      <button className="btn btn-steel btn-sm" onClick={() => previewSection('outro')} disabled={ioPreviewing === 'outro'}>{ioPreviewing === 'outro' ? <Spinner size={9} /> : <Play size={9} />} PREVIEW</button>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <Field label="Announcer Text ({topic} + [pause] supported)"><textarea className="ds-textarea" style={{ minHeight: 52 }} value={ioCfg.outro?.announcer_text || ''} onChange={e => setIo('outro.announcer_text', e.target.value)} /></Field>
-                      <Field label="Announcer Voice (Kokoro)"><input className="ds-input" value={ioCfg.outro?.announcer_voice || ''} onChange={e => setIo('outro.announcer_voice', e.target.value)} /></Field>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                        <Field label="Clip Start (ms)"><input className="ds-input" type="number" value={ioCfg.outro?.clip_start_ms ?? 0} onChange={e => setIo('outro.clip_start_ms', +e.target.value)} /></Field>
-                        <Field label="Clip Duration (ms)"><input className="ds-input" type="number" value={ioCfg.outro?.clip_duration_ms ?? 12000} onChange={e => setIo('outro.clip_duration_ms', +e.target.value)} /></Field>
-                        <Field label="Music Fade In (ms)"><input className="ds-input" type="number" value={ioCfg.outro?.music_fade_in_ms ?? 2000} onChange={e => setIo('outro.music_fade_in_ms', +e.target.value)} /></Field>
-                        <Field label="Music Fade Out (ms)"><input className="ds-input" type="number" value={ioCfg.outro?.music_fade_out_ms ?? 3000} onChange={e => setIo('outro.music_fade_out_ms', +e.target.value)} /></Field>
-                        <Field label="Silence Before (ms)"><input className="ds-input" type="number" value={ioCfg.outro?.silence_before_ms ?? 600} onChange={e => setIo('outro.silence_before_ms', +e.target.value)} /></Field>
-                        <Field label="Pause Duration (ms)"><input className="ds-input" type="number" value={ioCfg.outro?.pause_duration_ms ?? 700} onChange={e => setIo('outro.pause_duration_ms', +e.target.value)} /></Field>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {ioPreviewUrl && (
-                  <div style={{ marginTop: 4 }}>
-                    <div className="section-label" style={{ marginBottom: 6 }}>Preview</div>
-                    <audio controls autoPlay src={ioPreviewUrl} style={{ width: '100%' }} />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      <Toast {...toast} />
+  const setIo = (path, value) => setIoCfg(prev => {
+    const next = structuredClone(prev), keys = path.split('.')
+    let object = next
+    keys.slice(0, -1).forEach(key => { object = object[key] })
+    object[keys.at(-1)] = value
+    return next
+  })
+  const saveIoConfig = async () => {
+    setIoSaving(true)
+    try { await api.saveIntroOutroConfig(ioCfg); showToast('Intro/outro configuration saved') }
+    catch (e) { showToast('Save failed: ' + e.message) }
+    finally { setIoSaving(false) }
+  }
+  const previewSection = async section => {
+    setIoPreviewing(section)
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current)
+    setIoPreviewUrl(null)
+    try { const url = await api.previewIntroOutro(section); previewRef.current = url; setIoPreviewUrl(url) }
+    catch (e) { showToast('Preview failed: ' + e.message) }
+    finally { setIoPreviewing(null) }
+  }
+  const stale = !!error || (diagnostics && tick - new Date(diagnostics.checked_at).getTime() > 45000)
+  const voiceKeys = Object.keys(diagnostics?.voice_registry || {})
+  return <div className="tab-body"><div className="pane-main" style={{ overflow: 'auto' }}>
+    <div className="section-head"><span className="section-label">System Status · Live Checks</span><button className="btn btn-steel btn-sm" onClick={checkHealth} disabled={checking}><RefreshCw size={12} />{checking ? 'CHECKING' : 'REFRESH'}</button></div>
+    <div style={{ padding: '8px 16px', fontSize: '.75rem' }} role="status">
+      <Badge type={stale || diagnostics?.status !== 'ready' ? 'steel' : 'green'}>{stale ? 'STALE / CHECK FAILED' : diagnostics?.status || 'not checked'}</Badge>
+      {' '}Last response: {clock(diagnostics?.checked_at)} · refresh every 15 seconds while visible · WSL cache 60 seconds
+      {error && <div style={{ color: 'var(--red)' }}>{error}</div>}
+      <div>Reachable = service answered. Ready = named dependency check passed. Neither proves completed synthesis, inference, or camera frames.</div>
     </div>
-  )
+    <div className="sys-grid">
+      <div className="sys-card"><div className="sys-card-title">Frontend / API Proxy / WebSocket</div>
+        <div>Frontend: {location.origin} (this loaded page)</div><div>API proxy: {diagnostics ? 'response verified' : 'unverified'}{stale ? ' — stale' : ''}</div>
+        <div>WebSocket: {network?.status || 'unverified'} · {network?.latency_ms ?? '—'} ms</div>
+        <div style={{ overflowWrap: 'anywhere' }}>{network?.url}</div><div>{network?.error || network?.source}</div>
+      </div>
+      <div className="sys-card"><div className="sys-card-title">Production TTS / No Provider Fallback</div>
+        <Field label="Selected production engine"><select className="ds-select" value={selectedTts} disabled={!selectedTts || savingTts} onChange={e => setProductionTts(e.target.value)}><option value="" disabled>Not checked</option><option value="kokoro">Kokoro · WSL runtime</option><option value="qwen">Qwen · local bridge</option></select></Field>
+        <div>Selected: {selectedTts || 'unverified'} · Fallback: NONE</div>
+        <details><summary>Configured voice identities ({voiceKeys.length})</summary>{voiceKeys.map(key => <div key={key}>{key}: {diagnostics.voice_registry[key].primary_voice} · Qwen: {diagnostics.qwen_voice_registry[key] || 'not configured'}</div>)}</details>
+      </div>
+      {Object.entries(diagnostics?.checks || {}).map(([name, check]) => <div className="sys-card" key={name} style={{ minWidth: 0 }}>
+        <div className="sys-card-title">{CHECK_NAMES[name] || name} <Badge type={stale ? 'steel' : check.status === 'ready' ? 'green' : check.status === 'reachable' ? 'gold' : 'steel'}>{stale ? 'stale (' + check.status + ')' : check.status}</Badge></div>
+        <div style={{ fontSize: '.75rem', lineHeight: 1.7, overflowWrap: 'anywhere' }}><Summary name={name} check={check} />{check.error && <div style={{ color: 'var(--red)' }}>{check.error}</div>}</div>
+        <div className="font-mono" style={{ fontSize: '.58rem', color: 'var(--steel)', marginTop: 8 }}>{check.source} · {clock(check.checked_at)} · {check.latency_ms} ms{check.cached ? ' · cached' : ''}</div>
+        <details><summary style={{ fontSize: '.68rem' }}>Measured details</summary><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: '.65rem', maxHeight: 220, overflow: 'auto' }}>{JSON.stringify(check, null, 2)}</pre></details>
+      </div>)}
+      <div className="sys-card" style={{ gridColumn: '1 / -1' }}>
+        <div className="sys-card-title">Intro / Outro</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}><button className="btn btn-steel btn-sm" onClick={loadIoConfig} disabled={ioLoading}>RELOAD</button><button className="btn btn-solid btn-sm" onClick={saveIoConfig} disabled={ioSaving || !ioCfg}>{ioSaving ? <Spinner /> : <Save size={12} />} SAVE CONFIG</button></div>
+        {ioLoading && <Spinner />}
+        {ioCfg && <>
+          <Field label="Apply intro and outro"><select className="ds-select" value={ioCfg.enabled ? 'yes' : 'no'} onChange={e => setIo('enabled', e.target.value === 'yes')}><option value="yes">Enabled</option><option value="no">Disabled</option></select></Field>
+          <Field label="Theme music file"><input className="ds-input" value={ioCfg.music_file || ''} onChange={e => setIo('music_file', e.target.value)} /></Field>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+            {['intro', 'outro'].map(section => <div key={section}>
+              <div className="section-head"><span>{section.toUpperCase()}</span><button className="btn btn-steel btn-sm" onClick={() => previewSection(section)} disabled={!!ioPreviewing}>{ioPreviewing === section ? <Spinner /> : <Play size={12} />} PREVIEW SAVED SETTINGS</button></div>
+              <Field label={section === 'outro' ? 'Spoken outro ({topic} and [pause] supported)' : 'Spoken intro'}><textarea className="ds-textarea" value={ioCfg[section]?.announcer_text || ''} onChange={e => setIo(section + '.announcer_text', e.target.value)} /></Field>
+              <Field label="Announcer voice (Kokoro voice ID)"><input className="ds-input" value={ioCfg[section]?.announcer_voice || ''} onChange={e => setIo(section + '.announcer_voice', e.target.value)} /></Field>
+              <Field label="Music duration (seconds)"><input className="ds-input" type="number" min="0" max="120" value={(ioCfg[section]?.clip_duration_ms || 0) / 1000} onChange={e => setIo(section + '.clip_duration_ms', Number(e.target.value) * 1000)} /></Field>
+              <details><summary>Advanced timing and mix (milliseconds / dB)</summary>{Object.entries(ioCfg[section] || {}).filter(([key, value]) => typeof value === 'number' && key !== 'clip_duration_ms').map(([key, value]) => <Field key={key} label={key.replaceAll('_', ' ')}><input className="ds-input" type="number" value={value} onChange={e => setIo(section + '.' + key, Number(e.target.value))} /></Field>)}</details>
+            </div>)}
+          </div>
+          <div style={{ fontSize: '.72rem', marginTop: 12 }}>Intro/outro runs once around the assembled episode, not around each 15-minute section. Preview uses saved settings; save before previewing edits.</div>
+        </>}
+        {ioPreviewUrl && <audio controls src={ioPreviewUrl} style={{ width: '100%', marginTop: 12 }} />}
+      </div>
+    </div><Toast {...toast} />
+  </div></div>
 }

@@ -2,6 +2,32 @@ import math
 from typing import Dict, List
 
 
+def mix_ad_tracks(ad, tracks, assets):
+    """One local audio authority shared by visual rendering and episode assembly."""
+    from pathlib import Path
+    from pydub import AudioSegment
+    voice = AudioSegment.from_file(ad["audio_file"])
+    duration_ms = round(float(ad["duration_seconds"]) * 1000)
+    if len(voice) > duration_ms + 150:
+        raise ValueError("Spoken audio exceeds the requested ad duration; increase the target or shorten copy. No trimming or speed change was applied.")
+    mixed = voice + AudioSegment.silent(duration=max(0, duration_ms - len(voice)), frame_rate=voice.frame_rate)
+    asset_map = {asset["asset_id"]: asset for asset in assets}
+    for track in tracks:
+        record = asset_map.get(track["asset_id"])
+        if not record or not Path(record["stored_path"]).is_file():
+            raise ValueError(f"SFX asset {track['asset_id']} is missing from this ad")
+        sound = AudioSegment.from_file(record["stored_path"]) + float(track.get("volume_db", -12))
+        if track.get("fade_in"):
+            sound = sound.fade_in(min(len(sound), round(track["fade_in"] * 1000)))
+        if track.get("fade_out"):
+            sound = sound.fade_out(min(len(sound), round(track["fade_out"] * 1000)))
+        start_ms = round(track.get("start", 0) * 1000)
+        if start_ms + len(sound) > duration_ms:
+            raise ValueError(f"SFX {track['id']} extends beyond the requested ad duration")
+        mixed = mixed.overlay(sound, position=start_ms)
+    return mixed
+
+
 def _estimate_words(duration_seconds: int, words_per_minute: int = 150) -> int:
     # Conservative speaking rate; ad reads are usually tighter/faster.
     wps = words_per_minute / 60

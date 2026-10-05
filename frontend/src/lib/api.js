@@ -4,25 +4,23 @@
 const BASE = '/api'
 const jobCache = new Map()
 
-async function req(path, opts = {}) {
+export async function req(path, opts = {}) {
   const res = await fetch(BASE + path, {
-    headers: { 'Content-Type': 'application/json', ...opts.headers },
     ...opts,
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
   })
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
-    throw new Error(text || `HTTP ${res.status}`)
+    let message = text
+    try {
+      const detail = JSON.parse(text).detail
+      message = Array.isArray(detail) ? detail.map(item => `${item.loc?.slice(1).join('.') || 'Input'}: ${item.msg}`).join('; ') : (detail || text)
+    } catch { /* Non-JSON errors retain their response text. */ }
+    throw new Error(message || `HTTP ${res.status}`)
   }
   const ct = res.headers.get('content-type') || ''
   if (ct.includes('application/json')) return res.json()
   return res.text()
-}
-
-function normalizeDurationToAdBucket(seconds) {
-  const value = Number(seconds) || 30
-  if (value <= 17) return 15
-  if (value <= 25) return 20
-  return 30
 }
 
 function normalizeAd(ad = {}) {
@@ -32,7 +30,10 @@ function normalizeAd(ad = {}) {
   return {
     ...ad,
     voice: ad.voice || ad.announcer_key || ad.announcer || '',
-    status: ad.status || 'done',
+    title: ad.title || ad.label || ad.sponsor,
+    ad_type: ad.ad_type || ad.label || 'custom',
+    script_lines: Array.isArray(ad.script) ? ad.script : (ad.script_lines || []),
+    status: ad.status || (ad.audio_file ? 'produced' : 'draft'),
     script: adScript,
     audio_file: ad.audio_file || ad.audio_path || ad.audio || '',
   }
@@ -53,6 +54,7 @@ async function ensureJob(episodeId) {
   const title = config.title || detail.title || episodeId
   const topic = (config.topic || detail.topic || title || episodeId).trim()
   const payload = {
+    ...config,
     episode_id: episodeId,
     title,
     topic: topic || title || episodeId,
@@ -136,7 +138,7 @@ async function normalizeEditPayload(body) {
 }
 
 export const api = {
-  health: () => req('/health'),
+  health: () => req('/health', { signal: AbortSignal.timeout(10000) }),
   writerStatus: () => req('/writer-status'),
   voices: async () => {
     const data = await req('/voices')
@@ -239,10 +241,12 @@ export const api = {
       product: body.product || '',
       offer: body.tagline || '',
       cta: body.cta || 'Visit the link in the show notes.',
-      duration_seconds: normalizeDurationToAdBucket(body.duration_seconds),
+      duration_seconds: Number(body.duration_seconds) || 30,
       tone: body.tone || 'confident',
       label: body.ad_type || 'custom',
-      announcer_key: body.voice === 'INTRO_FEMALE' ? 'announcer_female' : (body.voice ? 'announcer_male' : null),
+      announcer_key: body.voice === 'CUSTOM' ? String(body.custom_voice_key || '').trim().toLowerCase() : (({ INTRO_MALE: 'announcer_male', INTRO_FEMALE: 'announcer_female', PHIL: 'phil', JIM: 'jim', HOST: 'host', GUEST: 'guest' })[body.voice] || null),
+      ad_type: body.ad_type || 'custom',
+      custom_script: body.custom_script || '',
       insert_into_script: false,
     }
     const data = await req(`/episodes/${encodeURIComponent(id)}/ads`, { method: 'POST', body: JSON.stringify(payload) })

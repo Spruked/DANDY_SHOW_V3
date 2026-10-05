@@ -1,5 +1,46 @@
 # Dandy Studio Dev Log
 
+## 2026-10-05 - App recovery, audit and repair work paused for credit reset
+
+Canonical checkout: `C:\dev\Desktop\The Real Dandy\Dandy-Studio-Qwen`. This entry supersedes historical runtime assumptions below; it does not replace their history.
+
+Status: **IN PROGRESS, NOT ACCEPTED AS COMPLETE.** The operator requested a handoff and a pause with approximately 12% usage credits remaining. No commit or push was requested or performed. Implementation stopped after compile/build checks and this documentation update.
+
+Authorized scope accumulated during this session:
+
+- Start/recover the local app and use the running DeepSeek 7B llama.cpp writer.
+- Review/refine ad creation, voice/duration/custom-copy preservation, deterministic insertion, and Social Post Maker output contracts.
+- Replace decorative System status with real service/resource checks, source labels, timestamps and honest readiness states.
+- Repair repetition in older generation paths; target 15-45-minute episodes using sections of at most 15 minutes, with saved ads between sections and easier intro/outro controls.
+- Add a persisted Visual Ad Composer under ADS with text, visuals, animation, SFX and a timing strip. Keep live controls in STUDIO and standalone promotional cards under SOCIAL.
+
+Startup recovery completed earlier in the session:
+
+- Restored frontend `5173`, backend `8110`, writer `40343/v1`, Qwen bridge `8020`, CustomVoice `8031` and operator UI `7861`.
+- Updated the existing launcher to use hidden, logged processes and the real sibling FFmpeg installation when this checkout lacks binaries.
+- Verified a real DeepSeek completion and a real Qwen MP3 synthesis. The latter is `secondary_systems/Dandy_Qwen_TTS_Ui/generated_audio/20261005_071538_phil.mp3` (21,813 bytes; 2.56 seconds; 24 kHz). This proves that bounded sample only, not an entire episode or the new composer.
+
+Repair code now present, but workflow acceptance is still pending:
+
+- Ads: expanded validated target range 5-120 seconds; custom script and speaker identities persisted; requested/resolved voice provenance; one-based UI insertion with zero-based API positions; idempotent insertion; asset metadata excluded from the ad-record listing. Produced ad audio is padded only when shorter than the requested target, while overlong speech raises an explicit validation failure. Added saved composition schema, save/render routes, and `VisualAdComposer.jsx`.
+- Social: typed export options now consumed; aspect sizing, quote copy, clip timing, waveform setting, platform metadata and downloadable post copy; static exports no longer require audio; unique output directories/manifests; real brand-image availability endpoint; path-boundary checks. Presets are connected to the form. Slideshow/ad-card error handling and rendering gaps remain unfinished.
+- System: concurrent diagnostics for writer/model, WSL Kokoro, Qwen services, GPU, OS/process resources, media tools, storage/assets, job records, OBS and mixer. Frontend refreshes every 15 seconds, labels probe sources/timestamps and stale readings, and tests WebSocket handshake/echo without calling it production progress. New Win32 CPU/RAM counters are compiled but not live-verified yet.
+- Episodes: 15-45-minute schema/UI targets, section-aware generation with prior-section history/repeat filters, stricter exact-repeat gate, progress records and generation ownership lock. Removed the active 5,000-word production floor/template expansion and silent placeholder-audio fallback. Added reuse of fingerprint-matched produced ad audio and shared SFX mixing. These changes need isolated regression and real bounded acceptance tests.
+- Shared UI: associated form labels, dialog semantics/focus trap/Escape, accessible toast status and cross-tab selected-episode continuity.
+
+Verified at pause:
+
+- `py -3.12 -m compileall -q backend/app` passed.
+- `npm run build` in `frontend` passed: 1,500 modules, JS bundle 288.81 kB / gzip 83.45 kB. Existing Vite/plugin and Browserslist warnings remain.
+- `git diff --check` passed.
+- Live early-version diagnostics answered and identified DeepSeek correctly; GPU read 5,572 / 6,144 MiB VRAM, 3% utilization, 73 C at that particular check.
+- That live check found selected Kokoro unavailable: `/home/bryan/.venvs/gpu/bin/python` and `/home/bryan/wsl_tts_worker.py` are missing in the default Ubuntu WSL. Configured theme music and all six brand PNGs are missing. These are not repaired or substituted.
+- Before screenshots are saved in `staging/audit-01-ads-before.png` through `audit-05-slideshow-before.png`, plus `audit-07-system-before.png`. No accepted after-render screenshots exist yet.
+
+Important: the running backend was last restarted before the later episode/composer changes. Successful compile/build does not mean those latest changes are loaded or working end to end. Recent backend logs still include a writer timeout. Operator episode/draft/config/job changes are present in the dirty tree; preserve them.
+
+Resume instructions and separate acceptance tracks are at the top of `docs/operations/NEXT_INSTANCE_NOTES.md`.
+
 ## 2026-08-08 - Repo Context Scan
 
 Scope: `S:\The Real Dandy\All things Dandy\Dandy`

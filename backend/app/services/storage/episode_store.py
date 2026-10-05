@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 import uuid
 from collections import Counter
@@ -245,7 +246,7 @@ def list_ads(episode_id: str) -> List[Dict[str, Any]]:
     ads: List[Dict[str, Any]] = []
     for path in sorted(directory.glob("ad_*.json")):
         payload = load_json(path)
-        if payload:
+        if isinstance(payload, dict) and payload.get("ad_id") and "script" in payload:
             ads.append(payload)
     return ads
 
@@ -345,8 +346,8 @@ def calculate_script_provenance(script_lines: List[Dict[str, Any]]) -> Dict[str,
     }
 
 
-def calculate_repetition_report(script_lines: List[Dict[str, Any]], max_allowed: int = 3) -> Dict[str, Any]:
-    texts = [_normal_text(str(line.get("text", line.get("line", "")))) for line in script_lines]
+def calculate_repetition_report(script_lines: List[Dict[str, Any]], max_allowed: int = 1) -> Dict[str, Any]:
+    texts = [re.sub(r"[^\w\s]", "", _normal_text(str(line.get("text", line.get("line", ""))))) for line in script_lines if not line.get("is_ad") and not line.get("ad_id")]
     counts = Counter(text for text in texts if text)
     repeated = [(text, count) for text, count in counts.items() if count > 1]
     repeated.sort(key=lambda item: item[1], reverse=True)
@@ -376,11 +377,15 @@ def _recalculate_script_metadata(script_lines: List[Dict[str, Any]]) -> Dict[str
         "phil_count": sum(1 for line in script_lines if speaker_is(line, "phil")),
         "jim_count": sum(1 for line in script_lines if speaker_is(line, "jim")),
         "host_count": sum(1 for line in script_lines if speaker_is(line, "host")),
-        "ads_count": sum(1 for line in script_lines if speaker_is(line, "ad")),
+        "ads_count": len({line["ad_id"] for line in script_lines if line.get("ad_id")}) + sum(1 for line in script_lines if not line.get("ad_id") and speaker_is(line, "ad")),
     }
 
-    avg_seconds_per_line = 6.5
-    metadata["estimated_runtime_seconds"] = int(metadata["line_count"] * avg_seconds_per_line)
+    words = sum(len(str(line.get("text", "")).split()) for line in script_lines)
+    pauses = sum(float(line.get("pause_after", 0) or 0) for line in script_lines)
+    metadata["word_count"] = words
+    metadata["estimated_runtime_seconds"] = round(words / 155 * 60 + pauses)
+    metadata["runtime_source"] = "word-count plus pauses estimate; final audio requires ffprobe"
+    metadata["segment_count"] = len({line["segment_index"] for line in script_lines if line.get("segment_index") is not None and not line.get("is_ad")})
     metadata.update(calculate_script_provenance(script_lines))
     metadata.update(calculate_repetition_report(script_lines))
 

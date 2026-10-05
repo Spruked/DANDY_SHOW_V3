@@ -519,8 +519,7 @@ class HardenedPodcastWorker:
                     processing_result["intro_outro"] = "wrapped"
                     logger.info("Intro/outro applied to %s", episode_id)
                 except Exception as exc:
-                    logger.warning("Intro/outro wrap failed (episode audio kept clean): %s", exc)
-                    processing_result["intro_outro"] = f"failed: {exc}"
+                    raise RuntimeError(f"Configured intro/outro failed: {exc}. Fix its assets/runtime or explicitly disable it before production.") from exc
 
             transcript_payload = {
                 "episode_id": episode_id,

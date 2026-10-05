@@ -1,4 +1,5 @@
 import json
+import os
 import logging
 import shutil
 import subprocess
@@ -82,8 +83,10 @@ def generate_audiogram(
     captions: List[Dict] | None = None,
     image_cues: List[Dict] | None = None,
     background_image_path: str | None = None,
+    config_overrides: Dict | None = None,
 ) -> str:
     config = _load_config()
+    config.update(config_overrides or {})
     audio_path = Path(audio_path)
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -92,7 +95,7 @@ def generate_audiogram(
         logger.error("Audiogram source audio does not exist: %s", audio_path)
         return ""
 
-    ffmpeg_path = shutil.which("ffmpeg")
+    ffmpeg_path = os.getenv("DANDY_FFMPEG") or shutil.which("ffmpeg")
     if not ffmpeg_path:
         logger.error("ffmpeg is not available in PATH")
         return ""
@@ -100,7 +103,7 @@ def generate_audiogram(
     vcodec = config["codec_cuda"] if torch.cuda.is_available() else config["codec_cpu"]
     filter_parts = [
         f"[0:a]showwaves=s={config['width']}x{config['height']}:mode={config['wave_mode']}:colors={config['wave_color']}:scale={config['wave_scale']},format=rgba,colorkey=0x000000:0.12:0.08[wave]"
-    ]
+    ] if config.get("show_waveform", True) else []
 
     inputs = [
         ffmpeg_path,
@@ -130,7 +133,7 @@ def generate_audiogram(
         bg_label = "[bg]"
         next_input_index = 2
 
-    filter_parts.append(f"{bg_label}[wave]overlay=0:0[base]")
+    filter_parts.append(f"{bg_label}[wave]overlay=0:0[base]" if config.get("show_waveform", True) else f"{bg_label}null[base]")
     current = "[base]"
 
     resolved_logo = _resolve_path(config.get("logo_path"))
@@ -227,7 +230,7 @@ def generate_audiogram(
         cmd[1:1] = ["-hwaccel", "cuda"]
 
     try:
-        subprocess.run(cmd, check=True, capture_output=True, text=True)
+        subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=600)
         return str(output_path)
     except subprocess.CalledProcessError as exc:
         logger.error("Audiogram generation failed: %s", exc.stderr or exc)

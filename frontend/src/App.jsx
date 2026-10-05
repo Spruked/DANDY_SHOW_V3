@@ -19,11 +19,14 @@ const TABS = [
 export default function App() {
   const [activeTab, setActiveTab]     = useState('studio')
   const [backendOk, setBackendOk]     = useState(null)   // null = checking
+  const [episodeId, setEpisodeId] = useState(null)
 
   useEffect(() => {
-    api.health()
-      .then(() => setBackendOk(true))
-      .catch(() => setBackendOk(false))
+    let active = true
+    const check = () => api.health().then(() => { if (active) setBackendOk(true) }).catch(() => { if (active) setBackendOk(false) })
+    check()
+    const interval = setInterval(check, 30000)
+    return () => { active = false; clearInterval(interval) }
   }, [])
 
   const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || EpisodeTab
@@ -61,7 +64,7 @@ export default function App() {
       </nav>
 
       {/* ── Active tab ── */}
-      <ActiveComponent />
+      <ActiveComponent episodeId={episodeId} onEpisodeChange={setEpisodeId} />
     </div>
   )
 }

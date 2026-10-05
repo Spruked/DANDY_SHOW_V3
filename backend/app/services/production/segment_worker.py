@@ -57,6 +57,8 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
         if selected == "qwen":
             if not self.qwen_tts_config.get("enabled"):
                 raise RuntimeError("Qwen TTS is selected but disabled")
+            if not self.qwen_tts_config.get("voices", {}).get(speaker):
+                raise RuntimeError(f"No Qwen voice registered for '{speaker}'; no fallback voice substituted")
             try:
                 if self._try_qwen_bridge(text, speaker, emotion, output_path):
                     return "qwen"
@@ -135,12 +137,8 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             or (episode_config.get("target_duration", 600) // 60)
             or 10
         )
-        if target_minutes > 15:
-            return super().generate_script(
-                episode_config,
-                line_callback=line_callback,
-                max_retries=max_retries,
-            )
+        if target_minutes >= 15:
+            return self._generate_episode_sections(episode_config, line_callback)
 
         topic = str(episode_config.get("topic", "general")).strip()
         title = str(episode_config.get("title") or topic).strip()
@@ -198,6 +196,46 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
         )
         return accepted
 
+    def _generate_episode_sections(self, config, line_callback=None):
+        target_seconds = int(config.get("target_duration") or 1800)
+        if not 900 <= target_seconds <= 2700:
+            raise ValueError("Episodes must target 15 to 45 minutes")
+        reserve = float(config.get("ad_break_duration_seconds") or 0)
+        if self.project_config.get("intro_outro", {}).get("enabled"):
+            reserve += 40
+        content_seconds = max(780, target_seconds - reserve)
+        section_seconds = int(config.get("segment_duration_seconds") or 900)
+        count = __import__('math').ceil(content_seconds / section_seconds)
+        result, history = [], []
+        progress = config.get("_progress_callback")
+        for index in range(count):
+            seconds = min(section_seconds, content_seconds - index * section_seconds)
+            section_config = {**config, "target_duration_minutes": seconds / 60,
+                              "target_duration": round(seconds), "target_word_count": round(seconds / 60 * 150),
+                              "_prior_texts": [line["text"] for line in result], "_prior_history": history,
+                              "_section_index": index, "_section_count": count,
+                              "generation_nonce": f"{config.get('generation_nonce', 'episode')}-section-{index + 1}"}
+            if callable(progress):
+                progress({"section": index + 1, "section_count": count, "accepted_words": sum(len(line["text"].split()) for line in result)})
+            topic = str(config.get("topic") or config.get("title") or "general")
+            points = config.get("key_points") or [topic]
+            context = build_rich_context(topic=topic, key_points=points, title=config.get("title") or topic,
+                                         audience=config.get("audience", "general"), intensity=config.get("intensity", "medium"),
+                                         source_context=str(config.get("source_context", "")), personality_settings=config.get("personality_settings"))
+            lines = self._try_skg_generation(section_config, context, points, topic, config.get("title") or topic, 0)
+            if not lines:
+                raise RuntimeError(f"Section {index + 1} produced no fresh dialogue; no repeated filler was added")
+            words = sum(len(line["text"].split()) for line in lines)
+            if words < section_config["target_word_count"] * .90:
+                raise RuntimeError(f"Section {index + 1} too short: {words}/{section_config['target_word_count']} words. Existing saved episode was preserved.")
+            for line in lines:
+                line.update(segment_index=index + 1, segment_title=f"Part {index + 1}", line_number=len(result) + 1)
+                result.append(line)
+                history.append(f"{str(line['speaker']).upper()}: {line['text']}")
+                if line_callback:
+                    line_callback(line)
+        return result
+
     def _try_skg_generation(
         self,
         episode_config: Dict[str, Any],
@@ -208,7 +246,7 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
         attempt: int,
         line_callback: Optional[Callable] = None,
     ) -> Optional[List[Dict[str, Any]]]:
-        target_minutes = int(
+        target_minutes = float(
             episode_config.get("target_duration_minutes")
             or (episode_config.get("target_duration", 600) // 60)
             or 10
@@ -231,7 +269,7 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
 
         try:
             self._apply_personality_settings(episode_config.get("personality_settings"))
-            target_words = target_minutes * 155
+            target_words = int(episode_config.get("target_word_count") or target_minutes * 155)
             rhythm = RhythmState.from_context(episode_config)
 
             script_definition = {
@@ -268,13 +306,14 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 or f"segment-{datetime.now().isoformat()}"
             )
             exchanges: List[Dict[str, Any]] = []
-            seen_text: set[str] = set()
-            history_lines: List[str] = []
+            prior_episode_texts = list(episode_config.get("_prior_texts") or [])
+            seen_text: set[str] = {self.communication_layer._repeat_key(text) for text in prior_episode_texts}
+            history_lines: List[str] = list(episode_config.get("_prior_history") or [])
             stage_counter = 0
 
             def append_fresh(lines: List[Dict[str, Any]]) -> int:
                 accepted = 0
-                prior_texts = [str(exchange.get("text", "")) for exchange in exchanges]
+                prior_texts = prior_episode_texts + [str(exchange.get("text", "")) for exchange in exchanges]
                 for line in lines:
                     text = str(line.get("text", "")).strip()
                     if not text:
@@ -315,22 +354,29 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 stage_counter += 1
                 lines = generate_segment(
                     topic=topic,
-                    key_points=key_points,
+                    key_points=key_points[stage_counter % len(key_points):] + key_points[:stage_counter % len(key_points)],
                     stage=stage,
                     history_lines=history_lines,
                     primary_source_summary=context.get("primary_source_summary", ""),
                     n_exchanges=n_exchanges,
-                    persona_brief=persona_brief,
+                    persona_brief=persona_brief + f"\nEpisode section {episode_config.get('_section_index', 0) + 1}/{episode_config.get('_section_count', 1)}. Continue forward. Discuss a new concrete angle; no restart or repeated examples.",
                     generation_nonce=(
                         f"{generation_nonce}-forward-{stage_counter}-{stage}-{len(exchanges)}"
                     ),
                 )
                 if not lines:
                     return 0
-                return append_fresh(lines)
+                count = append_fresh(lines)
+                progress = episode_config.get("_progress_callback")
+                if callable(progress):
+                    progress({"section": episode_config.get("_section_index", 0) + 1, "section_count": episode_config.get("_section_count", 1),
+                              "stage": stage, "batch": stage_counter,
+                              "accepted_words": sum(len(text.split()) for text in prior_episode_texts) + sum(len(line["text"].split()) for line in exchanges)})
+                return count
 
             opening_exchanges = 1 if target_minutes <= 3 else 2
-            if request_stage("opening", opening_exchanges) <= 0:
+            first_stage = "opening" if not prior_episode_texts else "expansion"
+            if request_stage(first_stage, opening_exchanges) <= 0:
                 return None
 
             if target_minutes <= 3:
@@ -341,12 +387,12 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 max_middle_batches = 12
             else:
                 middle_exchanges = 4
-                max_middle_batches = 14
+                max_middle_batches = max(14, __import__('math').ceil(target_words / 160) + 8)
 
             stalled_batches = 0
             for batch_index in range(max_middle_batches):
                 current_words = sum(len(e["text"].split()) for e in exchanges)
-                if current_words >= target_words * 0.90:
+                if current_words >= target_words * 0.98:
                     break
                 stage = "expansion" if batch_index % 2 == 0 else "deepening"
                 accepted_count = request_stage(stage, middle_exchanges)
@@ -367,7 +413,8 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             current_words = sum(len(e["text"].split()) for e in exchanges)
             if current_words < target_words * 0.96:
                 request_stage("reflection", 1)
-            request_stage("closing", 1)
+            if episode_config.get('_section_index', 0) == episode_config.get('_section_count', 1) - 1:
+                request_stage("closing", 1)
 
             if not exchanges:
                 return None
@@ -387,6 +434,49 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
         except Exception as exc:
             logger.warning("Segment forward generation failed: %s", exc)
             return None
+
+    def _synthesize_segments(self, script_lines, output_dir, episode_id):
+        from ..storage.episode_store import list_ads
+        import hashlib
+        import json
+        ads = {ad["ad_id"]: ad for ad in list_ads(episode_id)}
+        segments, offset, block = [], 0, 0
+        while offset < len(script_lines):
+            line = script_lines[offset]
+            ad_id = line.get("ad_id")
+            end = offset + 1
+            if ad_id:
+                while end < len(script_lines) and script_lines[end].get("ad_id") == ad_id:
+                    end += 1
+                ad = ads.get(ad_id)
+                if not ad or not ad.get("audio_file") or not Path(ad["audio_file"]).is_file():
+                    raise RuntimeError(f"Ad {ad_id} must have produced audio before episode assembly")
+                signature = hashlib.sha256(json.dumps([{key: item.get(key) for key in ("speaker", "text")} for item in script_lines[offset:end]], sort_keys=True).encode()).hexdigest()
+                if signature != ad.get("audio_script_fingerprint"):
+                    raise RuntimeError(f"Ad {ad_id} audio does not match the inserted script; produce/reinsert the matching ad before assembly")
+                audio_file = Path(ad["audio_file"])
+                if ad.get("composition", {}).get("sfx_tracks"):
+                    from .ads import mix_ad_tracks
+                    asset_meta = self.base_path / "episodes" / episode_id / "ads" / f"{ad_id}_assets.json"
+                    assets = json.loads(asset_meta.read_text(encoding="utf-8")) if asset_meta.is_file() else []
+                    mixed = mix_ad_tracks(ad, ad["composition"]["sfx_tracks"], assets)
+                    audio_file = output_dir / f"{ad_id}_mixed.mp3"
+                    mixed.export(audio_file, format="mp3", bitrate="192k")
+                segments.append({"index": len(segments) + 1, "line_index": end, "speaker": ad.get("resolved_voice", ad.get("announcer_key")),
+                                 "audio_file": str(audio_file), "duration_seconds": self._probe_duration_seconds(audio_file),
+                                 "pause_after": 0, "engine": "saved_ad_audio", "ad_id": ad_id, "text": " ".join(item['text'] for item in script_lines[offset:end]),
+                                 "voice_resolution": ad.get("voice_resolution"), "generated_by": "ad_engine"})
+            else:
+                while end < len(script_lines) and not script_lines[end].get("ad_id"):
+                    end += 1
+                block += 1
+                produced = super()._synthesize_segments(script_lines[offset:end], output_dir, f"{episode_id}_block{block}")
+                for item in produced:
+                    item["line_index"] += offset
+                    item["index"] = len(segments) + 1
+                    segments.append(item)
+            offset = end
+        return segments
 
     def _concatenate_segments(self, segments: List[Dict[str, Any]], output_path: Path) -> None:
         """Build dialogue audio, then apply episode media cues before wrapping."""

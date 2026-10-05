@@ -82,6 +82,12 @@ async def update_episode_config(
     detail = load_episode_detail(episode_id)
     if not detail:
         raise HTTPException(status_code=404, detail="Episode not found")
+    from ..schemas.episode import EpisodeCreateRequest
+    from pydantic import ValidationError
+    try:
+        EpisodeCreateRequest(**{**detail.get("config", {}), **payload, "episode_id": episode_id})
+    except ValidationError as exc:
+        raise HTTPException(422, str(exc)) from exc
     updated = save_episode_config(episode_id, payload)
     return {"episode_id": episode_id, "config": updated}
 

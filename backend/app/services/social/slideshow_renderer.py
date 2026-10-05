@@ -9,9 +9,13 @@ import json
 import shutil
 import subprocess
 import uuid
+import os
+import math
+import tempfile
+import time
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from ...schemas.social_visual import Slide, AdCard
 from ...core.paths import PROJECT_ROOT
@@ -24,7 +28,168 @@ ASPECT_SIZES = {
     "16:9": (1920, 1080),
     "1:1":  (1080, 1080),
     "9:16": (1080, 1920),
+    "4:5": (1080, 1350),
 }
+
+
+def _layer_motion(image, layer, t, canvas_size):
+    """Render the saved entrance/exit motion. Coordinates are normalized centers."""
+    w, h = canvas_size
+    if not layer.start <= t < layer.end:
+        return None
+    duration = min(layer.animation_duration, (layer.end - layer.start) / 2)
+    entrance = min(1.0, max(0.0, (t - layer.start) / duration))
+    exit_progress = min(1.0, max(0.0, (layer.end - t) / duration))
+    if layer.easing == "ease_in_out":
+        entrance = entrance * entrance * (3 - 2 * entrance)
+        exit_progress = exit_progress * exit_progress * (3 - 2 * exit_progress)
+    alpha, scale, dx, reveal = float(getattr(layer, "opacity", 1)), 1.0, 0.0, 1.0
+    for motion, progress, exiting in ((layer.animation_in, entrance, False), (layer.animation_out, exit_progress, True)):
+        if motion == "fade":
+            alpha *= progress
+        elif motion == "slide":
+            dx += (1 - progress) * w * (.35 if exiting else -.35)
+        elif motion == "zoom":
+            scale *= .6 + .4 * progress
+            alpha *= progress
+        elif motion == "reveal":
+            reveal *= progress
+        elif motion == "pulse":
+            scale *= 1 + .045 * math.sin((t - layer.start) * math.tau * 1.5)
+    frame = image.copy().convert("RGBA")
+    if scale != 1:
+        frame = frame.resize((max(1, round(frame.width * scale)), max(1, round(frame.height * scale))), Image.Resampling.LANCZOS)
+    if reveal < 1:
+        mask = Image.new("L", frame.size, 0)
+        ImageDraw.Draw(mask).rectangle((0, 0, int(frame.width * reveal), frame.height), fill=255)
+        from PIL import ImageChops
+        frame.putalpha(ImageChops.multiply(frame.getchannel("A"), mask))
+    if alpha < 1:
+        frame.putalpha(frame.getchannel("A").point(lambda value: round(value * alpha)))
+    x = round(layer.x * w - frame.width / 2 + dx)
+    y = round(layer.y * h - frame.height / 2)
+    return frame, x, y
+
+
+def _text_layer_image(layer, size):
+    font_files = {"Arial": "arial.ttf", "Arial Bold": "arialbd.ttf", "Georgia": "georgia.ttf", "Consolas": "consola.ttf"}
+    font_path = Path("C:/Windows/Fonts") / font_files[layer.font]
+    font = ImageFont.truetype(str(font_path), layer.size) if font_path.is_file() else _load_font(layer.size)
+    maximum_width = int(size[0] * .88)
+    measurement = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+    lines = []
+    for paragraph in layer.content.splitlines() or [""]:
+        current = ""
+        for word in paragraph.split():
+            proposed = f"{current} {word}".strip()
+            if current and measurement.textlength(proposed, font=font) > maximum_width:
+                lines.append(current); current = word
+            else:
+                current = proposed
+        lines.append(current)
+    text = "\n".join(lines)
+    box = measurement.multiline_textbbox((0, 0), text, font=font, spacing=8, align=layer.align)
+    if box[2] - box[0] > maximum_width or box[3] - box[1] > size[1] * .9:
+        raise ValueError(f"Text layer {layer.id} does not fit; reduce font size or shorten its text")
+    image = Image.new("RGBA", (max(1, box[2] - box[0] + 16), max(1, box[3] - box[1] + 16)))
+    ImageDraw.Draw(image).multiline_text((8 - box[0], 8 - box[1]), text, font=font, fill=layer.color, spacing=8, align=layer.align,
+                                        stroke_width=1, stroke_fill="#000000")
+    return image
+
+
+def render_composed_ad(ad, composition, assets):
+    """Local, saved-state renderer: visual/text motion + voice + timed SFX."""
+    from pydub import AudioSegment
+    ffmpeg = os.getenv("DANDY_FFMPEG") or shutil.which("ffmpeg")
+    if not ffmpeg:
+        raise RuntimeError("FFmpeg is unavailable")
+    duration = float(ad["duration_seconds"])
+    from ..production.ads import mix_ad_tracks
+    mixed = mix_ad_tracks(ad, [track.model_dump() for track in composition.sfx_tracks], assets)
+    asset_map = {asset["asset_id"]: asset for asset in assets}
+    def asset_path(asset_id):
+        record = asset_map.get(asset_id)
+        if not record:
+            raise ValueError(f"Asset {asset_id} is not attached to this ad")
+        path = Path(record["stored_path"])
+        if not path.is_file():
+            raise ValueError(f"Asset file is missing: {asset_id}")
+        return path
+    size = ASPECT_SIZES[composition.aspect]
+    fps = 24
+    layers = [(layer, _text_layer_image(layer, size)) for layer in composition.text_layers]
+    visual_sources = []
+    video_commands = []
+    readers = []
+    output = RENDERS_DIR / f"advisual_{ad['ad_id']}_{uuid.uuid4().hex[:8]}.mp4"
+    with tempfile.TemporaryDirectory(dir=str(RENDERS_DIR), prefix="ad_render_") as scratch:
+        scratch = Path(scratch)
+        audio = scratch / "mixed.wav"
+        mixed.export(audio, format="wav")
+        for layer in composition.visuals:
+            path = asset_path(layer.asset_id)
+            if path.suffix.lower() in {".mp4", ".mov", ".webm", ".mkv", ".avi"}:
+                video_commands.append((layer, [ffmpeg, "-v", "error", "-stream_loop", "-1", "-i", str(path), "-vf", f"scale={size[0]}:{size[1]}",
+                                               "-r", str(fps), "-f", "rawvideo", "-pix_fmt", "rgb24", "pipe:1"]))
+            else:
+                image = Image.open(path).convert("RGBA")
+                if layer.role == "background":
+                    image = ImageOps.fit(image, size)
+                else:
+                    image.thumbnail((round(size[0] * layer.width), size[1]))
+                visual_sources.append((layer, image))
+        error_log = scratch / "ffmpeg_errors.txt"
+        with error_log.open("wb") as errors:
+            encoder = subprocess.Popen([ffmpeg, "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{size[0]}x{size[1]}",
+                                        "-r", str(fps), "-i", "pipe:0", "-i", str(audio), "-map", "0:v", "-map", "1:a",
+                                        "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "aac",
+                                        "-t", str(duration), "-movflags", "+faststart", str(output)], stdin=subprocess.PIPE, stderr=errors)
+            started = time.monotonic()
+            try:
+                for layer, command in video_commands:
+                    reader = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                    readers.append((layer, reader))
+                    visual_sources.append((layer, reader))
+                order = {layer.id: index for index, layer in enumerate(composition.visuals)}
+                visual_sources.sort(key=lambda item: order[item[0].id])
+                for frame_index in range(math.ceil(duration * fps)):
+                    if time.monotonic() - started > 600:
+                        raise TimeoutError("Visual render exceeded 10 minutes")
+                    t = frame_index / fps
+                    canvas = Image.new("RGBA", size, composition.background_color)
+                    for layer, source in visual_sources:
+                        if layer.start <= t < layer.end:
+                            if isinstance(source, subprocess.Popen):
+                                raw = source.stdout.read(size[0] * size[1] * 3)
+                                if len(raw) != size[0] * size[1] * 3:
+                                    raise RuntimeError(f"Video decode failed for {layer.asset_id}")
+                                frame = Image.frombytes("RGB", size, raw).convert("RGBA")
+                                if layer.role != "background":
+                                    frame.thumbnail((round(size[0] * layer.width), size[1]))
+                            else:
+                                frame = source
+                            placed = _layer_motion(frame, layer, t, size)
+                            if placed:
+                                canvas.alpha_composite(placed[0], (placed[1], placed[2]))
+                    for layer, image in layers:
+                        placed = _layer_motion(image, layer, t, size)
+                        if placed:
+                            canvas.alpha_composite(placed[0], (placed[1], placed[2]))
+                    encoder.stdin.write(canvas.convert("RGB").tobytes())
+                encoder.stdin.close()
+                if encoder.wait(timeout=30):
+                    raise RuntimeError(error_log.read_text(encoding="utf-8", errors="replace")[-1200:])
+            except Exception:
+                encoder.kill(); encoder.wait()
+                output.unlink(missing_ok=True)
+                raise
+            finally:
+                for _, reader in readers:
+                    reader.terminate(); reader.wait(timeout=5); reader.stdout.close()
+    if not output.is_file() or not output.stat().st_size:
+        raise RuntimeError("Encoder did not produce a non-empty video")
+    return {"path": str(output), "download_url": f"/renders/{output.name}", "duration_seconds": duration,
+            "aspect": composition.aspect, "width": size[0], "height": size[1], "composition_version": composition.version}
 
 
 def _load_font(size: int) -> ImageFont.ImageFont:

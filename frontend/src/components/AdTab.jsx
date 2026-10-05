@@ -1,15 +1,16 @@
 // components/AdTab.jsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { RefreshCw, Zap, Download, Upload } from 'lucide-react'
 import { api } from '../lib/api'
 import { Modal, Field, SectionHead, Spinner, Empty, Badge, Toast } from './ui'
 import { useToast } from '../hooks/useToast'
+import VisualAdComposer from './VisualAdComposer'
 
 const AD_TYPES    = ['sponsor_60s', 'product_teaser', 'cta_closer', 'promo_15s', 'custom']
-const AD_VOICES   = ['INTRO_MALE', 'INTRO_FEMALE', 'PHIL', 'JIM']
+const AD_VOICES   = ['INTRO_MALE', 'INTRO_FEMALE', 'PHIL', 'JIM', 'HOST', 'GUEST', 'CUSTOM']
 const TONE_OPTS   = ['confident', 'warm', 'urgent', 'playful', 'professional']
 
-export default function AdTab() {
+export default function AdTab({ episodeId, onEpisodeChange }) {
   const { toast, showToast } = useToast()
   const [episodes,  setEpisodes]  = useState([])
   const [activeEp,  setActiveEp]  = useState(null)
@@ -18,6 +19,8 @@ export default function AdTab() {
   const [selectedAd, setSelectedAd] = useState(null)
   const [generating, setGenerating] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
+  const [selectedPreset, setSelectedPreset] = useState(null)
+  const selectionRequest = useRef(0)
   const [scriptLength, setScriptLength] = useState(0)
   const [adAssets, setAdAssets] = useState({})
   const [insertLines, setInsertLines] = useState({})
@@ -37,7 +40,7 @@ export default function AdTab() {
       const data = await api.listEpisodes()
       const list = Array.isArray(data) ? data : (data.episodes || [])
       setEpisodes(list)
-      if (list.length) selectEpisode(list[0])
+      if (list.length) selectEpisode(list.find(ep => (ep.episode_id || ep.id) === episodeId) || list[0])
     } catch { showToast('Could not load episodes') }
   }
 
@@ -49,17 +52,25 @@ export default function AdTab() {
   }
 
   const selectEpisode = async (ep) => {
+    const requestId = ++selectionRequest.current
     setActiveEp(ep)
     setSelectedAd(null)
     const id = ep.episode_id || ep.id
+    onEpisodeChange?.(id)
     // Restore persisted insert lines for this episode from localStorage
-    const savedLines = JSON.parse(localStorage.getItem(`dandy_insert_lines_${id}`) || '{}')
+    let savedLines = {}
+    try {
+      const beforeLines = localStorage.getItem(`dandy_insert_before_lines_${id}`)
+      savedLines = beforeLines ? JSON.parse(beforeLines) : Object.fromEntries(Object.entries(JSON.parse(localStorage.getItem(`dandy_insert_lines_${id}`) || '{}')).map(([adId, position]) => [adId, Number(position) + 1]))
+    } catch { /* Invalid saved positions do not block the episode. */ }
+    setAds([])
     try {
       const [adData, scriptData] = await Promise.all([
         api.listAds(id),
         api.getScript(id).catch(() => ({ script: [] })),
       ])
       const nextAds = Array.isArray(adData) ? adData : (adData.ads || [])
+      if (requestId !== selectionRequest.current) return
       setAds(nextAds)
       setScriptLength(Array.isArray(scriptData?.script) ? scriptData.script.length : 0)
       setAdAssets({})
@@ -67,6 +78,7 @@ export default function AdTab() {
       setAssetLabels({})
       setAssetFiles({})
     } catch {
+      if (requestId !== selectionRequest.current) return
       setAds([])
       setScriptLength(0)
       setInsertLines(savedLines)
@@ -126,10 +138,11 @@ export default function AdTab() {
     if (!epId || !adId) return
     setInsertingAdId(adId)
     try {
-      const lineIndex = Number(insertLines[adId] ?? scriptLength)
-      await api.insertAd(epId, adId, lineIndex)
-      setScriptLength((prev) => prev + (ads.find((ad) => ad.ad_id === adId)?.script?.split(' ').length ? 0 : 0))
-      showToast(`Inserted ad at line ${lineIndex + 1} ✓`)
+      const beforeLine = Number(insertLines[adId] ?? scriptLength + 1)
+      if (!Number.isInteger(beforeLine) || beforeLine < 1 || beforeLine > scriptLength + 1) throw new Error(`Choose a line from 1 to ${scriptLength + 1}`)
+      const result = await api.insertAd(epId, adId, beforeLine - 1)
+      showToast(result.status === 'already_inserted' ? 'This ad is already in the episode' : `Inserted before line ${result.insert_at + 1} ✓`)
+      setAds((prev) => prev.map((ad) => ad.ad_id === adId ? { ...ad, inserted: true, inserted_line_index: result.insert_at } : ad))
       const scriptData = await api.getScript(epId).catch(() => ({ script: [] }))
       setScriptLength(Array.isArray(scriptData?.script) ? scriptData.script.length : scriptLength)
     } catch (e) {
@@ -213,9 +226,11 @@ export default function AdTab() {
                 </span>
                 <Badge type="gold">{ad.ad_type || 'custom'}</Badge>
                 <Badge type={ad.audio_file ? 'green' : 'steel'}>{ad.audio_file ? 'produced' : (ad.status || 'draft')}</Badge>
+                {ad.inserted && <Badge type="green">in episode</Badge>}
               </div>
               <div className="font-mono" style={{ fontSize: '.55rem', color: 'var(--steel)', marginBottom: 6 }}>
-                Voice: {ad.voice || '—'} · Tone: {ad.tone || '—'} · {ad.duration_seconds ? `${ad.duration_seconds}s` : '—'}
+                Voice: {ad.voice || '—'} · Tone: {ad.tone || '—'} · Target: {ad.duration_seconds || '—'}s
+                {ad.actual_duration_seconds != null ? ` · Audio: ${ad.actual_duration_seconds.toFixed(1)}s` : ad.estimated_duration_seconds != null ? ` · Estimated read: ${ad.estimated_duration_seconds}s` : ''}
               </div>
               {ad.script && (
                 <div style={{ fontSize: '.75rem', color: 'var(--bone)', opacity: .7, lineHeight: 1.5, maxHeight: selectedAd?.ad_id === ad.ad_id ? 'none' : 48, overflow: 'hidden' }}>
@@ -240,24 +255,29 @@ export default function AdTab() {
                   )}
 
                   <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr auto', gap: 8, alignItems: 'end' }}>
-                    <Field label={`Insert Before Line (${scriptLength} total)`}>
+                    <Field label={`Insert Before Line (1–${scriptLength + 1})`}>
                       <input
                         className="ds-input"
                         type="number"
-                        min="0"
-                        max={scriptLength}
-                        value={insertLines[ad.ad_id] ?? scriptLength}
+                        min="1"
+                        max={scriptLength + 1}
+                        value={ad.inserted ? ad.inserted_line_index + 1 : (insertLines[ad.ad_id] ?? scriptLength + 1)}
+                        disabled={ad.inserted}
                         onChange={(e) => {
                           const next = { ...insertLines, [ad.ad_id]: e.target.value }
                           setInsertLines(next)
-                          if (epId) localStorage.setItem(`dandy_insert_lines_${epId}`, JSON.stringify(next))
+                          if (epId) localStorage.setItem(`dandy_insert_before_lines_${epId}`, JSON.stringify(next))
                         }}
                       />
                     </Field>
                     <div />
-                    <button className="btn btn-steel btn-sm" onClick={() => handleInsert(ad.ad_id)} disabled={insertingAdId === ad.ad_id}>
+                    <button className="btn btn-steel btn-sm" onClick={() => handleInsert(ad.ad_id)} disabled={ad.inserted || insertingAdId === ad.ad_id}>
                       {insertingAdId === ad.ad_id ? <Spinner size={11} /> : null} INSERT INTO EPISODE
                     </button>
+                  </div>
+
+                  <div style={{ fontSize: '.72rem', color: 'var(--steel)' }}>
+                    Line {scriptLength + 1} appends at the end. Insertion adds the ad script; produce the episode again to include it in the final audio.
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, alignItems: 'end' }}>
@@ -307,6 +327,7 @@ export default function AdTab() {
                       </div>
                     )}
                   </div>
+                  <VisualAdComposer key={`${epId}-${ad.ad_id}`} episodeId={epId} ad={ad} assets={adAssets[ad.ad_id] || []} onSaved={updated => setAds(prev => prev.map(item => item.ad_id === updated.ad_id ? { ...item, ...updated, script_lines: updated.script, script: item.script } : item))} />
                 </div>
               )}
             </div>
@@ -320,12 +341,14 @@ export default function AdTab() {
         <div className="scrollable" style={{ padding: '10px 12px' }}>
           {presets.length === 0 && <Empty msg="No presets loaded" />}
           {presets.map((p, i) => (
-            <div key={i} className="preset-card" onClick={() => { setShowCreate(true) }}>
+            <div key={i} className="preset-card" role="button" tabIndex={0}
+              onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedPreset(p); setShowCreate(true) } }}
+              onClick={() => { setSelectedPreset(p); setShowCreate(true) }}>
               <div style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--bone)', marginBottom: 4 }}>
-                {p.name || p.preset_id || `Preset ${i + 1}`}
+                {p.name || p.title || p.preset_id || `Preset ${i + 1}`}
               </div>
               <div className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>
-                {p.duration_seconds ? `${p.duration_seconds}s` : ''} {p.tone || ''}
+                {p.duration_seconds || p.target_duration_seconds ? `${p.duration_seconds || p.target_duration_seconds}s` : ''} {p.tone || ''}
               </div>
             </div>
           ))}
@@ -336,7 +359,8 @@ export default function AdTab() {
         <GenerateAdModal
           epId={epId}
           presets={presets}
-          onClose={() => setShowCreate(false)}
+          preset={selectedPreset}
+          onClose={() => { setShowCreate(false); setSelectedPreset(null) }}
           onGenerate={handleGenerate}
           generating={generating}
         />
@@ -347,15 +371,16 @@ export default function AdTab() {
   )
 }
 
-function GenerateAdModal({ epId, presets, onClose, onGenerate, generating }) {
+function GenerateAdModal({ epId, presets, preset, onClose, onGenerate, generating }) {
   const [form, setForm] = useState({
-    ad_type: 'sponsor_60s',
+    ad_type: AD_TYPES.includes(preset?.preset_id) ? preset.preset_id : 'sponsor_60s',
     voice: 'INTRO_MALE',
+    custom_voice_key: '',
     tone: 'confident',
     product: '',
     tagline: '',
     cta: '',
-    duration_seconds: 60,
+    duration_seconds: preset?.target_duration_seconds || preset?.duration_seconds || 60,
     custom_script: '',
   })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -366,7 +391,7 @@ function GenerateAdModal({ epId, presets, onClose, onGenerate, generating }) {
       onClose={onClose}
       footer={<>
         <button className="btn btn-steel" onClick={onClose}>CANCEL</button>
-        <button className="btn btn-gold" onClick={() => onGenerate(form)} disabled={generating}>
+        <button className="btn btn-gold" onClick={() => onGenerate(form)} disabled={generating || (!form.product.trim() && !form.custom_script.trim())}>
           {generating ? <Spinner size={11} /> : <Zap size={11} />} GENERATE
         </button>
       </>}
@@ -389,12 +414,13 @@ function GenerateAdModal({ epId, presets, onClose, onGenerate, generating }) {
             </select>
           </Field>
           <Field label={`Duration: ${form.duration_seconds}s`}>
-            <input type="range" min={10} max={90} step={5} value={form.duration_seconds} onChange={e => set('duration_seconds', +e.target.value)} />
+            <input type="range" min={5} max={120} step={5} value={form.duration_seconds} onChange={e => set('duration_seconds', +e.target.value)} />
           </Field>
         </div>
         <Field label="Product / Show Name">
           <input className="ds-input" value={form.product} onChange={e => set('product', e.target.value)} placeholder="e.g. Dandy Studio" />
         </Field>
+        {form.voice === 'CUSTOM' && <Field label="Custom registered voice identity"><input className="ds-input" value={form.custom_voice_key} onChange={e => set('custom_voice_key', e.target.value)} placeholder="Speaker key registered in config/voices.json and the selected TTS engine" /></Field>}
         <Field label="Tagline">
           <input className="ds-input" value={form.tagline} onChange={e => set('tagline', e.target.value)} placeholder="e.g. Spin episodes in minutes" />
         </Field>
