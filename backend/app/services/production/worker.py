@@ -578,12 +578,7 @@ class HardenedPodcastWorker:
         normalized = self._SPEAKER_NORM.get(s)
         if normalized and normalized in self.voices_config:
             return normalized
-        # Best-effort: prefer announcer_male for unknown 'announcer*' prefixes
-        if s.startswith("announcer"):
-            return "announcer_male"
-        # Fall back to phil so TTS never crashes
-        logger.warning("Unknown speaker '%s' — falling back to 'phil'", raw)
-        return "phil"
+        raise RuntimeError(f"Unknown speaker '{raw}'; register its voice before production")
 
     _TTS_MAX_CHARS = 220
 
@@ -633,10 +628,10 @@ class HardenedPodcastWorker:
                 current = candidate
                 continue
             if current:
-                chunks.append(current.rstrip(",;:"))
+                chunks.append(current)
             current = word
         if current:
-            chunks.append(current.rstrip(",;:"))
+            chunks.append(current)
         return chunks
 
     def _synthesize_segments(self, script_lines: List[Dict[str, Any]], output_dir: Path, episode_id: str) -> List[Dict[str, Any]]:
@@ -644,10 +639,9 @@ class HardenedPodcastWorker:
         segment_index = 0
         for idx, line in enumerate(script_lines, start=1):
             speaker = self._normalize_speaker(str(line.get("speaker", "phil")))
-            text = self._strip_spoken_speaker_prefix(
-                text=str(line.get("text", "")).strip(),
-                speaker=speaker,
-            )
+            text = str(line.get("text", "")).strip()
+            if not line.get("is_ad"):
+                text = self._strip_spoken_speaker_prefix(text=text, speaker=speaker)
             if not text:
                 continue
 
@@ -662,7 +656,7 @@ class HardenedPodcastWorker:
                     output_path=output_path,
                 )
                 duration_seconds = self._probe_duration_seconds(output_path) if output_path.exists() else 0.0
-                pause_after = float(line.get("pause_after", 0.4) or 0.4)
+                pause_after = float(line.get("pause_after", 0.4))
                 if len(chunks) > 1 and chunk_idx < len(chunks):
                     pause_after = max(pause_after, 0.55)
                 segments.append({
@@ -686,30 +680,42 @@ class HardenedPodcastWorker:
         return segments
 
     def _synthesize_line(self, text: str, speaker: str, emotion: str, output_path: Path) -> str:
+        """Synthesize with the selected studio engine only.
+
+        Dandy has no Edge or browser-voice production fallback. Kokoro is the
+        default production engine; Qwen is available only when explicitly
+        selected as the primary TTS engine. If the selected engine fails, the
+        production fails visibly instead of changing voices behind the operator.
+        """
+        speaker = self._normalize_speaker(speaker)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        errors: List[str] = []
+        selected = str(
+            self.project_config.get("tts", {}).get("primary_engine", "kokoro")
+        ).strip().lower()
 
-        if self.qwen_tts_config.get("enabled") and self.qwen_tts_config.get("production", {}).get("enabled", True):
-            try:
-                if self._try_qwen_bridge(text, speaker, emotion, output_path):
-                    return "qwen"
-            except Exception as exc:
-                errors.append(f"qwen:{exc}")
-
-        if self.runtime.primary_engine == "kokoro":
+        if selected == "kokoro":
             try:
                 if self._try_kokoro(text, speaker, emotion, output_path):
                     return "kokoro"
             except Exception as exc:
-                errors.append(f"kokoro:{exc}")
+                raise RuntimeError(f"Kokoro TTS failed: {exc}") from exc
+            raise RuntimeError("Kokoro TTS failed without producing audio")
 
-        try:
-            self._synthesize_edge(text, speaker, output_path)
-            return "edge"
-        except Exception as exc:
-            errors.append(f"edge:{exc}")
+        if selected == "qwen":
+            if not self.qwen_tts_config.get("enabled"):
+                raise RuntimeError("Qwen TTS is selected but disabled")
+            if not self.qwen_tts_config.get("voices", {}).get(speaker):
+                raise RuntimeError(f"No Qwen voice registered for '{speaker}'; no fallback voice substituted")
+            try:
+                if self._try_qwen_bridge(text, speaker, emotion, output_path):
+                    return "qwen"
+            except Exception as exc:
+                raise RuntimeError(f"Qwen TTS failed: {exc}") from exc
+            raise RuntimeError("Qwen TTS failed without producing audio")
 
-        raise RuntimeError("; ".join(errors) or "All TTS engines failed")
+        raise RuntimeError(
+            f"Unsupported production TTS engine '{selected}'. Dandy allows only Kokoro or Qwen."
+        )
 
     def _try_qwen_bridge(self, text: str, speaker: str, emotion: str, output_path: Path) -> bool:
         bridge_url = str(self.qwen_tts_config.get("bridge_url") or "").rstrip("/")
@@ -860,15 +866,17 @@ class HardenedPodcastWorker:
             with concat_list.open("w", encoding="utf-8") as handle:
                 for idx, segment in enumerate(segments, start=1):
                     audio_file = Path(segment["audio_file"]).resolve()
-                    handle.write(f"file '{audio_file.as_posix()}'\n")
+                    escaped = audio_file.as_posix().replace("'", "'\\''")
+                    handle.write(f"file '{escaped}'\n")
 
                     pause_ms = int(float(segment.get("pause_after", 0.4)) * 1000)
                     if pause_ms <= 0:
                         continue
                     silence_file = output_path.parent / f"pause_{idx:03d}.mp3"
-                    AudioSegment.silent(duration=pause_ms).export(silence_file, format="mp3")
+                    AudioSegment.silent(duration=pause_ms).export(silence_file, format="mp3").close()
                     generated_files.append(silence_file)
-                    handle.write(f"file '{silence_file.resolve().as_posix()}'\n")
+                    escaped = silence_file.resolve().as_posix().replace("'", "'\\''")
+                    handle.write(f"file '{escaped}'\n")
 
             cmd = [
                 "ffmpeg", "-y", "-f", "concat", "-safe", "0",
@@ -876,7 +884,7 @@ class HardenedPodcastWorker:
                 "-c:a", "libmp3lame", "-q:a", "2",
                 str(output_path),
             ]
-            subprocess.run(cmd, check=True, capture_output=True, text=True)
+            subprocess.run(cmd, check=True, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
         finally:
             if concat_list.exists():
                 concat_list.unlink()

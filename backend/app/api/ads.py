@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 import uuid
 import re
-import hashlib
+import tempfile
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 
 from ..schemas.ads import AdCreateRequest, AdInsertRequest, AdComposition
 from ..core.paths import PROJECT_ROOT, EPISODES_ROOT
-from ..services.production.ads import generate_ad_lines
+from ..services.production.ads import generate_ad_lines, ad_audio_fingerprint
 from ..services.ads.ad_engine import ADS_CATALOG, generate_ad_script, summarize_context
 from ..services.storage.episode_store import (
     list_ads,
@@ -100,6 +100,8 @@ async def create_ad(episode_id: str, payload: AdCreateRequest):
         raise HTTPException(status_code=400, detail="duration_seconds must be between 5 and 120")
 
     script_context = load_script(episode_id).get("script", [])
+    if payload.insert_into_script and payload.line_index is not None and payload.line_index > len(script_context):
+        raise HTTPException(400, "Insertion position is outside the episode script")
     context_summary = summarize_context(script_context)
 
     raw_speaker = str(payload.announcer_key or "announcer_male").lower()
@@ -116,9 +118,14 @@ async def create_ad(episode_id: str, payload: AdCreateRequest):
             if not text:
                 continue
             speaker = announcer_override
-            match = re.match(r"^(phil|jim|intro_male|intro_female|announcer_male|announcer_female)\s*:\s*(.+)$", text, re.IGNORECASE)
+            labels = set(configured_voices) | set(_SPEAKERS)
+            pattern = "|".join(re.escape(key) for key in sorted(labels, key=len, reverse=True))
+            match = re.match(rf"^({pattern})\s*:\s*(.+)$", text, re.IGNORECASE)
             if match:
-                speaker, text = _SPEAKERS[match[1].lower()], match[2]
+                key = match[1].lower()
+                speaker, text = _SPEAKERS.get(key, key), match[2]
+            if speaker not in configured_voices:
+                raise HTTPException(422, f"Speaker '{speaker}' is not registered; no voice was substituted")
             lines.append({"speaker": speaker, "text": text, "emotion": payload.tone,
                           "pause_after": 0.4, "line_number": len(lines) + 1, "generated_by": "manual_edit"})
     elif payload.label and payload.label.lower() in ADS_CATALOG:
@@ -127,6 +134,8 @@ async def create_ad(episode_id: str, payload: AdCreateRequest):
             announcer=announcer_override,
             episode_context=context_summary,
             duration_seconds=duration,
+            sponsor=payload.sponsor, product_name=payload.product,
+            offer=payload.offer, cta=payload.cta,
         )
     else:
         lines = generate_ad_lines(
@@ -196,34 +205,44 @@ def produce_ad_audio(episode_id: str, ad_id: str) -> Dict:
 
     staging_dir = PROJECT_ROOT / "staging" / "ads" / episode_id / ad_id
     staging_dir.mkdir(parents=True, exist_ok=True)
-    raw_mix = staging_dir / "raw_mix.mp3"
+    with tempfile.TemporaryDirectory(prefix="produce_", dir=staging_dir) as scratch:
+        scratch = Path(scratch)
+        raw_mix = scratch / "raw_mix.mp3"
+        try:
+            segments = worker._synthesize_segments([{**line, "is_ad": True} for line in script_lines], scratch, episode_id)
+            # Ad voice assembly must not apply unrelated episode media cues.
+            from ..services.production.worker import HardenedPodcastWorker
+            HardenedPodcastWorker._concatenate_segments(worker, segments, raw_mix)
+        except Exception as exc:
+            raise HTTPException(500, f"TTS synthesis failed: {exc}") from exc
 
-    try:
-        segments = worker._synthesize_segments(script_lines, staging_dir, episode_id)
-        worker._concatenate_segments(segments, raw_mix)
-    except Exception as e:
-        raise HTTPException(500, f"TTS synthesis failed: {e}")
+        from pydub import AudioSegment
+        sound = AudioSegment.from_file(raw_mix)
+        target_ms = round(float(ad["duration_seconds"]) * 1000)
+        if len(sound) > target_ms + 150:
+            raise HTTPException(422, f"Spoken script is {len(sound) / 1000:.2f}s, longer than the requested {ad['duration_seconds']}s. Increase duration or shorten copy; the script and voice were not trimmed or changed.")
+        if len(sound) < target_ms:
+            sound += AudioSegment.silent(duration=target_ms - len(sound), frame_rate=sound.frame_rate)
+            sound.export(raw_mix, format="mp3", bitrate="192k").close()
 
-    from pydub import AudioSegment
-    sound = AudioSegment.from_file(raw_mix)
-    target_ms = round(float(ad["duration_seconds"]) * 1000)
-    if len(sound) > target_ms + 150:
-        raise HTTPException(422, f"Spoken script is {len(sound) / 1000:.2f}s, longer than the requested {ad['duration_seconds']}s. Increase duration or shorten copy; the script and voice were not trimmed or changed.")
-    if len(sound) < target_ms:
-        sound += AudioSegment.silent(duration=target_ms - len(sound), frame_rate=sound.frame_rate)
-        sound.export(raw_mix, format="mp3", bitrate="192k")
-
-    ads_dir = EPISODES_ROOT / episode_id / "ads"
-    ads_dir.mkdir(exist_ok=True)
-    final_audio = ads_dir / f"{ad_id}.mp3"
-    raw_mix.replace(final_audio)
+        resolution = []
+        for segment in segments:
+            record = {"requested_voice": segment["speaker"], "resolved_voice": segment["speaker"],
+                      "resolved_voice_id": segment["voice_name"], "engine": segment["engine"], "fallback_used": False}
+            if record not in resolution:
+                resolution.append(record)
+        ads_dir = EPISODES_ROOT / episode_id / "ads"
+        ads_dir.mkdir(exist_ok=True)
+        # A failed re-production must preserve the last accepted audio file.
+        final_audio = ads_dir / f"{ad_id}.mp3"
+        measured = worker._probe_duration_seconds(raw_mix)
+        raw_mix.replace(final_audio)
 
     updated = {**ad, "audio_file": str(final_audio), "produced_at": datetime.now().isoformat(),
-               "status": "produced", "actual_duration_seconds": worker._probe_duration_seconds(final_audio),
-               "audio_script_fingerprint": hashlib.sha256(json.dumps([{key: line.get(key) for key in ("speaker", "text")} for line in script_lines], sort_keys=True).encode()).hexdigest(),
-               "voice_resolution": [{"requested_voice": line.get("speaker"), "resolved_voice": line.get("speaker"),
-                                     "resolved_voice_id": worker._resolve_voice_name(line.get("speaker"), worker.project_config.get("tts", {}).get("primary_engine")),
-                                     "engine": worker.project_config.get("tts", {}).get("primary_engine"), "fallback_used": False} for line in script_lines]}
+               "status": "produced", "actual_duration_seconds": measured,
+               "audio_script_fingerprint": ad_audio_fingerprint(script_lines),
+               "voice_resolution": resolution}
+
     save_ad(episode_id, updated)
     return {"status": "produced", "ad": updated}
 
@@ -241,6 +260,18 @@ def save_composition(episode_id: str, ad_id: str, payload: AdComposition):
     duration = float(ad.get("duration_seconds") or 30)
     if any(layer.end > duration for layer in payload.text_layers + payload.visuals) or any(track.start >= duration for track in payload.sfx_tracks):
         raise HTTPException(422, "Composition timing must stay within the requested ad duration")
+    meta_path = EPISODES_ROOT / episode_id / "ads" / f"{ad_id}_assets.json"
+    assets = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.is_file() else []
+    asset_map = {asset["asset_id"]: asset for asset in assets}
+    visual_types = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".mp4", ".mov", ".webm", ".mkv", ".avi"}
+    audio_types = {".wav", ".mp3", ".ogg", ".flac", ".m4a", ".aac"}
+    for track in payload.visuals + payload.sfx_tracks:
+        asset = asset_map.get(track.asset_id)
+        if not asset or not Path(asset["stored_path"]).is_file():
+            raise HTTPException(422, f"Asset '{track.asset_id}' is not attached or its file is missing")
+        allowed = visual_types if track in payload.visuals else audio_types
+        if Path(asset["stored_path"]).suffix.lower() not in allowed:
+            raise HTTPException(422, f"Asset '{track.asset_id}' has an unsupported file type for this track")
     updated = save_ad(episode_id, {**ad, "composition": payload.model_dump(), "composition_saved_at": datetime.now().isoformat()})
     return {"status": "saved", "ad": updated}
 

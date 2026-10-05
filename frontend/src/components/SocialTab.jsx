@@ -92,8 +92,8 @@ export default function SocialTab({ episodeId, onEpisodeChange }) {
       {/* Mode body */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
         {mode === 'exports'   && <ExportsMode episodeId={episodeId || epId} onEpisodeChange={id => { onEpisodeChange?.(id); setActiveEp(episodes.find(ep => (ep.episode_id || ep.id) === id) || null) }} />}
-        {mode === 'slideshow' && <SlideshowBuilder episode={episode} assetSlots={assetSlots} />}
-        {mode === 'adcards'   && <AdCardsBuilder   episode={episode} assetSlots={assetSlots} />}
+        {mode === 'slideshow' && <SlideshowBuilder key={epId || "none"} episode={episode} assetSlots={assetSlots} />}
+        {mode === 'adcards'   && <AdCardsBuilder key={epId || "global"} episode={episode} assetSlots={assetSlots} />}
       </div>
 
     </div>

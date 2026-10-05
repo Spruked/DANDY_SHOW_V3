@@ -1,12 +1,22 @@
-import math
 from typing import Dict, List
+import hashlib
+import json
+
+
+def ad_audio_fingerprint(lines):
+    """Spoken copy, identity, delivery and pauses must match reusable audio."""
+    payload = [{"speaker": line.get("speaker"), "text": line.get("text"),
+                "emotion": line.get("emotion", "neutral"), "pause_after": line.get("pause_after", .4)}
+               for line in lines]
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
 
 
 def mix_ad_tracks(ad, tracks, assets):
     """One local audio authority shared by visual rendering and episode assembly."""
     from pathlib import Path
     from pydub import AudioSegment
-    voice = AudioSegment.from_file(ad["audio_file"])
+    with open(ad["audio_file"], "rb") as handle:
+        voice = AudioSegment.from_file(handle)
     duration_ms = round(float(ad["duration_seconds"]) * 1000)
     if len(voice) > duration_ms + 150:
         raise ValueError("Spoken audio exceeds the requested ad duration; increase the target or shorten copy. No trimming or speed change was applied.")
@@ -16,7 +26,8 @@ def mix_ad_tracks(ad, tracks, assets):
         record = asset_map.get(track["asset_id"])
         if not record or not Path(record["stored_path"]).is_file():
             raise ValueError(f"SFX asset {track['asset_id']} is missing from this ad")
-        sound = AudioSegment.from_file(record["stored_path"]) + float(track.get("volume_db", -12))
+        with open(record["stored_path"], "rb") as handle:
+            sound = AudioSegment.from_file(handle) + float(track.get("volume_db", -12))
         if track.get("fade_in"):
             sound = sound.fade_in(min(len(sound), round(track["fade_in"] * 1000)))
         if track.get("fade_out"):
@@ -28,12 +39,6 @@ def mix_ad_tracks(ad, tracks, assets):
     return mixed
 
 
-def _estimate_words(duration_seconds: int, words_per_minute: int = 150) -> int:
-    # Conservative speaking rate; ad reads are usually tighter/faster.
-    wps = words_per_minute / 60
-    return max(15, int(duration_seconds * wps * 0.9))
-
-
 def generate_ad_lines(
     sponsor: str,
     product: str,
@@ -42,45 +47,18 @@ def generate_ad_lines(
     duration_seconds: int,
     tone: str = "confident",
 ) -> List[Dict]:
-    target_words = _estimate_words(duration_seconds)
-    hook = f"{sponsor} presents {product}" if product else f"{sponsor} has you covered"
-    offer_text = offer or "Exclusive for listeners."
-    cta_text = cta or "Learn more in the show notes."
+    """Use supplied facts once; the audio stage enforces the requested duration.
 
-    lines: List[Dict] = [
-        {
-            "speaker": "intro_male",
-            "text": f"{hook}. {offer_text}",
-            "emotion": tone,
-            "pause_after": 0.4,
-        },
-        {
-            "speaker": "intro_female",
-            "text": f"Quick hit: {offer_text}. {cta_text}",
-            "emotion": tone,
-            "pause_after": 0.4,
-        },
-    ]
-
-    # If we need more words to reach target, add a single closer line.
-    word_count = sum(len(l["text"].split()) for l in lines)
-    if word_count < target_words:
-        remaining = target_words - word_count
-        closer = (
-            f"{sponsor}—{offer_text}—{cta_text}"
-        )
-        # Trim closer roughly to remaining words.
-        closer_words = closer.split()[: max(3, int(remaining))]
-        lines.append(
-            {
-                "speaker": "intro_male",
-                "text": " ".join(closer_words),
-                "emotion": tone,
-                "pause_after": 0.3,
-            }
-        )
-
-    # Reindex line_number for clarity when inserted into script.
-    for idx, line in enumerate(lines, start=1):
-        line["line_number"] = idx
-    return lines
+    Missing offer details are not evidence for an exclusive deal or a product
+    claim. Silence padding belongs to the renderer, never generated filler.
+    """
+    if not 5 <= duration_seconds <= 120:
+        raise ValueError("Ad duration must be between 5 and 120 seconds")
+    hook = f"{sponsor} presents {product}" if product else f"This message is from {sponsor}"
+    texts = [hook.rstrip(". !?") + "."]
+    for text in (offer, cta):
+        if text and text.strip() and text.strip() not in texts:
+            texts.append(text.strip())
+    return [{"speaker": "announcer_male", "text": text, "emotion": tone,
+             "pause_after": .4, "line_number": index}
+            for index, text in enumerate(texts, start=1)]

@@ -2,6 +2,7 @@
 // The Ads tab owns audio; this owns the visual companion.
 
 import { useEffect, useState } from "react";
+import { req } from "../lib/api";
 
 const CARD_TEMPLATES = [
   { id: "sponsor",     label: "Sponsor Card" },
@@ -34,61 +35,70 @@ export default function AdCardsBuilder({ episode, assetSlots }) {
   const [format, setFormat] = useState("png");
   const [rendering, setRendering] = useState(false);
 
+  const [dirty, setDirty] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    fetch(`/api/social/adcards/load?episode_id=${episode?.id || ""}`)
-      .then((r) => r.json())
-      .then((d) => {
-        setCards(d.cards || []);
-        setSelectedId(d.cards?.[0]?.id || null);
-      });
+    const controller = new AbortController();
+    setCards([]); setSelectedId(null); setDirty(false); setError(""); setMessage(""); setDownloadUrl(""); setLoading(true);
+    req(`/social/adcards/load?episode_id=${encodeURIComponent(episode?.id || "")}`, { signal: controller.signal })
+      .then(data => { if (!controller.signal.aborted) { setCards(data.cards || []); setSelectedId(data.cards?.[0]?.id || null); } })
+      .catch(error => { if (!controller.signal.aborted) setError(error.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [episode?.id]);
+
+  const run = async action => {
+    if (rendering || loading) return;
+    setRendering(true); setError(""); setMessage(""); setDownloadUrl("");
+    try { await action(); } catch (error) { setError(error.message); }
+    finally { setRendering(false); }
+  };
 
   const selected = cards.find((c) => c.id === selectedId);
 
   const updateSelected = (patch) => {
+    setDirty(true); setDownloadUrl("");
     setCards((prev) =>
       prev.map((c) => (c.id === selectedId ? { ...c, ...patch } : c))
     );
   };
 
   const addCard = (type) => {
+    setDirty(true); setDownloadUrl("");
     const c = EMPTY_CARD(type);
     setCards((prev) => [...prev, c]);
     setSelectedId(c.id);
   };
 
   const deleteCard = () => {
-    setCards((prev) => prev.filter((c) => c.id !== selectedId));
-    setSelectedId(null);
+    const remaining = cards.filter(card => card.id !== selectedId);
+    setCards(remaining); setSelectedId(remaining[0]?.id || null); setDirty(true); setDownloadUrl("");
   };
 
   const saveCards = async () => {
-    await fetch("/api/social/adcards/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ episode_id: episode?.id, cards }),
+    await req("/social/adcards/save", {
+      method: "POST", body: JSON.stringify({ episode_id: episode?.id || null, cards }),
     });
+    setDirty(false); setMessage("Saved.");
   };
 
-  const renderCard = async () => {
+  const renderCard = () => run(async () => {
     if (!selected) return;
-    setRendering(true);
-    try {
-      await saveCards();
-      const res = await fetch("/api/social/adcards/render", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ card_id: selected.id, aspect, format }),
-      });
-      const data = await res.json();
-      if (data.download_url) window.open(data.download_url, "_blank");
-    } finally {
-      setRendering(false);
-    }
-  };
+    await saveCards();
+    const data = await req("/social/adcards/render", {
+      method: "POST", body: JSON.stringify({ episode_id: episode?.id || null, card_id: selected.id, aspect, format }),
+    });
+    if (!data.download_url) throw new Error("Render returned no downloadable output.");
+    setDownloadUrl(data.download_url); setMessage("Render complete.");
+  });
 
   return (
     <div className="adcards-builder">
+      <fieldset disabled={rendering || loading} style={{ display: "contents" }}>
       {/* LEFT — template gallery + card list */}
       <div className="panel panel-left">
         <div className="panel-header">TEMPLATES</div>
@@ -129,12 +139,12 @@ export default function AdCardsBuilder({ episode, assetSlots }) {
               className="adcard-preview"
               style={{
                 aspectRatio: aspect === "9:16" ? "9/16" : aspect === "16:9" ? "16/9" : "1/1",
-                backgroundImage: selected.background ? `url(/assets/${selected.background})` : "none",
+                backgroundImage: selected.background ? `url(/api/social/assets/${encodeURIComponent(selected.background)})` : "none",
                 backgroundSize: "cover",
               }}
             >
               <div className="adcard-overlay">
-                {selected.logo && <img src={`/assets/${selected.logo}`} alt="" className="adcard-logo" />}
+                {selected.logo && <img src={`/api/social/assets/${encodeURIComponent(selected.logo)}`} alt="" className="adcard-logo" />}
                 <div className="adcard-sponsor">{selected.sponsor}</div>
                 <div className="adcard-cta">{selected.cta}</div>
                 {selected.offer_code && <div className="adcard-offer">Code: {selected.offer_code}</div>}
@@ -159,7 +169,7 @@ export default function AdCardsBuilder({ episode, assetSlots }) {
                 <select value={selected.background} onChange={(e) => updateSelected({ background: e.target.value })}>
                   <option value="">— none —</option>
                   {(assetSlots || []).map((a) => (
-                    <option key={a.id} value={a.filename}>{a.name}</option>
+                    <option key={a.id} value={a.filename} disabled={!a.available}>{a.name}{!a.available ? " (missing)" : ""}</option>
                   ))}
                 </select>
               </label>
@@ -167,7 +177,7 @@ export default function AdCardsBuilder({ episode, assetSlots }) {
                 <select value={selected.logo} onChange={(e) => updateSelected({ logo: e.target.value })}>
                   <option value="">— none —</option>
                   {(assetSlots || []).map((a) => (
-                    <option key={a.id} value={a.filename}>{a.name}</option>
+                    <option key={a.id} value={a.filename} disabled={!a.available}>{a.name}{!a.available ? " (missing)" : ""}</option>
                   ))}
                 </select>
               </label>
@@ -194,13 +204,17 @@ export default function AdCardsBuilder({ episode, assetSlots }) {
         </label>
 
         <div className="export-actions">
-          <button onClick={saveCards}>Save</button>
+          <button onClick={() => run(saveCards)} disabled={!dirty}>{dirty ? "Save" : "Saved"}</button>
           <button onClick={deleteCard} disabled={!selected}>Delete</button>
           <button className="btn-render" onClick={renderCard} disabled={!selected || rendering}>
             {rendering ? "Rendering..." : "⚡ Render"}
           </button>
         </div>
+        <div role="status">{loading ? "Loading cards..." : message}</div>
+        {error && <div role="alert" style={{ color: "var(--red)", overflowWrap: "anywhere" }}>{error}</div>}
+        {downloadUrl && <a href={downloadUrl} download>Download render</a>}
       </div>
+      </fieldset>
     </div>
   );
 }

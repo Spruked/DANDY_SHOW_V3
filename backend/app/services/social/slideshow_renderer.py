@@ -13,6 +13,7 @@ import os
 import math
 import tempfile
 import time
+import threading
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -44,6 +45,7 @@ def _layer_motion(image, layer, t, canvas_size):
         entrance = entrance * entrance * (3 - 2 * entrance)
         exit_progress = exit_progress * exit_progress * (3 - 2 * exit_progress)
     alpha, scale, dx, reveal = float(getattr(layer, "opacity", 1)), 1.0, 0.0, 1.0
+    pulse_applied = False
     for motion, progress, exiting in ((layer.animation_in, entrance, False), (layer.animation_out, exit_progress, True)):
         if motion == "fade":
             alpha *= progress
@@ -54,8 +56,9 @@ def _layer_motion(image, layer, t, canvas_size):
             alpha *= progress
         elif motion == "reveal":
             reveal *= progress
-        elif motion == "pulse":
+        elif motion == "pulse" and not pulse_applied:
             scale *= 1 + .045 * math.sin((t - layer.start) * math.tau * 1.5)
+            pulse_applied = True
     frame = image.copy().convert("RGBA")
     if scale != 1:
         frame = frame.resize((max(1, round(frame.width * scale)), max(1, round(frame.height * scale))), Image.Resampling.LANCZOS)
@@ -125,14 +128,15 @@ def render_composed_ad(ad, composition, assets):
     with tempfile.TemporaryDirectory(dir=str(RENDERS_DIR), prefix="ad_render_") as scratch:
         scratch = Path(scratch)
         audio = scratch / "mixed.wav"
-        mixed.export(audio, format="wav")
+        mixed.export(audio, format="wav").close()
         for layer in composition.visuals:
             path = asset_path(layer.asset_id)
             if path.suffix.lower() in {".mp4", ".mov", ".webm", ".mkv", ".avi"}:
                 video_commands.append((layer, [ffmpeg, "-v", "error", "-stream_loop", "-1", "-i", str(path), "-vf", f"scale={size[0]}:{size[1]}",
                                                "-r", str(fps), "-f", "rawvideo", "-pix_fmt", "rgb24", "pipe:1"]))
             else:
-                image = Image.open(path).convert("RGBA")
+                with Image.open(path) as original:
+                    image = original.convert("RGBA")
                 if layer.role == "background":
                     image = ImageOps.fit(image, size)
                 else:
@@ -145,10 +149,25 @@ def render_composed_ad(ad, composition, assets):
                                         "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "aac",
                                         "-t", str(duration), "-movflags", "+faststart", str(output)], stdin=subprocess.PIPE, stderr=errors)
             started = time.monotonic()
+            timed_out = threading.Event()
+            processes = [encoder]
+            def abort_render():
+                timed_out.set()
+                for process in processes:
+                    if process.poll() is None:
+                        try:
+                            process.kill()
+                        except OSError:
+                            pass
+            # A loop-clock check alone cannot interrupt a blocked pipe read/write.
+            watchdog = threading.Timer(600, abort_render)
+            watchdog.daemon = True
+            watchdog.start()
             try:
                 for layer, command in video_commands:
                     reader = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
                     readers.append((layer, reader))
+                    processes.append(reader)
                     visual_sources.append((layer, reader))
                 order = {layer.id: index for index, layer in enumerate(composition.visuals)}
                 visual_sources.sort(key=lambda item: order[item[0].id])
@@ -179,13 +198,24 @@ def render_composed_ad(ad, composition, assets):
                 encoder.stdin.close()
                 if encoder.wait(timeout=30):
                     raise RuntimeError(error_log.read_text(encoding="utf-8", errors="replace")[-1200:])
-            except Exception:
-                encoder.kill(); encoder.wait()
+            except Exception as exc:
+                if encoder.poll() is None:
+                    encoder.kill()
+                encoder.wait(timeout=5)
                 output.unlink(missing_ok=True)
+                if timed_out.is_set():
+                    raise TimeoutError("Visual render exceeded 10 minutes") from exc
                 raise
             finally:
+                watchdog.cancel()
+                watchdog.join(timeout=5)
+                if encoder.stdin and not encoder.stdin.closed:
+                    encoder.stdin.close()
                 for _, reader in readers:
-                    reader.terminate(); reader.wait(timeout=5); reader.stdout.close()
+                    if reader.poll() is None:
+                        reader.kill()
+                    reader.wait(timeout=5)
+                    reader.stdout.close()
     if not output.is_file() or not output.stat().st_size:
         raise RuntimeError("Encoder did not produce a non-empty video")
     return {"path": str(output), "download_url": f"/renders/{output.name}", "duration_seconds": duration,
