@@ -1,11 +1,15 @@
 {
 	"folders": [
 		{
+			"name": "Dandy-Studio-Qwen",
 			"path": "."
 		},
 		{
+			"name": "Phil_and_Jim_Dandy_Show",
 			"path": "../../Phil_and_Jim_Dandy_Show"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"powershell.cwd": "Phil_and_Jim_Dandy_Show"
+	}
 }
