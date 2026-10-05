@@ -1,9 +1,14 @@
+import json
 import re
+import shutil
+from pathlib import Path
 from typing import Dict, Any, List
 
 from fastapi import APIRouter, Body, HTTPException
 
 from ..services.storage.episode_store import (
+    DRAFTS_ROOT,
+    JOBS_ROOT,
     list_episode_summaries,
     load_episode_detail,
     load_script,
@@ -11,6 +16,7 @@ from ..services.storage.episode_store import (
     save_script,
     save_script_version,
 )
+from ..core.paths import EPISODES_ROOT
 
 
 router = APIRouter(tags=["library"])
@@ -48,6 +54,17 @@ def _parse_script_text(text: str) -> List[Dict[str, Any]]:
     return parsed
 
 
+def _safe_episode_path(episode_id: str) -> Path:
+    episode_id = str(episode_id or "").strip()
+    if not episode_id or episode_id in {".", ".."} or Path(episode_id).name != episode_id:
+        raise HTTPException(status_code=400, detail="Invalid episode id")
+    root = EPISODES_ROOT.resolve()
+    candidate = (EPISODES_ROOT / episode_id).resolve()
+    if candidate.parent != root:
+        raise HTTPException(status_code=400, detail="Invalid episode id")
+    return candidate
+
+
 @router.get("/library")
 async def library() -> Dict:
     return {"episodes": list_episode_summaries()}
@@ -56,6 +73,41 @@ async def library() -> Dict:
 @router.get("/episodes")
 async def episodes() -> Dict:
     return {"episodes": list_episode_summaries()}
+
+
+@router.delete("/episodes/{episode_id}")
+async def delete_episode(episode_id: str) -> Dict[str, Any]:
+    """Delete one episode and only the draft/job records owned by that episode."""
+    episode_path = _safe_episode_path(episode_id)
+    draft_path = DRAFTS_ROOT / f"{episode_id}.json"
+
+    if not episode_path.exists() and not draft_path.exists():
+        raise HTTPException(status_code=404, detail="Episode not found")
+
+    removed_jobs: List[str] = []
+    if JOBS_ROOT.exists():
+        for job_path in JOBS_ROOT.glob("*.json"):
+            try:
+                payload = json.loads(job_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if str(payload.get("episode_id", "")) != episode_id:
+                continue
+            job_path.unlink(missing_ok=True)
+            removed_jobs.append(job_path.name)
+
+    if episode_path.exists():
+        if not episode_path.is_dir():
+            raise HTTPException(status_code=409, detail="Episode path is not a directory")
+        shutil.rmtree(episode_path)
+
+    draft_path.unlink(missing_ok=True)
+
+    return {
+        "status": "deleted",
+        "episode_id": episode_id,
+        "removed_job_records": len(removed_jobs),
+    }
 
 
 @router.get("/episodes/{episode_id}/script")
