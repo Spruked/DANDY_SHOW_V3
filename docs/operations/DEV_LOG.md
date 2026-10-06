@@ -1,5 +1,31 @@
 # Dandy Studio Dev Log
 
+## 2026-10-05 - Generation progress, studio cleanup and camera connection
+
+Canonical checkout: `C:\dev\Desktop\The Real Dandy\Dandy-Studio-Qwen`.
+
+Completed and verified:
+
+- Fixed the local DeepSeek/llama.cpp script path with bounded completion grammar, stage-sized exchange counts, scaled token budgets, opening-stage retry, and exchange-count telemetry.
+- Added live job status at `/api/episodes/jobs/{job_id}` and visible frontend progress for script generation and background episode production.
+- Removed Voicemeeter from the active app surface, diagnostics, and backend router registration.
+- Added the Dandy Show Phil & Jim logo to the top navigation and enlarged/separated navigation tabs.
+- Added browser camera discovery, permission-based connection, live preview, reconnect/disconnect controls, and device refresh under Studio > Cameras.
+- Recovered the Episodes page after moving the progress polling hook below its `epId` initialization.
+
+Verification:
+
+- `py -3.12 -m compileall -q backend/app` passed.
+- `npm run build` in `frontend` passed.
+- `git diff --check` passed.
+- Backend restarted and `/health` returned `healthy`.
+- `/api/system/diagnostics` no longer reports a mixer check.
+- No full 15-minute generation test was run by the agent; manual episode validation remains operator-owned.
+
+Delivery:
+
+- Code commit: `8e66384` (`Fix generation progress and studio runtime controls`).
+
 ## 2026-10-05 - App recovery, audit and repair work paused for credit reset
 
 Canonical checkout: `C:\dev\Desktop\The Real Dandy\Dandy-Studio-Qwen`. This entry supersedes historical runtime assumptions below; it does not replace their history.
