@@ -183,6 +183,10 @@ export const api = {
       body: JSON.stringify(body),
     })
   },
+  generationStatus: async (id) => {
+    const jobId = await ensureJob(id)
+    return req(`/episodes/jobs/${encodeURIComponent(jobId)}`)
+  },
   editScript: async (body) => {
     const normalized = await normalizeEditPayload(body)
     return req('/episodes/edit-script', { method: 'POST', body: JSON.stringify(normalized) })

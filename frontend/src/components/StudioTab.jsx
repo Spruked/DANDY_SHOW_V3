@@ -1,5 +1,5 @@
-// components/StudioTab.jsx — Phil & Jim Dandy Show Full Studio Control Dashboard
-import { useState, useEffect, useCallback } from 'react'
+﻿// components/StudioTab.jsx â€” Phil & Jim Dandy Show Full Studio Control Dashboard
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Mic, Mic2, Volume2, VolumeX, Radio, Monitor, Camera,
   Headphones, Settings, Activity, Zap, ToggleLeft, ToggleRight,
@@ -8,7 +8,7 @@ import {
   Video, Layers, Play, Square, Circle, SkipForward, Download
 } from 'lucide-react'
 
-// ─── tiny helpers ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ tiny helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 const pct   = v => `${clamp(v, 0, 100)}%`
 
@@ -211,10 +211,10 @@ function MacroBtn({ label, color = 'var(--gold)', onClick, active = false, disab
   )
 }
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
+// â”€â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function StudioTab() {
 
-  // ── Voicemeeter channel states ──
+  // â”€â”€ audio mixer channel states â”€â”€
   const initCh = (label, color, gain = 0) => ({
     label, color, gain, mute: false, solo: false,
     gate: 30, comp: 40, eq: false,
@@ -224,23 +224,23 @@ export default function StudioTab() {
   })
 
   const [channels, setChannels] = useState({
-    mic1:  initCh('MIC 1 · PHIL', 'var(--phil)',   0),
-    mic2:  initCh('MIC 2 · JIM',  'var(--jim)',    0),
+    mic1:  initCh('MIC 1 Â· PHIL', 'var(--phil)',   0),
+    mic2:  initCh('MIC 2 Â· JIM',  'var(--jim)',    0),
     guest: initCh('GUEST MIC',    'var(--guest)', -3),
     music: initCh('MUSIC BED',    'var(--steel)', -18),
     sfx:   initCh('SFX',          'var(--ad)',    -6),
-    vm:    initCh('VOICEMEETER',  'var(--gold)',   0),
+    vm:    initCh('AUDIO MIXER',  'var(--gold)',   0),
   })
 
   const [master, setMaster] = useState({ gain: 0, mute: false, comp: 60, limiter: true, vu: 0 })
 
-  // ── Monitor / headphone ──
+  // â”€â”€ Monitor / headphone â”€â”€
   const [monitor, setMonitor] = useState({
     volume: 75, dim: false, mono: false, philHP: 80, jimHP: 80,
     talkback: false, comfortReverb: 20, clickTrack: false, clickLevel: 50,
   })
 
-  // ── OBS states ──
+  // â”€â”€ OBS states â”€â”€
   const [obs, setObs] = useState({
     connected: false, streaming: false, recording: false,
     activeScene: '',
@@ -250,7 +250,7 @@ export default function StudioTab() {
     transitions: ['Cut', 'Fade', 'Swipe', 'Stinger'],
   })
 
-  // ── Camera states ──
+  // â”€â”€ Camera states â”€â”€
   const [cameras, setCameras] = useState({
     main:  { label: 'MAIN', zoom: 50, focus: 70, exposure: 55, active: true  },
     phil:  { label: 'PHIL', zoom: 40, focus: 65, exposure: 55, active: false },
@@ -258,7 +258,7 @@ export default function StudioTab() {
     screen:{ label: 'SCRN', zoom: 100, focus: 100, exposure: 50, active: false },
   })
 
-  // ── Macro buttons ──
+  // â”€â”€ Macro buttons â”€â”€
   const [activeMacros, setActiveMacros] = useState({})
   const macros = [
     { id: 'intro',   label: 'INTRO SEQUENCE',  color: 'var(--gold)'  },
@@ -271,13 +271,13 @@ export default function StudioTab() {
     { id: 'outro',   label: 'OUTRO SEQUENCE',   color: 'var(--gold)'  },
   ]
 
-  // ── Audacity / Recording ──
+  // â”€â”€ Audacity / Recording â”€â”€
   const [audacity, setAudacity] = useState({
     inputGain: 75, noiseReduction: 60, compression: 50,
     eq: 55, deEss: 40, limiter: 80, recording: false,
   })
 
-  // ── Streaming status ──
+  // â”€â”€ Streaming status â”€â”€
   const [stream, setStream] = useState({
     platform: 'OBS', bitrate: '--', fps: '--', resolution: '--',
     duration: 0, viewers: 0,
@@ -289,8 +289,58 @@ export default function StudioTab() {
   const [obsError, setObsError] = useState('')
   const [macroBusy, setMacroBusy] = useState(false)
   const [macroError, setMacroError] = useState('')
-  const [studioView, setStudioView] = useState('audio')
+  const [studioView, setStudioView] = useState('obs')
   const [audioIo, setAudioIo] = useState({ ok: false, label: 'AUDIO I/O' })
+  const cameraVideoRef = useRef(null)
+  const cameraStreamRef = useRef(null)
+  const [cameraDevices, setCameraDevices] = useState([])
+  const [cameraDeviceId, setCameraDeviceId] = useState('')
+  const [cameraConnected, setCameraConnected] = useState(false)
+  const [cameraError, setCameraError] = useState('')
+
+  const stopBrowserCamera = useCallback(() => {
+    cameraStreamRef.current?.getTracks().forEach(track => track.stop())
+    cameraStreamRef.current = null
+    if (cameraVideoRef.current) cameraVideoRef.current.srcObject = null
+    setCameraConnected(false)
+  }, [])
+
+  const refreshBrowserCameras = useCallback(async () => {
+    if (!navigator.mediaDevices?.enumerateDevices) {
+      setCameraError('Browser camera access is unavailable.')
+      return
+    }
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    const camerasFound = devices.filter(device => device.kind === 'videoinput')
+    setCameraDevices(camerasFound)
+    if (!cameraDeviceId && camerasFound[0]) setCameraDeviceId(camerasFound[0].deviceId)
+  }, [cameraDeviceId])
+
+  const startBrowserCamera = useCallback(async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError('This browser does not expose camera access.')
+      return
+    }
+    setCameraError('')
+    stopBrowserCamera()
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: cameraDeviceId ? { deviceId: { exact: cameraDeviceId } } : true,
+        audio: false,
+      })
+      cameraStreamRef.current = stream
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream
+        await cameraVideoRef.current.play()
+      }
+      setCameraConnected(true)
+      await refreshBrowserCameras()
+    } catch (error) {
+      setCameraError(error?.name === 'NotAllowedError' ? 'Camera permission was denied.' : (error?.message || 'Camera could not be opened.'))
+    }
+  }, [cameraDeviceId, refreshBrowserCameras, stopBrowserCamera])
+
+  useEffect(() => () => stopBrowserCamera(), [stopBrowserCamera])
 
   const mixerRequest = useCallback(async (path, options = {}) => {
     const res = await fetch(`/api/mixer${path}`, {
@@ -362,25 +412,9 @@ export default function StudioTab() {
       setMixerError('')
     } catch (err) {
       setMixerConnected(false)
-      setMixerError(err?.message || 'Voicemeeter unavailable')
+      setMixerError(err?.message || 'audio mixer unavailable')
     }
   }, [mixerRequest])
-
-  useEffect(() => {
-    let cancelled = false
-    const init = async () => {
-      await refreshMixerStatus()
-      if (cancelled) return
-    }
-    init()
-    const iv = setInterval(() => {
-      if (!cancelled) refreshMixerStatus()
-    }, MIXER_POLL_MS)
-    return () => {
-      cancelled = true
-      clearInterval(iv)
-    }
-  }, [refreshMixerStatus])
 
   const obsRequest = useCallback(async (path, options = {}) => {
     const res = await fetch(`/api/obs${path}`, {
@@ -570,7 +604,7 @@ export default function StudioTab() {
       setMixerError('')
     } catch (err) {
       setMixerConnected(false)
-      setMixerError(err?.message || 'Voicemeeter write failed')
+      setMixerError(err?.message || 'audio mixer write failed')
     }
   }, [mixerRequest])
 
@@ -593,7 +627,7 @@ export default function StudioTab() {
       setMixerError('')
     } catch (err) {
       setMixerConnected(false)
-      setMixerError(err?.message || 'Voicemeeter write failed')
+      setMixerError(err?.message || 'audio mixer write failed')
     }
   }, [mixerRequest])
 
@@ -623,7 +657,7 @@ export default function StudioTab() {
       setMixerError('')
       return data
     } catch (err) {
-      setMixerError(err?.message || 'Voicemeeter bus write failed')
+      setMixerError(err?.message || 'audio mixer bus write failed')
       return null
     }
   }, [mixerRequest])
@@ -641,7 +675,7 @@ export default function StudioTab() {
       setMixerError('')
       return data
     } catch (err) {
-      setMixerError(err?.message || `Voicemeeter macro ${buttonIndex} failed`)
+      setMixerError(err?.message || `audio mixer macro ${buttonIndex} failed`)
       return null
     }
   }, [mixerRequest])
@@ -675,7 +709,6 @@ export default function StudioTab() {
   const updateCamera  = (k, patch) => setCameras(p => ({ ...p, [k]: { ...p[k], ...patch } }))
   const chKeys = Object.keys(channels)
   const studioViews = [
-    { id: 'audio', label: 'AUDIO MIX', icon: Sliders },
     { id: 'obs', label: 'OBS LIVE', icon: Monitor },
     { id: 'cams', label: 'CAMERAS', icon: Camera },
     { id: 'automate', label: 'MACROS / TOOLS', icon: Zap },
@@ -731,7 +764,7 @@ export default function StudioTab() {
 
   return (
     <div className="tab-body" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* ── TOP STATUS BAR ── */}
+      {/* â”€â”€ TOP STATUS BAR â”€â”€ */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10, padding: '6px 16px',
         background: 'var(--surface)', borderBottom: '1px solid var(--rim)', flexShrink: 0, flexWrap: 'wrap',
@@ -739,20 +772,10 @@ export default function StudioTab() {
         <span style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', color: 'var(--gold)', letterSpacing: '.12em', marginRight: 8 }}>
           STUDIO CONTROL
         </span>
-        <StatusPill ok={mixerConnected} label={mixerConnected ? `VOICEMEETER ${mixerKind.toUpperCase()}` : 'VOICEMEETER'} />
         <StatusPill ok={obs.connected} label="OBS WS" />
         <StatusPill ok={audioIo.ok} label={audioIo.label} />
         <StatusPill ok={obs.streaming}  label={obs.streaming ? `LIVE ${fmtTime(stream.duration)}` : 'OFF AIR'} />
         <StatusPill ok={obs.recording}  label={obs.recording  ? 'REC' : 'IDLE'} />
-        <button
-          onClick={() => void refreshMixerStatus()}
-          style={{
-            background: 'var(--bg)', border: '1px solid var(--rim)', borderRadius: 6,
-            color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '.5rem', padding: '4px 8px', cursor: 'pointer',
-          }}
-        >
-          REFRESH MIXER
-        </button>
         <button
           onClick={() => void Promise.all([refreshObsStatus(), refreshObsScenes()])}
           style={{
@@ -762,11 +785,6 @@ export default function StudioTab() {
         >
           REFRESH OBS
         </button>
-        {mixerError && (
-          <span style={{ fontSize: '.48rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
-            {mixerError}
-          </span>
-        )}
         {obsError && (
           <span style={{ fontSize: '.48rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
             {obsError}
@@ -826,7 +844,7 @@ export default function StudioTab() {
         ))}
       </div>
 
-      {/* ── MAIN LAYOUT ── */}
+      {/* â”€â”€ MAIN LAYOUT â”€â”€ */}
       <div style={{ flex: 1, overflow: 'auto', padding: 12, display: 'grid', gap: 10,
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         alignContent: 'start',
@@ -834,16 +852,16 @@ export default function StudioTab() {
 
         {studioView === 'audio' && (
           <>
-        {/* ════════════════════════════════════════════════════════════
-            COL 1 — AUDIO / VOICEMEETER
-        ════════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            COL 1 â€” AUDIO / AUDIO MIXER
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
         {/* Channel mixer */}
-        <SectionCard title="VOICEMEETER — CHANNEL MIXER" icon={Sliders} accent="var(--gold)" defaultOpen={true}>
+        <SectionCard title="AUDIO MIXER â€” CHANNEL MIXER" icon={Sliders} accent="var(--gold)" defaultOpen={true}>
           <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
             {mixerConnected
-              ? 'LIVE: channel controls wired to Voicemeeter Remote API.'
-              : 'OFFLINE: waiting for Voicemeeter Remote API.'}
+              ? 'LIVE: channel controls wired to audio mixer Remote API.'
+              : 'OFFLINE: waiting for audio mixer Remote API.'}
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', overflowX: 'auto', paddingBottom: 4 }}>
             {chKeys.map(k => {
@@ -1023,7 +1041,7 @@ export default function StudioTab() {
         </SectionCard>
 
         {/* Audacity / Recording chain */}
-        <SectionCard title="AUDACITY — RECORDING CHAIN" icon={Mic2} accent="var(--guest)" defaultOpen={true}>
+        <SectionCard title="AUDACITY â€” RECORDING CHAIN" icon={Mic2} accent="var(--guest)" defaultOpen={true}>
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: 8 }}>
               {[
@@ -1051,8 +1069,8 @@ export default function StudioTab() {
               </button>
               <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', lineHeight: 1.6 }}>
                 <div>Pre-processing chain</div>
-                <div style={{ color: 'var(--bone)' }}>ReaFIR → ReaComp → ReaEQ</div>
-                <div style={{ color: 'var(--bone)' }}>Spitfish → LoudMax</div>
+                <div style={{ color: 'var(--bone)' }}>ReaFIR â†’ ReaComp â†’ ReaEQ</div>
+                <div style={{ color: 'var(--bone)' }}>Spitfish â†’ LoudMax</div>
               </div>
             </div>
           </div>
@@ -1062,12 +1080,12 @@ export default function StudioTab() {
 
         {studioView === 'obs' && (
           <>
-        {/* ════════════════════════════════════════════════════════════
-            COL 2 — OBS / VIDEO
-        ════════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            COL 2 â€” OBS / VIDEO
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
         {/* OBS Scene switcher */}
-        <SectionCard title="OBS — SCENE SWITCHER" icon={Monitor} accent="var(--blue)" defaultOpen={true}>
+        <SectionCard title="OBS â€” SCENE SWITCHER" icon={Monitor} accent="var(--blue)" defaultOpen={true}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginBottom: 8 }}>
             {obs.scenes.map(scene => (
               <button key={scene}
@@ -1082,7 +1100,7 @@ export default function StudioTab() {
                   cursor: 'pointer', transition: 'all .15s', textAlign: 'left',
                   opacity: (obsBusy || !obs.connected) ? 0.5 : 1,
                 }}>
-                {obs.activeScene === scene && '▶ '}{scene}
+                {obs.activeScene === scene && 'â–¶ '}{scene}
               </button>
             ))}
           </div>
@@ -1120,9 +1138,9 @@ export default function StudioTab() {
         </SectionCard>
 
         {/* OBS Audio levels */}
-        <SectionCard title="OBS — AUDIO SOURCES" icon={Volume2} accent="var(--blue)" defaultOpen={true}>
+        <SectionCard title="OBS â€” AUDIO SOURCES" icon={Volume2} accent="var(--blue)" defaultOpen={true}>
           <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
-            {mixerConnected ? 'LIVE: levels mirrored from Voicemeeter.' : 'OFFLINE: waiting on Voicemeeter levels.'}
+            {mixerConnected ? 'LIVE: levels mirrored from audio mixer.' : 'OFFLINE: waiting on audio mixer levels.'}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
@@ -1153,7 +1171,7 @@ export default function StudioTab() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {[
               { label: 'PLATFORM',    value: stream.platform,          color: 'var(--gold)' },
-              { label: 'STATUS',      value: obs.streaming ? 'LIVE 🔴' : 'OFF AIR', color: obs.streaming ? 'var(--red)' : 'var(--steel)' },
+              { label: 'STATUS',      value: obs.streaming ? 'LIVE ðŸ”´' : 'OFF AIR', color: obs.streaming ? 'var(--red)' : 'var(--steel)' },
               { label: 'OBS WS',      value: obs.connected ? 'CONNECTED' : 'OFFLINE', color: obs.connected ? 'var(--green)' : 'var(--red)' },
               { label: 'DURATION',    value: fmtTime(stream.duration), color: 'var(--bone)' },
               { label: 'BITRATE',     value: stream.bitrate === '--' ? '--' : `${stream.bitrate} kbps`, color: 'var(--blue)' },
@@ -1172,9 +1190,35 @@ export default function StudioTab() {
 
         {studioView === 'cams' && (
           <>
-        {/* ════════════════════════════════════════════════════════════
-            COL 3 — CAMERAS + MACROS
-        ════════════════════════════════════════════════════════════ */}
+        <SectionCard title="CONNECTED CAMERA" icon={Camera} accent="var(--green)" defaultOpen={true}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) minmax(180px, .7fr)', gap: 12, alignItems: 'start' }}>
+            <div style={{ background: '#050505', border: '1px solid var(--rim)', borderRadius: 'var(--radius)', minHeight: 170, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              {cameraConnected
+                ? <video ref={cameraVideoRef} muted playsInline autoPlay style={{ display: 'block', width: '100%', maxHeight: 280, objectFit: 'contain' }} />
+                : <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.55rem', color: 'var(--steel)' }}>NO CAMERA PREVIEW</span>}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '.55rem', color: cameraConnected ? 'var(--green)' : 'var(--steel)' }}>
+                {cameraConnected ? 'LIVE CAMERA CONNECTED' : 'CAMERA NOT CONNECTED'}
+              </div>
+              <select className="ds-select" value={cameraDeviceId} onChange={e => { setCameraDeviceId(e.target.value); setCameraConnected(false) }}>
+                <option value="">Default camera</option>
+                {cameraDevices.map((device, index) => <option key={device.deviceId || index} value={device.deviceId}>{device.label || `Camera ${index + 1}`}</option>)}
+              </select>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button className="btn btn-solid btn-sm" onClick={() => void startBrowserCamera()}>{cameraConnected ? 'RECONNECT' : 'CONNECT CAMERA'}</button>
+                {cameraConnected && <button className="btn btn-steel btn-sm" onClick={stopBrowserCamera}>DISCONNECT</button>}
+              </div>
+              <button className="btn btn-steel btn-sm" onClick={() => void refreshBrowserCameras()}>REFRESH DEVICES</button>
+              {cameraError && <div style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: '.52rem' }}>{cameraError}</div>}
+              <div style={{ color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '.48rem', lineHeight: 1.5 }}>Uses the browser camera permission and feeds the local studio preview.</div>
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            COL 3 â€” CAMERAS + MACROS
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
         {/* PTZ Camera controls */}
         <SectionCard title="PTZ CAMERAS" icon={Camera} accent="var(--guest)" defaultOpen={true}>
@@ -1190,7 +1234,7 @@ export default function StudioTab() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.55rem', color: cam.active ? 'var(--guest)' : 'var(--steel)' }}>
-                    {cam.label} {cam.active && '● LIVE'}
+                    {cam.label} {cam.active && 'â— LIVE'}
                   </span>
                   <Toggle on={cam.active} onClick={() => {
                     setCameras(p => {

@@ -219,14 +219,6 @@ async def _obs_probe():
             "cameras": "unverified: OBS scene state does not prove camera frames"}
 
 
-def _mixer_probe():
-    from ..services.mixer import voicemeeter
-    if voicemeeter.voicemeeterlib is None:
-        return {"status": "unavailable", "error": str(voicemeeter.VOICEMEETER_IMPORT_ERROR), "source": "Voicemeeter Remote API import"}
-    # Read-only Remote API; never change levels or routing from monitoring.
-    return {"status": "ready", "data": voicemeeter.VoiceMeeterService().status(), "source": "live Voicemeeter Remote API"}
-
-
 async def _measured(name, callback, asynchronous=False):
     started = time.monotonic()
     try:
@@ -244,7 +236,6 @@ async def diagnostics():
         _measured("gpu", _gpu_probe), _measured("resources", _resources_probe),
         _measured("media_tools", _tools_probe), _measured("storage", _storage_probe),
         _measured("production", _production_probe), _measured("obs", _obs_probe, True),
-        _measured("mixer", _mixer_probe),
     ]
     for name, key, suffix, is_json in [("qwen_bridge", "bridge_url", "/health", True),
                                       ("qwen_custom_voice", "custom_voice_url", "/config", True),

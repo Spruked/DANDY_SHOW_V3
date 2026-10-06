@@ -310,6 +310,7 @@ class DandyCommunicationLayer:
             if current_words >= target_words * 0.90 and stage in ("expansion", "deepening"):
                 continue
 
+            stage_nonce = f"{generation_nonce}-{stage}-{len(exchanges)}"
             lines = llm_writer.generate_segment(
                 topic=topic,
                 key_points=key_points,
@@ -318,8 +319,30 @@ class DandyCommunicationLayer:
                 primary_source_summary=source_summary,
                 n_exchanges=n,
                 persona_brief=persona_brief,
-                generation_nonce=f"{generation_nonce}-{stage}-{len(exchanges)}",
+                generation_nonce=stage_nonce,
             )
+
+            # A parse miss on the opening stage must not discard the whole
+            # topic. Retry once with a fresh nonce before allowing SKG fallback.
+            if not lines and first_segment:
+                logger.warning("LLM: opening stage empty for topic=%r; retrying once", topic)
+                lines = llm_writer.generate_segment(
+                    topic=topic,
+                    key_points=key_points,
+                    stage=stage,
+                    history_lines=history_lines,
+                    primary_source_summary=source_summary,
+                    n_exchanges=n,
+                    persona_brief=persona_brief,
+                    generation_nonce=f"{stage_nonce}-retry",
+                )
+
+            returned = len(lines or [])
+            if returned != n:
+                logger.warning(
+                    "LLM stage exchange count: topic=%r stage=%s requested=%d returned=%d",
+                    topic, stage, n, returned,
+                )
 
             if not lines:
                 if first_segment:

@@ -62,19 +62,21 @@ body {
   display: flex;
   align-items: center;
   gap: 0;
-  height: 52px;
+  height: 166px;
   border-bottom: 1px solid var(--rim);
   background: var(--surface);
   flex-shrink: 0;
-  padding: 0 20px;
+  padding: 8px 28px;
   position: relative;
 }
 
 .nav-logo {
   display: flex;
   align-items: center;
+  width: 250px;
+  height: 145px;
   gap: 10px;
-  margin-right: 32px;
+  margin-right: 42px;
   text-decoration: none;
 }
 
@@ -91,6 +93,17 @@ body {
   font-size: 17px;
   letter-spacing: 0;
   line-height: 1;
+  flex-shrink: 0;
+}
+
+.nav-logo-image {
+  display: block;
+  width: 250px;
+  height: 145px;
+  object-fit: contain;
+  object-position: center;
+  transform: scaleX(1.4);
+  transform-origin: center;
   flex-shrink: 0;
 }
 
@@ -113,7 +126,7 @@ body {
 .tab-bar {
   display: flex;
   align-items: stretch;
-  gap: 0;
+  gap: 8px;
   height: 100%;
   flex: 1;
 }
@@ -122,23 +135,33 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 18px;
-  height: 100%;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
+  justify-content: center;
+  align-self: center;
+  min-height: 46px;
+  padding: 0 20px;
+  background: var(--panel);
+  border: 1px solid var(--rim);
+  border-radius: 7px;
   color: var(--steel);
   font-family: var(--font-mono);
-  font-size: .6rem;
-  letter-spacing: .12em;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .14em;
   cursor: pointer;
-  transition: color .15s, border-color .15s;
+  transition: color .15s, border-color .15s, background .15s, transform .15s;
   white-space: nowrap;
 }
-.tab-btn:hover { color: var(--bone); }
+.tab-btn:hover {
+  color: var(--bone);
+  border-color: var(--steel);
+  background: var(--surface);
+  transform: translateY(-1px);
+}
 .tab-btn.active {
   color: var(--gold);
-  border-bottom-color: var(--gold);
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  box-shadow: 0 0 0 1px rgba(214, 164, 74, .16), inset 0 -2px 0 var(--gold);
 }
 
 .nav-status {
@@ -147,7 +170,8 @@ body {
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: .52rem;
+  font-size: .68rem;
+  letter-spacing: .06em;
   color: var(--steel);
 }
 

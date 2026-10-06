@@ -20,7 +20,7 @@
     "minimal_redesign": true
   },
   "tts": {
-    "primary_engine": "kokoro",
+    "primary_engine": "qwen",
     "fallback_engine": "none",
     "preferred_device": "cuda",
     "fallback_device": "cpu",

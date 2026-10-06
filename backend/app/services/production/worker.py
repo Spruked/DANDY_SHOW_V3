@@ -725,12 +725,22 @@ class HardenedPodcastWorker:
         voice_map = self.qwen_tts_config.get("voices", {})
         instruction_map = self.qwen_tts_config.get("instructions", {})
         timeout = float(self.qwen_tts_config.get("timeouts", {}).get("synthesis_seconds", 180))
+        voice_payload = self.voices_config.get(speaker, {})
+        voice_prompt = voice_payload.get("qwen_voice_prompt")
+        if voice_prompt:
+            prompt_path = Path(str(voice_prompt))
+            if not prompt_path.is_absolute():
+                prompt_path = (self.base_path / prompt_path).resolve()
+            if not prompt_path.is_file():
+                raise RuntimeError(f"Saved Qwen clone prompt for '{speaker}' is missing: {prompt_path}")
+            voice_prompt = str(prompt_path)
         payload = {
             "text": text,
             "speaker": speaker,
             "voice": voice_map.get(speaker),
             "emotion": emotion,
             "instruction": instruction_map.get(speaker),
+            "voice_prompt": voice_prompt,
             "language": "English",
             "format": output_path.suffix.lstrip(".") or "mp3",
             "output_path": str(output_path),

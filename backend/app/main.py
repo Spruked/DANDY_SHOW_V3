@@ -14,7 +14,6 @@ from .api.qwen_studio import router as qwen_studio_router
 from .api.conversation import router as conversation_router
 from .api.ads import router as ads_router
 from .api.obs import router as obs_router
-from .api.mixer import router as mixer_router
 from .core.settings import load_project_config
 from .core.paths import PROJECT_ROOT
 from .websockets.manager import ConnectionManager
@@ -78,8 +77,6 @@ def create_app() -> FastAPI:
     app.include_router(ads_router, prefix="/api")
     app.include_router(obs_router)
     app.include_router(obs_router, prefix="/api")
-    app.include_router(mixer_router)
-    app.include_router(mixer_router, prefix="/api")
     app.include_router(conversation_router)
     app.include_router(conversation_router, prefix="/api")
     app.include_router(slideshow_router)

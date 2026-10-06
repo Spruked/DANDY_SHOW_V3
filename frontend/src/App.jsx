@@ -52,7 +52,11 @@ export default function App() {
       {/* ── Top nav ── */}
       <nav className="top-nav">
         <div className="nav-logo" title="Dandy Studio V3">
-          <div className="nav-logo-mark">D</div>
+          <img
+            className="nav-logo-image"
+            src="/dandy-show-phil-jim.png?v=2"
+            alt="The Dandy Show Phil and Jim"
+          />
         </div>
 
         <div className="tab-bar">

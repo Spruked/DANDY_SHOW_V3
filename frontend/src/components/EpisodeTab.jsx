@@ -25,6 +25,7 @@ export default function EpisodeTab({ episodeId, onEpisodeChange }) {
   const [loading, setLoading]       = useState(false)
   const [generating, setGenerating] = useState(false)
   const [producing, setProducing]   = useState(false)
+  const [generationProgress, setGenerationProgress] = useState(null)
 
   const [showCreate,   setShowCreate]   = useState(false)
   const [showVersions, setShowVersions] = useState(false)
@@ -102,6 +103,23 @@ export default function EpisodeTab({ episodeId, onEpisodeChange }) {
   }
 
   const epId = activeEp?.episode_id || activeEp?.id
+  useEffect(() => {
+    if (!epId || (!generating && !producing)) return undefined
+    let active = true
+    const poll = async () => {
+      try {
+        const state = await api.generationStatus(epId)
+        if (!active) return
+        setGenerationProgress(state)
+        const status = state?.status || (typeof state?.episode_status === 'string' ? state.episode_status : state?.episode_status?.status)
+        if (producing && ['produced', 'failed'].includes(status)) setProducing(false)
+      } catch { /* the main request reports the final error */ }
+    }
+    poll()
+    const timer = setInterval(poll, 1000)
+    return () => { active = false; clearInterval(timer) }
+  }, [epId, generating, producing])
+
   const lines = script?.lines || script?.script || []
   const philLines = lines.filter(l => (l.speaker || '').toUpperCase() === 'PHIL').length
   const jimLines  = lines.filter(l => (l.speaker || '').toUpperCase() === 'JIM').length
@@ -124,6 +142,7 @@ export default function EpisodeTab({ episodeId, onEpisodeChange }) {
   const handleGenerate = async () => {
     if (!activeEp) return
     setGenerating(true)
+    setGenerationProgress({ status: 'starting' })
     try {
       const result = await api.generateScript(epId)
       if (result?.status === 'cancelled') {
@@ -144,13 +163,15 @@ export default function EpisodeTab({ episodeId, onEpisodeChange }) {
       showToast('Local llama.cpp writer is offline; saved script can still be produced')
     }
     setProducing(true)
+    setGenerationProgress({ status: 'starting production' })
     try {
       await api.produce(epId)
       await selectEpisode(activeEp)
       showToast('Production queued ✓')
     } catch (e) {
+      setProducing(false)
       showToast('Produce failed: ' + e.message.slice(0, 80))
-    } finally { setProducing(false) }
+    }
   }
 
   const handleExport = async (format) => {
@@ -358,6 +379,24 @@ export default function EpisodeTab({ episodeId, onEpisodeChange }) {
             <button className={`btn btn-sm ${wsConnected ? 'btn-green' : 'btn-steel'}`} onClick={connectWs} disabled={!activeEp} title="Connect WebSocket"><Wifi size={10} /> {wsConnected ? 'WS ON' : 'WS'}</button>
           </div>
         </div>
+
+        {(generating || producing) && (() => {
+          const episodeStatus = generationProgress?.episode_status || {}
+          const section = generationProgress?.section || episodeStatus.section
+          const sectionCount = generationProgress?.section_count || episodeStatus.section_count
+          const stage = generationProgress?.stage || episodeStatus.stage
+          const accepted = generationProgress?.accepted_words ?? episodeStatus.accepted_words
+          const label = producing
+            ? (episodeStatus.status === 'producing' ? 'PRODUCTION IN PROGRESS' : 'STARTING PRODUCTION')
+            : (stage ? `GENERATING · ${stage.toUpperCase()}` : 'STARTING GENERATION')
+          return <div role="status" aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 14px', background: 'rgba(214,164,74,.12)', borderBottom: '1px solid var(--gold)', color: 'var(--gold)', fontFamily: 'var(--font-mono)', fontSize: '.62rem', letterSpacing: '.06em' }}>
+            <Spinner size={13} />
+            <strong>{label}</strong>
+            {section && sectionCount ? <span>SECTION {section}/{sectionCount}</span> : null}
+            {accepted != null ? <span>{accepted} WORDS ACCEPTED</span> : null}
+            {!generating && producing ? <span>Audio, assembly, and final export are running in the background.</span> : null}
+          </div>
+        })()}
 
         {(() => {
           const st = writerStatus

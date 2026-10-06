@@ -328,6 +328,17 @@ async def create_episode(payload: EpisodeCreateRequest):
     }
 
 
+@router.get("/episodes/jobs/{job_id}")
+def generation_job_status(job_id: str):
+    """Return live script-generation or production status for the UI."""
+    job = load_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    detail = load_episode_detail(job["episode_id"]) or {}
+    status = detail.get("status") or {}
+    return {**job, "episode_status": status}
+
+
 @router.post("/episodes/generate-script")
 def generate_script(
     job_id: str = Query(...),

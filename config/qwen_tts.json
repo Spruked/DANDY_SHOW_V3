@@ -4,7 +4,7 @@
   "bridge_url": "http://127.0.0.1:8020",
   "operator_ui_url": "http://127.0.0.1:7861",
   "custom_voice_url": "http://127.0.0.1:8031",
-  "clone_voice_url": "http://127.0.0.1:8002",
+  "clone_voice_url": "http://127.0.0.1:8032",
   "chunking": {
     "preferred_min": 120,
     "preferred_max": 190,

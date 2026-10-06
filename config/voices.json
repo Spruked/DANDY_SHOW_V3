@@ -2,8 +2,10 @@
   "phil": {
     "character_file": "./phil_dandy_skg.py",
     "display_name": "Phil Dandy",
-    "primary_engine": "kokoro",
+    "primary_engine": "qwen",
     "primary_voice": "am_michael",
+    "qwen_voice_prompt": "./audio/voices/phil.pt",
+    "qwen_voice_instruction": "Phil Dandy: curious, energetic younger-brother host; warm, quick, conversational cadence.",
     "defaults": {
       "speed": 1.1,
       "pitch": 0.2,
@@ -13,8 +15,10 @@
   "jim": {
     "character_file": "./Jim_dandy_skg.py",
     "display_name": "Jim Dandy",
-    "primary_engine": "kokoro",
+    "primary_engine": "qwen",
     "primary_voice": "am_liam",
+    "qwen_voice_prompt": "./audio/voices/jim.pt",
+    "qwen_voice_instruction": "Jim Dandy: grounded, practical older-brother host; dry, measured, skeptical, clear.",
     "defaults": {
       "speed": 1.0,
       "pitch": 0.0,

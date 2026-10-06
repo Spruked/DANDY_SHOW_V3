@@ -25,7 +25,19 @@ logger = logging.getLogger(__name__)
 
 _LLAMACPP_BASE_URL = os.getenv("DANDY_LLAMACPP_BASE_URL", "http://127.0.0.1:40343/v1")
 _LLAMACPP_MODEL = os.getenv("DANDY_LLAMACPP_MODEL", "local")
-_TIMEOUT = 120
+# One request is intentionally bounded. The local 7B model is single-request
+# and the Qwen runtime is a separate one-model-at-a-time GPU owner.
+_TIMEOUT = 75
+_DIALOGUE_GRAMMAR_BODY = r'''exchange ::= "PHIL [" emotion "]: " line "\nJIM [" emotion "]: " line "\n"
+emotion ::= "curious" | "warm" | "thoughtful" | "skeptical" | "dry" | "amused" | "concerned"
+line ::= [A-Za-z0-9 ,.'!?;:() -]{8,180}'''
+
+
+def _dialogue_grammar(exchanges: int) -> str:
+    # Match the largest stage request (expansion/deepening request six turns).
+    # A lower cap silently truncates otherwise valid model output.
+    count = max(1, min(int(exchanges or 1), 8))
+    return "root ::= " + " ".join(["exchange"] * count) + "\n" + _DIALOGUE_GRAMMAR_BODY
 
 _STAGES: Dict[str, Dict] = {
     "opening": {
@@ -67,38 +79,37 @@ def _post_json(url: str, payload: Dict, timeout: int = _TIMEOUT) -> Dict:
         return json.loads(resp.read().decode())
 
 
-def _call_llamacpp(prompt: str) -> Optional[str]:
+def _call_llamacpp(prompt: str, n_exchanges: int = 1) -> Optional[str]:
     payload = {
         "model": _LLAMACPP_MODEL,
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "You write only Phil and Jim Dandy dialogue in the exact "
-                    "line format requested. No headers, no commentary."
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
+        # DeepSeek-R1's chat template spends the request budget in hidden
+        # reasoning on this llama.cpp build. The completion route is the
+        # reliable local contract for bounded dialogue generation.
+        "prompt": (
+            "You write only Phil and Jim Dandy dialogue in the exact line "
+            "format requested. No headers, no commentary.\n\n" + prompt
+        ),
         "temperature": 0.7,
         "top_p": 0.9,
-        "max_tokens": 1800,
+        # Budget grows with the requested exchange count so the grammar does
+        # not reach its final line only after the completion budget is spent.
+        "max_tokens": min(900, max(220, 120 * max(1, int(n_exchanges or 1)))),
+        "grammar": _dialogue_grammar(n_exchanges),
     }
     try:
-        body = _post_json(f"{_LLAMACPP_BASE_URL}/chat/completions", payload)
-        return (
-            (body.get("choices") or [{}])[0]
-            .get("message", {})
-            .get("content", "")
-        )
+        body = _post_json(f"{_LLAMACPP_BASE_URL}/completions", payload)
+        text = (body.get("choices") or [{}])[0].get("text", "")
+        # If the model still emits a reasoning block, keep only final dialogue.
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.IGNORECASE | re.DOTALL)
+        return text.strip()
     except Exception as exc:
         logger.warning("llama.cpp writer call failed: %s", exc)
         return None
 
 
-def _call_bridge(prompt: str) -> Tuple[Optional[str], str]:
+def _call_bridge(prompt: str, n_exchanges: int = 1) -> Tuple[Optional[str], str]:
     """Compatibility name retained for callers; there is no governance hop."""
-    llamacpp = _call_llamacpp(prompt)
+    llamacpp = _call_llamacpp(prompt, n_exchanges=n_exchanges)
     if llamacpp:
         return llamacpp, "llamacpp"
     return None, ""
@@ -106,13 +117,21 @@ def _call_bridge(prompt: str) -> Tuple[Optional[str], str]:
 
 def _parse_response(text: str, generated_by: str) -> List[Dict]:
     lines = []
-    for raw in (text or "").strip().splitlines():
-        m = _LINE_RE.match(raw.strip())
-        if not m:
+    # llama.cpp completion mode may put several labelled turns on one line.
+    labelled = re.compile(r"\b(PHIL|JIM)(?:\s*\[([^\]]{2,20})\])?\s*:\s*", re.IGNORECASE)
+    matches = list(labelled.finditer(text or ""))
+    for index, match in enumerate(matches):
+        speaker_raw = match.group(1)
+        emotion = (match.group(2) or "thoughtful").lower().strip()
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        dialogue = (text[match.end():end].strip().strip('"').strip("- "))
+        dialogue = dialogue.split("\n")[0].strip()
+        if len(dialogue) > 180:
+            bounded = dialogue[:180]
+            boundary = max(bounded.rfind("."), bounded.rfind("!"), bounded.rfind("?"))
+            dialogue = bounded[: boundary + 1] if boundary >= 40 else bounded.rstrip()
+        if len(dialogue) < 8:
             continue
-        speaker_raw = m.group(1)
-        emotion = (m.group(2) or "thoughtful").lower().strip()
-        dialogue = m.group(3).strip().strip('"')
         speaker = _SPEAKER_MAP.get(speaker_raw.lower(), speaker_raw.capitalize())
         lines.append(
             {
@@ -148,23 +167,23 @@ def _build_prompt(
     generation_nonce: str = "",
 ) -> str:
     kp_block = (
-        "\n".join(f"- {kp}" for kp in key_points[:8])
+        "\n".join(f"- {kp}" for kp in key_points[:4])
         if key_points
         else f"- {topic}"
     )
     history_block = (
-        "\n".join(history_lines[-24:])
+        "\n".join(history_lines[-8:])
         if history_lines
         else "(none yet — this is the opening)"
     )
     source_block = (
-        f"\nPrimary source — use specific details from this:\n{primary_source_summary[:800]}"
+        f"\nSource:\n{primary_source_summary[:400]}"
         if primary_source_summary
         else ""
     )
 
     persona_block = (
-        f"\nPERSONA / SKG RULEBOOK:\n{persona_brief[:1800]}\n"
+        f"\nPERSONA:\n{persona_brief[:600]}\n"
         if persona_brief
         else ""
     )
@@ -234,7 +253,7 @@ def generate_segment(
         persona_brief=persona_brief,
         generation_nonce=generation_nonce or f"{stage}-{uuid4().hex}",
     )
-    raw, backend = _call_bridge(prompt)
+    raw, backend = _call_bridge(prompt, n_exchanges=n)
     if raw is None:
         return []
     parsed = _parse_response(raw, backend)

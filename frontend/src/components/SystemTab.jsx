@@ -10,7 +10,7 @@ const CHECK_NAMES = {
   qwen_custom_voice: 'Qwen CustomVoice Service', qwen_operator_ui: 'Qwen Operator UI',
   gpu: 'GPU / VRAM', resources: 'CPU / RAM / Backend Process', media_tools: 'Media Tools',
   storage: 'Storage / Required Assets', production: 'Production / Generation Records',
-  obs: 'OBS / Streaming / Recording', mixer: 'Voicemeeter',
+  obs: 'OBS / Streaming / Recording',
 }
 const bytes = value => typeof value === 'number' ? ((value / 1024 ** 3).toFixed(2) + ' GiB') : 'unverified'
 const clock = value => value ? new Date(value).toLocaleTimeString() : 'not checked'
