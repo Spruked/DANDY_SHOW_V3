@@ -16,6 +16,7 @@ import json
 import logging
 import os
 import re
+import time
 import urllib.request
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
@@ -27,7 +28,8 @@ _LLAMACPP_BASE_URL = os.getenv("DANDY_LLAMACPP_BASE_URL", "http://127.0.0.1:4034
 _LLAMACPP_MODEL = os.getenv("DANDY_LLAMACPP_MODEL", "local")
 # One request is intentionally bounded. The local 7B model is single-request
 # and the Qwen runtime is a separate one-model-at-a-time GPU owner.
-_TIMEOUT = 75
+_TIMEOUT = 180
+_LAST_CALL_DIAGNOSTIC: Dict[str, object] = {}
 _DIALOGUE_GRAMMAR_BODY = r'''exchange ::= "PHIL [" emotion "]: " line "\nJIM [" emotion "]: " line "\n"
 emotion ::= "curious" | "warm" | "thoughtful" | "skeptical" | "dry" | "amused" | "concerned"
 line ::= [A-Za-z0-9 ,.'!?;:() -]{8,180}'''
@@ -80,6 +82,7 @@ def _post_json(url: str, payload: Dict, timeout: int = _TIMEOUT) -> Dict:
 
 
 def _call_llamacpp(prompt: str, n_exchanges: int = 1) -> Optional[str]:
+    started = time.perf_counter()
     payload = {
         "model": _LLAMACPP_MODEL,
         # DeepSeek-R1's chat template spends the request budget in hidden
@@ -89,11 +92,14 @@ def _call_llamacpp(prompt: str, n_exchanges: int = 1) -> Optional[str]:
             "You write only Phil and Jim Dandy dialogue in the exact line "
             "format requested. No headers, no commentary.\n\n" + prompt
         ),
-        "temperature": 0.7,
+        "temperature": 0.8,
         "top_p": 0.9,
-        # Budget grows with the requested exchange count so the grammar does
-        # not reach its final line only after the completion budget is spent.
-        "max_tokens": min(900, max(220, 120 * max(1, int(n_exchanges or 1)))),
+        "repeat_penalty": 1.12,
+        "frequency_penalty": 0.05,
+        "presence_penalty": 0.05,
+        # Budget grows with the requested exchange count, with enough room for
+        # a complete six-exchange batch but a bounded local request.
+        "max_tokens": min(1200, max(220, 200 * max(1, int(n_exchanges or 1)))),
         "grammar": _dialogue_grammar(n_exchanges),
     }
     try:
@@ -101,10 +107,19 @@ def _call_llamacpp(prompt: str, n_exchanges: int = 1) -> Optional[str]:
         text = (body.get("choices") or [{}])[0].get("text", "")
         # If the model still emits a reasoning block, keep only final dialogue.
         text = re.sub(r"<think>.*?</think>", "", text, flags=re.IGNORECASE | re.DOTALL)
+        _LAST_CALL_DIAGNOSTIC.clear()
+        _LAST_CALL_DIAGNOSTIC.update({"status": "success", "elapsed_seconds": round(time.perf_counter() - started, 3)})
         return text.strip()
     except Exception as exc:
+        kind = "timeout" if isinstance(exc, TimeoutError) else "connection_reset" if getattr(exc, "winerror", None) == 10054 else "request_error"
+        _LAST_CALL_DIAGNOSTIC.clear()
+        _LAST_CALL_DIAGNOSTIC.update({"status": kind, "elapsed_seconds": round(time.perf_counter() - started, 3), "error": str(exc)})
         logger.warning("llama.cpp writer call failed: %s", exc)
         return None
+
+
+def last_call_diagnostic() -> Dict[str, object]:
+    return dict(_LAST_CALL_DIAGNOSTIC)
 
 
 def _call_bridge(prompt: str, n_exchanges: int = 1) -> Tuple[Optional[str], str]:
@@ -214,6 +229,11 @@ Write exactly {n_exchanges} back-and-forth exchanges ({n_exchanges * 2} lines to
 Phil speaks first in each exchange.
 
 RULES:
+- Do not reason aloud.
+- Do not output analysis, planning, commentary, <think> tags, or explanations.
+- Begin immediately with PHIL.
+- Return only the requested PHIL/JIM dialogue.
+- Use the token budget for finished dialogue, not internal reasoning.
 - Do NOT repeat any phrase, sentence, claim, example, question, or idea already in the conversation above
 - Do NOT summarize earlier turns unless the stage is closing
 - Do NOT restart with the basic definition after it has already been established

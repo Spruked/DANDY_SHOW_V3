@@ -221,19 +221,19 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
               onClick={() => toggleAd(ad)}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span className="font-display" style={{ fontSize: '.9rem', color: 'var(--bone)', letterSpacing: '.06em' }}>
+                <span className="font-display" style={{ fontSize: '1.17rem', color: 'var(--bone)', letterSpacing: '.06em' }}>
                   {ad.title || ad.ad_type || `Ad #${i + 1}`}
                 </span>
                 <Badge type="gold">{ad.ad_type || 'custom'}</Badge>
                 <Badge type={ad.audio_file ? 'green' : 'steel'}>{ad.audio_file ? 'produced' : (ad.status || 'draft')}</Badge>
                 {ad.inserted && <Badge type="green">in episode</Badge>}
               </div>
-              <div className="font-mono" style={{ fontSize: '.55rem', color: 'var(--steel)', marginBottom: 6 }}>
+              <div className="font-mono" style={{ fontSize: '0.72rem', color: 'var(--steel)', marginBottom: 6 }}>
                 Voice: {ad.voice || '—'} · Tone: {ad.tone || '—'} · Target: {ad.duration_seconds || '—'}s
                 {ad.actual_duration_seconds != null ? ` · Audio: ${ad.actual_duration_seconds.toFixed(1)}s` : ad.estimated_duration_seconds != null ? ` · Estimated read: ${ad.estimated_duration_seconds}s` : ''}
               </div>
               {ad.script && (
-                <div style={{ fontSize: '.75rem', color: 'var(--bone)', opacity: .7, lineHeight: 1.5, maxHeight: selectedAd?.ad_id === ad.ad_id ? 'none' : 48, overflow: 'hidden' }}>
+                <div style={{ fontSize: '0.98rem', color: 'var(--bone)', opacity: .7, lineHeight: 1.5, maxHeight: selectedAd?.ad_id === ad.ad_id ? 'none' : 48, overflow: 'hidden' }}>
                   {ad.script}
                 </div>
               )}
@@ -276,7 +276,7 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
                     </button>
                   </div>
 
-                  <div style={{ fontSize: '.72rem', color: 'var(--steel)' }}>
+                  <div style={{ fontSize: '0.94rem', color: 'var(--steel)' }}>
                     Line {scriptLength + 1} appends at the end. Insertion adds the ad script; produce the episode again to include it in the final audio.
                   </div>
 
@@ -302,20 +302,20 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
                   </div>
 
                   <div>
-                    <div className="font-mono" style={{ fontSize: '.55rem', color: 'var(--steel)', marginBottom: 6 }}>
+                    <div className="font-mono" style={{ fontSize: '0.72rem', color: 'var(--steel)', marginBottom: 6 }}>
                       Assets: {(adAssets[ad.ad_id] || []).length}
                     </div>
                     {(adAssets[ad.ad_id] || []).length === 0 ? (
-                      <div style={{ fontSize: '.72rem', color: 'var(--steel)' }}>No ad assets uploaded.</div>
+                      <div style={{ fontSize: '0.94rem', color: 'var(--steel)' }}>No ad assets uploaded.</div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                         {(adAssets[ad.ad_id] || []).map((asset) => (
                           <div key={asset.asset_id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
                             <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: '.72rem', color: 'var(--bone)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ fontSize: '0.94rem', color: 'var(--bone)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {asset.label || asset.original_name}
                               </div>
-                              <div className="font-mono" style={{ fontSize: '.52rem', color: 'var(--steel)' }}>
+                              <div className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)' }}>
                                 {asset.original_name}
                               </div>
                             </div>
@@ -344,10 +344,10 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
             <div key={i} className="preset-card" role="button" tabIndex={0}
               onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedPreset(p); setShowCreate(true) } }}
               onClick={() => { setSelectedPreset(p); setShowCreate(true) }}>
-              <div style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--bone)', marginBottom: 4 }}>
+              <div style={{ fontSize: '1.01rem', fontWeight: 600, color: 'var(--bone)', marginBottom: 4 }}>
                 {p.name || p.title || p.preset_id || `Preset ${i + 1}`}
               </div>
-              <div className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)' }}>
+              <div className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)' }}>
                 {p.duration_seconds || p.target_duration_seconds ? `${p.duration_seconds || p.target_duration_seconds}s` : ''} {p.tone || ''}
               </div>
             </div>

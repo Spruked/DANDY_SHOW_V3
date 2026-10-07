@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=1280, height=720, initial-scale=1.0" name="viewport" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0efff;
+      --bg-card: #ffffff;
+      --text: #1a1440;
+      --text-muted: #6b6898;
+      --accent: #7c3aed;
+      --accent-light: #ede9fe;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+    }
+    body {
+      margin: 0; padding: 0;
+      width: 1280px; height: 720px;
+      overflow: hidden;
+      font-family: 'Calibri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text);
+      font-family: 'Calibri Light', sans-serif;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .pill-violet {
+      background: var(--accent-light);
+      color: #5b21b6;
+      border: 1px solid #c4b5fd;
+    }
+    .pill-amber {
+      background: var(--amber-light);
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+    .pill-green {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #6ee7b7;
+    }
+
+    /* Chart Styles */
+    .chart-wrap {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 22px;
+      height: 340px;
+      position: relative;
+    }
+
+    /* Y-axis gridlines */
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+      padding-bottom: 0;
+    }
+    .grid-line {
+      width: 100%;
+      height: 1px;
+      background: rgba(100, 90, 180, 0.12);
+    }
+
+    .bar-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      flex: 1;
+      max-width: 120px;
+      height: 100%;
+      justify-content: flex-end;
+      position: relative;
+    }
+
+    .bar-total-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      font-family: 'Calibri', sans-serif;
+      text-align: center;
+    }
+
+    .bar-stack {
+      display: flex;
+      flex-direction: column-reverse;
+      width: 72px;
+      border-radius: 6px 6px 0 0;
+      overflow: hidden;
+    }
+
+    .bar-violet {
+      background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+      transition: height 0.3s ease;
+    }
+    .bar-amber {
+      background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+      transition: height 0.3s ease;
+    }
+
+    .bar-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      text-align: center;
+      padding: 3px 2px;
+      white-space: nowrap;
+      font-family: 'Calibri', sans-serif;
+    }
+    .bar-label.dark {
+      color: rgba(255,255,255,0.85);
+    }
+
+    .year-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 6px;
+      font-family: 'Calibri', sans-serif;
+    }
+    .cagr-badge {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'Calibri', sans-serif;
+    }
+
+    .y-axis-labels {
+      position: absolute;
+      left: -56px;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .y-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'Calibri', sans-serif;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body data-id="0">
+  <div data-id="1" style="position:relative; width:1280px; height:720px; padding: 36px 56px 24px 56px; box-sizing:border-box; display:flex; flex-direction:column; gap:0;">
+
+    <!-- Top decorative accent line -->
+    <div data-id="2" style="position:absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(to right, #7c3aed, #f59e0b); border-radius:0;"></div>
+
+    <!-- Header Row -->
+    <div data-id="3" id="header-xq4r" style="display:flex; flex-direction:column; gap:3px; margin-bottom:10px;">
+      <div data-id="4" style="display:flex; align-items:baseline; gap:12px;">
+        <h1 data-id="5" id="title-kp2z" style="font-size:30px; font-weight:300; letter-spacing:-0.5px; margin:0; color: var(--text); font-family:'Calibri Light',sans-serif;">
+          Revenue Projections: <span data-id="6" style="font-weight:600; color: var(--accent);">2026–2032</span>
+        </h1>
+      </div>
+      <p data-id="7" id="subtitle-wm9a" style="font-size:14px; color: var(--text-muted); margin:0; font-family:'Calibri',sans-serif;">
+        Conservative package adoption. Ecosystem and white-label upside not fully modeled.
+      </p>
+    </div>
+
+    <!-- Stat Pills Row -->
+    <div data-id="8" id="pills-row-bj7v" style="display:flex; gap:10px; align-items:center; margin-bottom:14px;">
+      <div data-id="9" class="pill pill-violet" id="pill1-an3k">
+        <svg data-id="10" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline data-id="11" points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline data-id="12" points="17 6 23 6 23 12"/></svg>
+        $110M projected Year 7 revenue
+      </div>
+      <div data-id="13" class="pill pill-green" id="pill2-rc5m">
+        <svg data-id="14" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path data-id="15" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        82%+ gross margin
+      </div>
+      <div data-id="16" class="pill pill-amber" id="pill3-tz8q">
+        <svg data-id="17" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle data-id="18" cx="12" cy="12" r="10"/><line data-id="19" x1="12" y1="8" x2="12" y2="12"/><line data-id="20" x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        1.1× ecosystem-to-package ratio by Y7
+      </div>
+
+      <!-- Legend pushed to right -->
+      <div data-id="21" style="margin-left:auto; display:flex; gap:18px; align-items:center;">
+        <div data-id="22" style="display:flex; align-items:center; gap:7px;">
+          <div data-id="23" class="legend-dot" style="background: linear-gradient(180deg,#8b5cf6,#6d28d9);"></div>
+          <span data-id="24" style="font-size:12px; color:var(--text-muted); font-family:'Calibri',sans-serif;">Site Packages &amp; Enterprise License</span>
+        </div>
+        <div data-id="25" style="display:flex; align-items:center; gap:7px;">
+          <div data-id="26" class="legend-dot" style="background: linear-gradient(180deg,#f59e0b,#d97706);"></div>
+          <span data-id="27" style="font-size:12px; color:var(--text-muted); font-family:'Calibri',sans-serif;">Add-On Ecosystem &amp; White-Label</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Area -->
+    <div data-id="28" id="chart-area-hq3p" style="flex:1; position:relative; display:flex; flex-direction:column;">
+
+      <!-- Y axis + chart -->
+      <div data-id="29" style="position:relative; flex:1; margin-left:60px; margin-right:8px;">
+
+        <!-- Y-axis labels -->
+        <div data-id="30" class="y-axis-labels" id="yaxis-labels-lp6w">
+          <span data-id="31" class="y-label">$110M</span>
+          <span data-id="32" class="y-label">$82M</span>
+          <span data-id="33" class="y-label">$55M</span>
+          <span data-id="34" class="y-label">$27M</span>
+          <span data-id="35" class="y-label">$0</span>
+        </div>
+
+        <!-- Grid lines -->
+        <div data-id="36" class="grid-bg" id="gridlines-mx2e">
+          <div data-id="37" class="grid-line"></div>
+          <div data-id="38" class="grid-line"></div>
+          <div data-id="39" class="grid-line"></div>
+          <div data-id="40" class="grid-line"></div>
+          <div data-id="41" class="grid-line"></div>
+        </div>
+
+        <!-- Bottom axis line -->
+        <div data-id="42" style="position:absolute; bottom:38px; left:0; right:0; height:2px; background: rgba(100,90,180,0.2);"></div>
+
+        <!-- Bar groups row -->
+        <div data-id="43" id="bars-container-yw8n" style="display:flex; align-items:flex-end; height:calc(100% - 44px); gap:0; padding-bottom:0;">
+
+          <!-- MAX height reference = 110M = 100% = ~296px -->
+          <!-- Year 1: 2026 — Total $700K = 0.64% of 110M → tiny but visible min 16px -->
+          <div data-id="44" class="bar-group" id="bar2026-qe5t">
+            <span data-id="45" class="bar-total-label" id="total2026-rm4k">$700K</span>
+            <div data-id="46" class="bar-stack" id="stack2026-np7a" style="height: 22px;">
+              <!-- Amber on top (col-reverse makes bottom of stack = first child) -->
+              <div data-id="47" class="bar-violet" id="violet2026-kj3q" style="height:14px;">
+              </div>
+              <div data-id="48" class="bar-amber" id="amber2026-wt6x" style="height:8px;">
+              </div>
+            </div>
+            <span data-id="49" class="year-label" id="year2026-bx9f">2026</span>
+            <span data-id="50" class="cagr-badge">Y1</span>
+          </div>
+
+          <!-- Year 2: 2027 — Total $2.68M = 2.4% → ~71px-->
+          <div data-id="51" class="bar-group" id="bar2027-sd4r">
+            <span data-id="52" class="bar-total-label" id="total2027-ha2m">$2.68M</span>
+            <div data-id="53" class="bar-stack" id="stack2027-lz8k" style="height: 52px;">
+              <div data-id="54" class="bar-violet" id="violet2027-gn5e" style="height:35px; display:flex; align-items:center; justify-content:center;">
+                <span data-id="55" class="bar-label">$1.9M</span>
+              </div>
+              <div data-id="56" class="bar-amber" id="amber2027-cx7a" style="height:17px; display:flex; align-items:center; justify-content:center;">
+                <span data-id="57" class="bar-label" style="font-size:9px;">$780K</span>
+              </div>
+            </div>
+            <span data-id="58" class="year-label" id="year2027-wq3v">2027</span>
+            <span data-id="59" class="cagr-badge">Y2</span>
+          </div>
+
+          <!-- Year 3: 2028 — Total $8.7M = 7.9% → ~162px-->
+          <div data-id="60" class="bar-group" id="bar2028-jt6u">
+            <span data-id="61" class="bar-total-label" id="total2028-pz5m">$8.7M</span>
+            <div data-id="62" class="bar-stack" id="stack2028-eq9r" style="height: 152px;">
+              <div data-id="63" class="bar-violet" id="violet2028-fn4b" style="height:99px; display:flex; align-items:center; justify-content:center;">
+                <span data-id="64" class="bar-label">$5.8M</span>
+              </div>
+              <div data-id="65" class="bar-amber" id="amber2028-hy7w" style="height:53px; display:flex; align-items:center; justify-content:center;">
+                <span data-id="66" class="bar-label">$2.9M</span>
+              </div>
+            </div>
+            <span data-id="67" class="year-label" id="year2028-tb2k">2028</span>
+            <span data-id="68" class="cagr-badge">Y3</span>
+          </div>
+
+          <!-- Spacer for Y4 gap -->
+          <div data-id="69" style="flex:0.4;"></div>
+
+          <!-- Year 5: 2030 — Total $32M = 29.1% → ~252px-->
+          <div data-id="70" class="bar-group" id="bar2030-rv1c">
+            <span data-id="71" class="bar-total-label" id="total2030-mg8s">$32M</span>
+            <div data-id="72" class="bar-stack" id="stack2030-ax4p" style="height: 253px;">
+              <div data-id="73" class="bar-violet" id="violet2030-qb3n" style="height:142px; display:flex; align-items:center; justify-content:center;">
+                <span data-id="74" class="bar-label">$18M</span>
+              </div>
+              <div data-id="75" class="bar-amber" id="amber2030-ek6z" style="height:111px; display:flex; align-items:center; justify-content:center;">
+                <span data-id="76" class="bar-label">$14M</span>
+              </div>
+            </div>
+            <span data-id="77" class="year-label" id="year2030-dp9f">2030</span>
+            <span data-id="78" class="cagr-badge">Y5</span>
+          </div>
+
+          <!-- Spacer for Y6 gap -->
+          <div data-id="79" style="flex:0.4;"></div>
+
+          <!-- Year 7: 2032 — Total $110M = 100% → ~310px -->
+          <div data-id="80" class="bar-group" id="bar2032-wu5h">
+            <span data-id="81" class="bar-total-label" id="total2032-lq7x" style="font-size:14px; color:var(--accent); font-weight:800;">$110M</span>
+            <div data-id="82" class="bar-stack" id="stack2032-zt3m" style="height: 310px;">
+              <div data-id="83" class="bar-violet" id="violet2032-cs8j" style="height:145px; display:flex; align-items:center; justify-content:center;">
+                <span data-id="84" class="bar-label" style="font-size:13px;">$52M</span>
+              </div>
+              <div data-id="85" class="bar-amber" id="amber2032-nf2p" style="height:165px; display:flex; align-items:center; justify-content:center;">
+                <span data-id="86" class="bar-label" style="font-size:13px;">$58M</span>
+              </div>
+            </div>
+            <span data-id="87" class="year-label" id="year2032-vw6k" style="color:var(--accent);">2032</span>
+            <span data-id="88" class="cagr-badge">Y7</span>
+          </div>
+
+        </div><!-- end bars-container -->
+      </div><!-- end y-axis + chart -->
+    </div><!-- end chart area -->
+
+    <!-- Disclaimer footnote -->
+    <div data-id="89" id="footnote-jk4r" style="margin-top:6px; padding-top:6px; border-top: 1px solid rgba(100,90,180,0.15);">
+      <p data-id="90" style="font-size:10.5px; color:var(--text-muted); margin:0; font-family:'Calibri',sans-serif; line-height:1.4;">
+        Projections based on 0.005% of live website TAM at scale. White-label OEM revenue not included in base case. Enterprise license assumed at 3% of total package volume.
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>

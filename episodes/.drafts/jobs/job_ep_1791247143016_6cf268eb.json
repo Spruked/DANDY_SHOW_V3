@@ -1,0 +1,164 @@
+{
+  "job_id": "job_ep_1791247143016_6cf268eb",
+  "episode_id": "ep_1791247143016",
+  "status": "failed",
+  "updated_at": "2026-10-06T00:27:39.114525",
+  "section": 1,
+  "section_count": 2,
+  "stage": "expansion",
+  "batch": 5,
+  "accepted_words": 150,
+  "stage_telemetry": [
+    {
+      "section": 1,
+      "stage": "opening",
+      "requested_exchanges": 2,
+      "returned_lines": 4,
+      "returned_exchanges": 2,
+      "stage_words": 58,
+      "cumulative_section_words": 58,
+      "elapsed_seconds": 17.608,
+      "status": "success",
+      "error": null,
+      "beat_numbers": [
+        1,
+        2
+      ],
+      "beat_descriptions": [
+        "introduce the central question",
+        "explain why people should care"
+      ],
+      "completed_beats": [
+        1,
+        2
+      ],
+      "duplicate_rejected_lines": 0,
+      "accepted_lines": 4
+    },
+    {
+      "section": 1,
+      "stage": "expansion",
+      "requested_exchanges": 3,
+      "returned_lines": 6,
+      "returned_exchanges": 3,
+      "stage_words": 102,
+      "cumulative_section_words": 102,
+      "elapsed_seconds": 36.168,
+      "status": "success",
+      "error": null,
+      "beat_numbers": [
+        3,
+        4
+      ],
+      "beat_descriptions": [
+        "give one concrete example",
+        "explain the mechanism behind it"
+      ],
+      "completed_beats": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "duplicate_rejected_lines": 4,
+      "accepted_lines": 2
+    },
+    {
+      "section": 1,
+      "stage": "expansion",
+      "requested_exchanges": 3,
+      "returned_lines": 6,
+      "returned_exchanges": 3,
+      "stage_words": 102,
+      "cumulative_section_words": 102,
+      "elapsed_seconds": 36.076,
+      "status": "success",
+      "error": null,
+      "beat_numbers": [
+        5,
+        6
+      ],
+      "beat_descriptions": [
+        "have Jim challenge the main assumption",
+        "have Phil answer with a different concrete example"
+      ],
+      "completed_beats": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "duplicate_rejected_lines": 6,
+      "accepted_lines": 0
+    },
+    {
+      "section": 1,
+      "stage": "expansion",
+      "requested_exchanges": 3,
+      "returned_lines": 6,
+      "returned_exchanges": 3,
+      "stage_words": 125,
+      "cumulative_section_words": 150,
+      "elapsed_seconds": 44.175,
+      "status": "success",
+      "error": null,
+      "beat_numbers": [
+        7,
+        8
+      ],
+      "beat_descriptions": [
+        "discuss a limitation or tradeoff",
+        "show the practical consequence for real people"
+      ],
+      "completed_beats": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "duplicate_rejected_lines": 4,
+      "accepted_lines": 2
+    },
+    {
+      "section": 1,
+      "stage": "expansion",
+      "requested_exchanges": 3,
+      "returned_lines": 6,
+      "returned_exchanges": 3,
+      "stage_words": 102,
+      "cumulative_section_words": 150,
+      "elapsed_seconds": 39.83,
+      "status": "success",
+      "error": null,
+      "beat_numbers": [
+        9,
+        10
+      ],
+      "beat_descriptions": [
+        "draw the section's takeaway",
+        "create a natural transition to the next section"
+      ],
+      "completed_beats": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "duplicate_rejected_lines": 6,
+      "accepted_lines": 0
+    }
+  ],
+  "error": "Section 1 too short: 150/750 words. Existing saved episode was preserved."
+}

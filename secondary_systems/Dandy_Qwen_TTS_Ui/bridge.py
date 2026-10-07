@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import shutil
@@ -14,7 +15,7 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 from fastapi import FastAPI, HTTPException
-from gradio_client import Client
+from gradio_client import Client, handle_file
 from pydantic import BaseModel, Field
 
 
@@ -25,11 +26,21 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 DEFAULT_SHOW_ROOT = APP_ROOT.parents[1]
 SHOW_ROOT = Path(os.getenv("DANDY_SHOW_ROOT", str(DEFAULT_SHOW_ROOT)))
 VOICES_CONFIG = SHOW_ROOT / "config" / "voices.json"
-FFMPEG_BIN = (
-    os.getenv("DANDY_FFMPEG")
-    or str(SHOW_ROOT / "staging" / "ffmpeg" / "ffmpeg-master-latest-win64-gpl" / "bin" / "ffmpeg.exe")
-)
-FFPROBE_BIN = os.getenv("DANDY_FFPROBE") or str(Path(FFMPEG_BIN).with_name("ffprobe.exe"))
+def _media_tool(name: str) -> str:
+    explicit = os.getenv(f"DANDY_{name.upper()}")
+    if explicit:
+        return explicit
+    bundled = Path("staging/ffmpeg/ffmpeg-master-latest-win64-gpl/bin")
+    for root in (SHOW_ROOT, SHOW_ROOT.parent / "Dandy"):
+        candidate = root / bundled / f"{name}.exe"
+        if candidate.is_file():
+            return str(candidate)
+    return shutil.which(name) or str(SHOW_ROOT / bundled / f"{name}.exe")
+
+
+FFMPEG_BIN = _media_tool("ffmpeg")
+FFPROBE_BIN = _media_tool("ffprobe")
+logger = logging.getLogger(__name__)
 
 BACKEND_ORDER = [
     url.strip().rstrip("/")
@@ -80,9 +91,9 @@ _CLIENT_CACHE_LOCK = threading.RLock()
 def _phase(event: str, **fields: Any) -> None:
     payload = {"event": event, "ts": time.strftime("%Y-%m-%d %H:%M:%S"), **fields}
     try:
-        print(f"[QWEN_BRIDGE_PHASE] {json.dumps(payload, ensure_ascii=False)}", flush=True)
+        print(f"[QWEN_BRIDGE_PHASE] {json.dumps(payload, ensure_ascii=True)}", flush=True)
     except Exception:
-        print(f"[QWEN_BRIDGE_PHASE] {event} {fields}", flush=True)
+        logger.exception("Qwen phase logging failed")
 
 
 def _normalize_url(url: str | None) -> str:
@@ -103,10 +114,19 @@ def _backend_alive(url: str | None) -> bool:
         return False
 
 
-def _detect_backend() -> str:
+def _detect_backend(payload: SynthesizeRequest | None = None) -> str:
+    # A registered clone identity must never become a built-in CustomVoice
+    # speaker just because another Qwen mode is available.
+    clone_requested = bool(payload and (_voice_prompt(payload) or payload.reference_audio))
     env_backend = _normalize_url(os.getenv("DANDY_QWEN_GRADIO_URL"))
+    if env_backend and clone_requested and _backend_mode(env_backend) != "clone":
+        raise HTTPException(status_code=503, detail="Configured Qwen backend is not VoiceClone/Base; switch to port 8032 for this saved clone identity.")
     if env_backend and _backend_alive(env_backend):
         return env_backend
+
+    if clone_requested:
+        clone_backend = next((url for url in BACKEND_ORDER if _backend_mode(url) == "clone"), "http://127.0.0.1:8032")
+        return clone_backend
 
     for backend in BACKEND_ORDER:
         if _backend_alive(backend):
@@ -236,9 +256,13 @@ def _chunk_text(text: str, max_chars: int = MAX_CHUNK_CHARS) -> list[str]:
 
 
 def _audio_duration_seconds(path: str) -> float:
+    executable = shutil.which(FFPROBE_BIN)
+    if not executable:
+        raise FileNotFoundError(f"Qwen reference validation requires ffprobe: {FFPROBE_BIN}")
+    _phase("reference_probe_started", executable=executable, reference_audio=path)
     result = subprocess.run(
         [
-            FFPROBE_BIN,
+            executable,
             "-v",
             "error",
             "-show_entries",
@@ -250,6 +274,7 @@ def _audio_duration_seconds(path: str) -> float:
         check=True,
         capture_output=True,
         text=True,
+        timeout=15,
     )
     return float(result.stdout.strip() or "0")
 
@@ -345,9 +370,14 @@ def _predict_audio_source(client: Client, mode: str, payload: SynthesizeRequest,
 
     if mode == "clone":
         prompt = _voice_prompt(payload)
-        if prompt and Path(prompt).exists():
+        if prompt:
+            prompt_path = Path(prompt)
+            if not prompt_path.is_absolute():
+                prompt_path = (SHOW_ROOT / prompt_path).resolve()
+            if not prompt_path.is_file():
+                raise HTTPException(status_code=400, detail=f"Saved Qwen clone prompt is missing: {prompt_path}")
             return client.predict(
-                file_obj=prompt,
+                file_obj=handle_file(prompt_path),
                 text=text,
                 lang_disp=payload.language or "English",
                 api_name="/load_prompt_and_gen",
@@ -355,7 +385,7 @@ def _predict_audio_source(client: Client, mode: str, payload: SynthesizeRequest,
         if payload.reference_audio and payload.reference_text:
             _validate_reference_audio(payload.reference_audio)
             return client.predict(
-                ref_aud=payload.reference_audio,
+                ref_aud=handle_file(payload.reference_audio),
                 ref_txt=payload.reference_text,
                 use_xvec=payload.use_xvec,
                 text=text,
@@ -384,6 +414,10 @@ def health() -> dict[str, Any]:
         "backend_mode": _backend_mode(backend_url),
         "backend_qwen_ready": backend_ready,
         "show_root": str(SHOW_ROOT),
+        "media_tools": {
+            "ffmpeg": {"path": FFMPEG_BIN, "available": bool(shutil.which(FFMPEG_BIN))},
+            "ffprobe": {"path": FFPROBE_BIN, "available": bool(shutil.which(FFPROBE_BIN))},
+        },
         "limits": {
             "max_chunk_chars": MAX_CHUNK_CHARS,
             "max_text_chars": MAX_TEXT_CHARS,
@@ -414,7 +448,7 @@ def synthesize(payload: SynthesizeRequest) -> dict[str, Any]:
             detail=f"text is {len(text)} characters; maximum request text is {MAX_TEXT_CHARS}. Split script lines before calling the bridge.",
         )
 
-    backend_url = _detect_backend()
+    backend_url = _detect_backend(payload)
     _phase("backend_selected", backend_url=backend_url, backend_mode=_backend_mode(backend_url))
     if not _backend_alive(backend_url):
         raise HTTPException(status_code=503, detail=f"No live Qwen Gradio backend detected. Tried: {BACKEND_ORDER}")
@@ -460,6 +494,7 @@ def synthesize(payload: SynthesizeRequest) -> dict[str, Any]:
     except HTTPException:
         raise
     except Exception as exc:
+        logger.exception("Qwen synthesis failed for speaker=%s backend=%s", payload.speaker, backend_url)
         _phase("synthesize_error", error_type=type(exc).__name__, error=str(exc))
         raise HTTPException(status_code=500, detail=f"{type(exc).__name__}: {exc}") from exc
 

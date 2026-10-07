@@ -17,8 +17,11 @@ instead of MergedDandyPodcastWorker.
 """
 
 import asyncio
+import copy
+import hashlib
 import json
 import logging
+import os
 import re
 import shutil
 import subprocess
@@ -26,6 +29,7 @@ import tempfile
 import threading
 import urllib.error
 import urllib.request
+from uuid import uuid4
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -40,6 +44,7 @@ from .rhythm import RhythmState
 from .script_expander import ScriptExpander
 from .script_seed import generate_seed_script
 from .intro_outro import wrap_episode_audio
+from .production_manifest import EDITOR_VERSION, checked_take_path, file_hash, load_manifest, save_manifest, validate_takes
 from .sfx import apply_sfx_events
 
 logger = logging.getLogger(__name__)
@@ -95,14 +100,15 @@ class HardenedPodcastWorker:
         self.project_config = load_project_config()
         self.voices_config = load_voices_config()
         self.qwen_tts_config = load_qwen_tts_config()
+        spoken_wpm = max(1, int(self.project_config.get("production", {}).get("spoken_wpm", 90)))
         self.runtime = WorkerRuntime(
             primary_engine=self.project_config.get("tts", {}).get("primary_engine", "kokoro"),
             fallback_engine=self.project_config.get("tts", {}).get("fallback_engine", "edge"),
             device=self.project_config.get("tts", {}).get("preferred_device", "cpu"),
         )
         self.post_processor = FFmpegPostProcessor(self.base_path, logger)
-        self.quality_guard = ScriptQualityGuard()
-        self.script_expander = ScriptExpander()
+        self.quality_guard = ScriptQualityGuard(words_per_minute=spoken_wpm)
+        self.script_expander = ScriptExpander(words_per_minute=spoken_wpm)
         self._init_skg_systems()
 
     def _init_skg_systems(self) -> None:
@@ -453,10 +459,21 @@ class HardenedPodcastWorker:
         title: str,
         topic: str,
         script_lines: List[Dict[str, Any]],
+        approved_production: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Produce audio from script — unchanged logic, just called with validated script."""
+        """Render only a frozen, explicitly approved production version."""
         if not script_lines:
             raise ValueError("script_lines are required for production")
+        if not approved_production or not approved_production.get("approved_version_id"):
+            raise ValueError("Production requires an approved production version")
+        if approved_production.get("script") != script_lines:
+            raise ValueError("Synthesis input differs from the approved production copy")
+        stable_plan = json.dumps({"script": script_lines,
+                                  "media_cues": approved_production.get("media_cues", [])},
+                                 sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+        approved_hash = hashlib.sha256(stable_plan.encode("utf-8")).hexdigest()
+        if approved_hash != approved_production.get("production_copy_hash"):
+            raise ValueError("Approved production copy hash does not match its contents")
 
         episode_dir = self.base_path / "episodes" / episode_id
         episode_dir.mkdir(parents=True, exist_ok=True)
@@ -464,15 +481,23 @@ class HardenedPodcastWorker:
         transcript_path = episode_dir / "transcript.json"
         metadata_path = episode_dir / "production_metadata.json"
         (self.base_path / "staging").mkdir(parents=True, exist_ok=True)
+        run_id = uuid4().hex
+        source_hash = str(approved_production.get("canonical_source_hash") or "")
+        if not re.fullmatch(r"[0-9a-f]{64}", source_hash):
+            raise RuntimeError("Approved production version has no canonical source hash")
+        cue_hash = hashlib.sha256(json.dumps(approved_production.get("media_cues", []),
+                                             sort_keys=True, ensure_ascii=False,
+                                             separators=(",", ":")).encode("utf-8")).hexdigest()
+        takes_dir = episode_dir / "takes" / run_id
+        takes_dir.mkdir(parents=True, exist_ok=False)
 
         with tempfile.TemporaryDirectory(dir=str(self.base_path / "staging")) as temp_dir:
             staging_dir = Path(temp_dir)
-            raw_segments_dir = staging_dir / "segments"
-            raw_segments_dir.mkdir(parents=True, exist_ok=True)
-
-            segment_payloads = self._synthesize_segments(script_lines, raw_segments_dir, episode_id)
+            candidate_audio_path = staging_dir / "audio.mp3"
+            segment_payloads = self._synthesize_segments(script_lines, takes_dir, episode_id)
             raw_mix_path = staging_dir / f"{episode_id}_raw_mix.mp3"
-            self._concatenate_segments(segment_payloads, raw_mix_path)
+            self._concatenate_segments(segment_payloads, raw_mix_path,
+                                       media_cues_override=approved_production.get("media_cues", []))
 
             # ── SFX injection ────────────────────────────────────────────
             sfx_cfg = self.project_config.get("sfx", {})
@@ -490,12 +515,12 @@ class HardenedPodcastWorker:
             try:
                 processing_result = self.post_processor.process_episode(
                     input_file=raw_mix_path,
-                    output_file=final_audio_path,
+                    output_file=candidate_audio_path,
                     voice_profile="phil_jim_mix",
                 )
             except Exception as exc:
                 logger.warning("Post-processing failed; exporting direct MP3 fallback: %s", exc)
-                self._export_direct_mp3(raw_mix_path, final_audio_path)
+                self._export_direct_mp3(raw_mix_path, candidate_audio_path)
                 processing_result = {
                     "processing_chain": "direct_mp3_fallback",
                     "compliant": False,
@@ -504,22 +529,49 @@ class HardenedPodcastWorker:
 
             # ── Intro / Outro wrap ──────────────────────────────────────
             io_cfg = self.project_config.get("intro_outro", {})
-            if io_cfg.get("enabled", False) and final_audio_path.exists():
+            if io_cfg.get("enabled", False) and candidate_audio_path.exists():
                 try:
-                    wrapped_path = episode_dir / "audio_wrapped.mp3"
+                    wrapped_path = staging_dir / "audio_wrapped.mp3"
                     wrap_episode_audio(
-                        episode_audio_path=final_audio_path,
+                        episode_audio_path=candidate_audio_path,
                         output_path=wrapped_path,
                         cfg=io_cfg,
                         base_path=self.base_path,
                         topic=topic,
                     )
-                    final_audio_path.unlink()
-                    wrapped_path.rename(final_audio_path)
+                    os.replace(wrapped_path, candidate_audio_path)
                     processing_result["intro_outro"] = "wrapped"
                     logger.info("Intro/outro applied to %s", episode_id)
                 except Exception as exc:
                     raise RuntimeError(f"Configured intro/outro failed: {exc}. Fix its assets/runtime or explicitly disable it before production.") from exc
+
+            current_plan_hash = hashlib.sha256(json.dumps(
+                {"script": approved_production.get("script"),
+                 "media_cues": approved_production.get("media_cues", [])},
+                sort_keys=True, ensure_ascii=False, separators=(",", ":")
+            ).encode("utf-8")).hexdigest()
+            if current_plan_hash != approved_hash:
+                raise RuntimeError("Approved production plan changed during production; existing master was preserved")
+            from .production_lifecycle import current_approval
+            live_approval, live_version_id = current_approval(episode_id)
+            if (live_version_id != approved_production.get("approved_version_id")
+                    or live_approval.get("production_copy_hash") != approved_hash):
+                raise RuntimeError("Approval became stale during production; existing master was preserved")
+            manifest = self._build_production_manifest(
+                episode_id, episode_dir, script_lines, segment_payloads, run_id, source_hash, topic,
+                approved_production,
+            )
+            manifest["media_cues_hash"] = cue_hash
+            manifest["processing"] = copy.deepcopy(processing_result)
+            validate_takes(episode_dir, manifest["segments"])
+            if final_audio_path.is_file():
+                previous_master = episode_dir / f"audio.before_{run_id}.mp3"
+                shutil.copy2(final_audio_path, previous_master)
+                previous_manifest = episode_dir / "production_manifest.json"
+                if previous_manifest.is_file():
+                    shutil.copy2(previous_manifest, episode_dir / f"production_manifest.before_{run_id}.json")
+            os.replace(candidate_audio_path, final_audio_path)
+            save_manifest(episode_dir, manifest)
 
             transcript_payload = {
                 "episode_id": episode_id,
@@ -558,6 +610,217 @@ class HardenedPodcastWorker:
             "transcript": script_lines,
             "metadata": metadata,
         }
+
+    def _build_production_manifest(
+        self, episode_id: str, episode_path: Path, script_lines: List[Dict[str, Any]],
+        audio_segments: List[Dict[str, Any]], run_id: str, source_hash: str, topic: str,
+        approved_production: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        lines = []
+        for idx, line in enumerate(script_lines, start=1):
+            chunks = [item for item in audio_segments if item["line_index"] == idx]
+            if not chunks:
+                continue
+            speaker = self._normalize_speaker(str(line.get("speaker", "phil")))
+            ad_id = line.get("ad_id")
+            production_line_id = str(line.get("production_line_id") or f"production_line_{idx:04d}")
+            source_text = str(line.get("original_text", line.get("text", "")))
+            spoken_text = str(line.get("spoken_text") or line.get("text", ""))
+            lines.append({
+                "segment_id": production_line_id, "line_index": idx,
+                "production_line_id": production_line_id,
+                "source_canonical_line_id": line.get("source_canonical_line_id"),
+                "canonical_version_id": (approved_production or {}).get("canonical_version_id"),
+                "original_speaker": line.get("speaker"), "production_speaker": speaker,
+                "original_text": source_text,
+                "production_text": spoken_text, "dialogue_text": str(line.get("text", "")),
+                "spoken_text": spoken_text, "pronunciation": line.get("pronunciation", ""),
+                "editorial_action": "APPROVED_PRODUCTION_COPY",
+                "before_after_diff": {"before": source_text, "after": line.get("text")}
+                if source_text != line.get("text") else None,
+                "delivery": {"emotion": line.get("emotion", "neutral"),
+                             "producer_mode": line.get("producer_mode", ""),
+                             "delivery_notes": line.get("delivery_notes", ""),
+                             "pause_after": float(line.get("pause_after", 0.4))},
+                "audio": {"take": 1, "chunks": [self._manifest_chunk(episode_path, item, 1) for item in chunks]},
+                "music": None, "fx": line.get("production_cues", []), "visual": None, "ad": ad_id,
+            })
+        return {
+            "episode_id": episode_id, "script_hash": source_hash,
+            "canonical_version_id": (approved_production or {}).get("canonical_version_id"),
+            "approved_version_id": (approved_production or {}).get("approved_version_id"),
+            "production_copy_hash": (approved_production or {}).get("production_copy_hash"),
+            "editor_run_id": (approved_production or {}).get("draft_id", run_id),
+            "production_run_id": run_id, "editor_version": EDITOR_VERSION,
+            "editor_status": "approved",
+            "directives": copy.deepcopy((approved_production or {}).get("media_cues", [])),
+            "created_at": datetime.now().isoformat(), "topic": topic,
+            "segments": lines,
+            "global_cues": {"intro_outro": copy.deepcopy(self.project_config.get("intro_outro", {})),
+                            "sfx": copy.deepcopy(self.project_config.get("sfx", {}))},
+        }
+
+    @staticmethod
+    def _manifest_chunk(episode_path: Path, item: Dict[str, Any], take: int) -> Dict[str, Any]:
+        audio_path = Path(item["audio_file"]).resolve()
+        chunk_index = int(item.get("chunk_index", 1))
+        return {
+            "asset_id": f"tts_line_{item['line_index']:03d}_chunk_{chunk_index:02d}_take_{take}",
+            "chunk_index": chunk_index, "chunk_count": int(item.get("chunk_count", 1)),
+            "text": item["text"], "path": audio_path.relative_to(episode_path.resolve()).as_posix(),
+            "duration_ms": round(float(item["duration_seconds"]) * 1000),
+            "hash": file_hash(audio_path), "engine": item["engine"],
+            "voice_name": item.get("voice_name", ""), "pause_after": item["pause_after"],
+        }
+
+    def regenerate_production_line(
+        self, episode_id: str, segment_id: str, reason: str,
+        text_change: Optional[str] = None,
+        revision_id: Optional[str] = None,
+        approved_production: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Synthesize one line only, then rebuild the master from saved takes."""
+        episode_path = self.base_path / "episodes" / episode_id
+        manifest = load_manifest(episode_path)
+        if not manifest:
+            raise ValueError("This production has no saved line takes; produce it once with the new pipeline first")
+        if not approved_production or manifest.get("approved_version_id") != approved_production.get("approved_version_id"):
+            raise ValueError("Line regeneration requires the production's current approved version")
+        if approved_production.get("production_copy_hash") != manifest.get("production_copy_hash"):
+            raise ValueError("Approved production copy differs from the rendered master")
+        if text_change is not None:
+            raise ValueError("Dialogue changes require a new production editor draft and approval")
+        segments = manifest["segments"]
+        validate_takes(episode_path, segments)
+        target = next((item for item in segments if item.get("segment_id") == segment_id), None)
+        if target is None:
+            raise ValueError(f"Unknown production segment: {segment_id}")
+        if any(chunk.get("engine") != "qwen" for chunk in target["audio"]["chunks"]):
+            raise ValueError("Only Qwen dialogue lines can be regenerated; saved ads use asset replacement")
+        script_lines = approved_production.get("script", [])
+        line_index = int(target["line_index"])
+        saved_line = next((item for item in script_lines
+                           if item.get("production_line_id") == target.get("production_line_id")), None)
+        if saved_line is None:
+            raise ValueError("Production segment is absent from the approved production copy")
+        speaker = self._normalize_speaker(str(saved_line.get("speaker", "phil")))
+        if speaker != target["original_speaker"]:
+            raise ValueError("Production segment speaker no longer matches the saved script")
+
+        previous_text = str(target["production_text"])
+        new_text = previous_text
+        if not new_text:
+            raise ValueError("A production line cannot be empty")
+        take = int(target["audio"]["take"]) + 1
+        revision_id = revision_id or uuid4().hex
+        take_dir = episode_path / "takes" / revision_id
+        take_dir.mkdir(parents=True, exist_ok=False)
+        line = {**saved_line, "text": new_text,
+                "emotion": target["delivery"].get("emotion", "neutral"),
+                "producer_mode": target["delivery"].get("producer_mode", ""),
+                "pause_after": target["delivery"].get("pause_after", 0.4)}
+        new_chunks = self._synthesize_segments([line], take_dir, episode_id)
+        for chunk in new_chunks:
+            chunk["line_index"] = line_index
+        new_segment = copy.deepcopy(target)
+        previous_audio = copy.deepcopy(target["audio"])
+        history = previous_audio.pop("take_history", [])
+        new_segment["audio"] = {
+            "take": take,
+            "chunks": [self._manifest_chunk(episode_path, item, take) for item in new_chunks],
+            "take_history": [*history, previous_audio],
+        }
+        if new_text != previous_text:
+            new_segment["production_text"] = new_text
+            new_segment["editorial_action"] = "PERFORM"
+            new_segment["before_after_diff"] = {"before": previous_text, "after": new_text}
+        revised = copy.deepcopy(manifest)
+        revised["segments"] = [new_segment if item["segment_id"] == segment_id else item for item in segments]
+        revised["editor_run_id"] = revision_id
+        revised["revised_at"] = datetime.now().isoformat()
+        validate_takes(episode_path, revised["segments"])
+
+        staging_root = self.base_path / "staging"
+        staging_root.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=str(staging_root)) as temp_dir:
+            staging_dir = Path(temp_dir)
+            audio_items = self._flatten_manifest_audio(episode_path, revised["segments"])
+            candidate_path = staging_dir / "audio.mp3"
+            processing = self._assemble_revision_audio(
+                audio_items, candidate_path, staging_dir, episode_id,
+                str(manifest.get("topic", "")), manifest.get("global_cues", {}),
+                approved_production.get("media_cues", []),
+            )
+            from .production_lifecycle import current_approval
+            current_approval(episode_id)
+            revised["processing"] = copy.deepcopy(processing)
+            final_path = episode_path / "audio.mp3"
+            backup_path = staging_dir / "previous_master.mp3"
+            if final_path.is_file():
+                shutil.copy2(final_path, backup_path)
+                shutil.copy2(backup_path, episode_path / f"audio.before_revision_{revision_id}.mp3")
+            previous_manifest = episode_path / "production_manifest.json"
+            if previous_manifest.is_file():
+                shutil.copy2(previous_manifest, episode_path / f"production_manifest.before_revision_{revision_id}.json")
+            try:
+                os.replace(candidate_path, final_path)
+                save_manifest(episode_path, revised)
+            except Exception:
+                if backup_path.is_file():
+                    os.replace(backup_path, final_path)
+                raise
+        result = {"episode_id": episode_id, "segment_id": segment_id,
+                  "revision_id": revision_id, "take": take, "audio_file": str(final_path),
+                  "processing": processing}
+        logger.info("Production line regenerated: episode=%s segment=%s take=%s", episode_id, segment_id, take)
+        return result
+
+    def _flatten_manifest_audio(self, episode_path: Path, segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        audio_items = []
+        for segment in segments:
+            chunks = segment["audio"]["chunks"]
+            for chunk in chunks:
+                audio_items.append({
+                    "audio_file": str(checked_take_path(episode_path, chunk["path"])),
+                    "pause_after": float(chunk["pause_after"]),
+                    "duration_seconds": float(chunk["duration_ms"]) / 1000,
+                    "line_index": int(segment["line_index"]),
+                })
+        return audio_items
+
+    def _assemble_revision_audio(
+        self, audio_items: List[Dict[str, Any]], output_path: Path, staging_dir: Path,
+        episode_id: str, topic: str, global_cues: Dict[str, Any],
+        media_cues: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
+        raw_mix_path = staging_dir / f"{episode_id}_raw_mix.mp3"
+        self._concatenate_segments(audio_items, raw_mix_path, media_cues_override=media_cues or [])
+        sfx_cfg = global_cues.get("sfx", {})
+        if sfx_cfg.get("enabled", False):
+            try:
+                audio = AudioSegment.from_file(str(raw_mix_path))
+                audio = apply_sfx_events(audio, sfx_cfg, self.base_path / "audio" / "sfx")
+                audio.export(str(raw_mix_path), format="mp3", bitrate="192k").close()
+            except Exception as exc:
+                logger.warning("SFX injection failed during line revision: %s", exc)
+        try:
+            processing = self.post_processor.process_episode(
+                input_file=raw_mix_path, output_file=output_path, voice_profile="phil_jim_mix"
+            )
+        except Exception as exc:
+            logger.warning("Post-processing failed during line revision: %s", exc)
+            self._export_direct_mp3(raw_mix_path, output_path)
+            processing = {"processing_chain": "direct_mp3_fallback", "compliant": False, "warning": str(exc)}
+        io_cfg = global_cues.get("intro_outro", {})
+        if io_cfg.get("enabled", False):
+            wrapped_path = staging_dir / "audio_wrapped.mp3"
+            wrap_episode_audio(
+                episode_audio_path=output_path, output_path=wrapped_path,
+                cfg=io_cfg, base_path=self.base_path, topic=topic,
+            )
+            os.replace(wrapped_path, output_path)
+            processing["intro_outro"] = "wrapped"
+        return processing
 
     # Maps non-canonical speaker keys → voices_config key
     _SPEAKER_NORM: Dict[str, str] = {
@@ -639,7 +902,7 @@ class HardenedPodcastWorker:
         segment_index = 0
         for idx, line in enumerate(script_lines, start=1):
             speaker = self._normalize_speaker(str(line.get("speaker", "phil")))
-            text = str(line.get("text", "")).strip()
+            text = str(line.get("spoken_text") or line.get("text", "")).strip()
             if not line.get("is_ad"):
                 text = self._strip_spoken_speaker_prefix(text=text, speaker=speaker)
             if not text:
@@ -654,6 +917,8 @@ class HardenedPodcastWorker:
                     speaker=speaker,
                     emotion=str(line.get("emotion", "neutral")),
                     output_path=output_path,
+                    producer_mode=str(line.get("producer_mode", "")),
+                    delivery_instruction=str(line.get("delivery_notes", "")),
                 )
                 duration_seconds = self._probe_duration_seconds(output_path) if output_path.exists() else 0.0
                 pause_after = float(line.get("pause_after", 0.4))
@@ -662,6 +927,8 @@ class HardenedPodcastWorker:
                 segments.append({
                     "index": segment_index,
                     "line_index": idx,
+                    "production_line_id": line.get("production_line_id"),
+                    "production_cues": copy.deepcopy(line.get("production_cues", [])) if chunk_idx == len(chunks) else [],
                     "chunk_index": chunk_idx,
                     "chunk_count": len(chunks),
                     "speaker": speaker,
@@ -679,7 +946,8 @@ class HardenedPodcastWorker:
             raise RuntimeError("No audio segments were generated")
         return segments
 
-    def _synthesize_line(self, text: str, speaker: str, emotion: str, output_path: Path) -> str:
+    def _synthesize_line(self, text: str, speaker: str, emotion: str, output_path: Path,
+                         producer_mode: str = "", delivery_instruction: str = "") -> str:
         """Synthesize with the selected studio engine only.
 
         Dandy has no Edge or browser-voice production fallback. Kokoro is the
@@ -707,7 +975,10 @@ class HardenedPodcastWorker:
             if not self.qwen_tts_config.get("voices", {}).get(speaker):
                 raise RuntimeError(f"No Qwen voice registered for '{speaker}'; no fallback voice substituted")
             try:
-                if self._try_qwen_bridge(text, speaker, emotion, output_path):
+                if self._try_qwen_bridge(text, speaker, emotion, output_path,
+                                         producer_mode=producer_mode,
+                                         delivery_instruction=delivery_instruction):
+                    self._apply_producer_mode(output_path, speaker, producer_mode)
                     return "qwen"
             except Exception as exc:
                 raise RuntimeError(f"Qwen TTS failed: {exc}") from exc
@@ -717,7 +988,8 @@ class HardenedPodcastWorker:
             f"Unsupported production TTS engine '{selected}'. Dandy allows only Kokoro or Qwen."
         )
 
-    def _try_qwen_bridge(self, text: str, speaker: str, emotion: str, output_path: Path) -> bool:
+    def _try_qwen_bridge(self, text: str, speaker: str, emotion: str, output_path: Path,
+                         producer_mode: str = "", delivery_instruction: str = "") -> bool:
         bridge_url = str(self.qwen_tts_config.get("bridge_url") or "").rstrip("/")
         if not bridge_url:
             raise RuntimeError("Qwen bridge_url is not configured")
@@ -726,6 +998,7 @@ class HardenedPodcastWorker:
         instruction_map = self.qwen_tts_config.get("instructions", {})
         timeout = float(self.qwen_tts_config.get("timeouts", {}).get("synthesis_seconds", 180))
         voice_payload = self.voices_config.get(speaker, {})
+        mode_cfg = voice_payload.get("modes", {}).get(producer_mode or voice_payload.get("producer_mode_default", ""), {})
         voice_prompt = voice_payload.get("qwen_voice_prompt")
         if voice_prompt:
             prompt_path = Path(str(voice_prompt))
@@ -734,13 +1007,17 @@ class HardenedPodcastWorker:
             if not prompt_path.is_file():
                 raise RuntimeError(f"Saved Qwen clone prompt for '{speaker}' is missing: {prompt_path}")
             voice_prompt = str(prompt_path)
+        base_instruction = mode_cfg.get("instruction") or instruction_map.get(speaker)
+        instruction = " ".join(part.strip() for part in (base_instruction, delivery_instruction) if part and part.strip())
         payload = {
             "text": text,
             "speaker": speaker,
             "voice": voice_map.get(speaker),
             "emotion": emotion,
-            "instruction": instruction_map.get(speaker),
+            "instruction": instruction or None,
             "voice_prompt": voice_prompt,
+            "reference_audio": self._resolve_voice_asset(voice_payload.get("qwen_reference_audio")),
+            "reference_text": voice_payload.get("qwen_reference_text"),
             "language": "English",
             "format": output_path.suffix.lstrip(".") or "mp3",
             "output_path": str(output_path),
@@ -768,6 +1045,23 @@ class HardenedPodcastWorker:
         if not output_path.exists():
             raise RuntimeError("Qwen bridge did not create an output file")
         return True
+
+    def _resolve_voice_asset(self, value: Any) -> Optional[str]:
+        if not value:
+            return None
+        path = Path(str(value))
+        if not path.is_absolute():
+            path = (self.base_path / path).resolve()
+        return str(path)
+
+    def _apply_producer_mode(self, output_path: Path, speaker: str, producer_mode: str) -> None:
+        if speaker != "bryan" or not output_path.exists():
+            return
+        voice_payload = self.voices_config.get("bryan", {})
+        mode = producer_mode or voice_payload.get("producer_mode_default", "producer_background")
+        gain_db = float(voice_payload.get("modes", {}).get(mode, {}).get("gain_db", -8))
+        if gain_db:
+            AudioSegment.from_file(str(output_path)).apply_gain(gain_db).export(str(output_path), format=output_path.suffix.lstrip(".") or "mp3")
 
     # ── WSL path helpers ────────────────────────────────────────────────
     _WSL_PYTHON = "/home/bryan/.venvs/gpu/bin/python"
@@ -869,7 +1163,10 @@ class HardenedPodcastWorker:
             return str(self.qwen_tts_config.get("voices", {}).get(speaker, ""))
         return ""
 
-    def _concatenate_segments(self, segments: List[Dict[str, Any]], output_path: Path) -> None:
+    def _concatenate_segments(
+        self, segments: List[Dict[str, Any]], output_path: Path,
+        media_cues_override: Optional[List[Dict[str, Any]]] = None,
+    ) -> None:
         concat_list = output_path.with_suffix(".txt")
         generated_files: List[Path] = []
         try:
@@ -883,7 +1180,13 @@ class HardenedPodcastWorker:
                     if pause_ms <= 0:
                         continue
                     silence_file = output_path.parent / f"pause_{idx:03d}.mp3"
-                    AudioSegment.silent(duration=pause_ms).export(silence_file, format="mp3").close()
+                    # The concat demuxer requires pauses to match the dialogue
+                    # stream; pydub's default silence is 11.025 kHz, while Qwen
+                    # dialogue is 24 kHz. Avoid rate changes inside one stream.
+                    source = AudioSegment.from_file(str(audio_file))
+                    pause = AudioSegment.silent(duration=pause_ms, frame_rate=source.frame_rate)
+                    pause = pause.set_channels(source.channels).set_sample_width(source.sample_width)
+                    pause.export(silence_file, format="mp3").close()
                     generated_files.append(silence_file)
                     escaped = silence_file.resolve().as_posix().replace("'", "'\\''")
                     handle.write(f"file '{escaped}'\n")

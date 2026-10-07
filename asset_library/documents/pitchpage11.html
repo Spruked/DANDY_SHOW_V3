@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=1280, height=720, initial-scale=1.0" name="viewport" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080818;
+      --bg-card: #13132b;
+      --text: #eeeeff;
+      --text-muted: #9090b8;
+      --accent: #8b5cf6;
+      --accent-glow: rgba(139,92,246,0.22);
+      --accent-border: rgba(139,92,246,0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      width: 1280px; height: 720px;
+      overflow: hidden;
+      font-family: 'Calibri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text) !important;
+      font-family: 'Calibri Light', sans-serif;
+    }
+
+    /* Background grid texture */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* Ambient glow blobs */
+    .glow-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    /* Header */
+    .slide-header {
+      position: relative;
+      z-index: 10;
+      padding: 28px 56px 0;
+    }
+    .slide-title {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 26px;
+      font-weight: 300;
+      letter-spacing: 0.01em;
+      line-height: 1.15;
+      color: var(--text) !important;
+      margin: 0 0 3px;
+    }
+    .title-accent {
+      color: var(--accent);
+    }
+    .slide-subtitle {
+      font-family: 'Calibri', sans-serif;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+
+    /* Grid */
+    .feature-grid {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 10px;
+      padding: 12px 56px 0;
+    }
+
+    /* Tile */
+    .tile {
+      background: var(--bg-card);
+      border: 1px solid var(--accent-border);
+      border-radius: 10px;
+      padding: 14px 16px 13px;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .tile::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(139,92,246,0.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Icon container */
+    .icon-wrap {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, rgba(139,92,246,0.32) 0%, rgba(109,40,217,0.18) 100%);
+      border: 1px solid rgba(139,92,246,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 14px rgba(139,92,246,0.3);
+      color: #c4b5fd;
+      margin-top: 1px;
+    }
+
+    /* Text */
+    .tile-body { flex: 1; min-width: 0; }
+    .tile-title {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text) !important;
+      margin: 0 0 4px;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tile-label {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #a78bfa;
+      background: rgba(139,92,246,0.14);
+      border: 1px solid rgba(139,92,246,0.3);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-bottom: 5px;
+    }
+    .tile-desc {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    /* Divider line under title block */
+    .header-rule {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 56px 0;
+    }
+    .rule-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, rgba(139,92,246,0.5), rgba(139,92,246,0.0));
+    }
+    .rule-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Bottom strip */
+    .bottom-strip {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 20;
+      height: 34px;
+      background: linear-gradient(90deg, rgba(139,92,246,0.22) 0%, rgba(109,40,217,0.10) 50%, rgba(139,92,246,0.22) 100%);
+      border-top: 1px solid rgba(139,92,246,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+    .strip-item {
+      font-size: 11px;
+      color: #c4b5fd;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .strip-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body data-id="0">
+
+  <!-- Background texture -->
+  <div data-id="1" class="bg-grid"></div>
+
+  <!-- Ambient glows -->
+  <div data-id="2" class="glow-blob" style="width:420px;height:300px;background:rgba(139,92,246,0.13);top:-60px;left:-80px;"></div>
+  <div data-id="3" class="glow-blob" style="width:320px;height:220px;background:rgba(109,40,217,0.10);bottom:60px;right:-40px;"></div>
+  <div data-id="4" class="glow-blob" style="width:200px;height:200px;background:rgba(139,92,246,0.07);top:260px;left:580px;"></div>
+
+  <!-- Header -->
+  <div data-id="5" class="slide-header" id="slide-header-jx72">
+    <h1 data-id="6" class="slide-title" id="slide-title-kp38">
+      ORB Intelligence Add-Ons: <span data-id="7" class="title-accent">Extend. Specialize. Dominate.</span>
+    </h1>
+    <p data-id="8" class="slide-subtitle" id="slide-subtitle-bw91">Core Site World packages unlock a growing ecosystem of specialized intelligence modules — all software, all modular.</p>
+  </div>
+
+  <!-- Decorative rule -->
+  <div data-id="9" class="header-rule" id="header-rule-qm14">
+    <div data-id="10" class="rule-dot"></div>
+    <div data-id="11" class="rule-line"></div>
+  </div>
+
+  <!-- Feature Grid -->
+  <div data-id="12" class="feature-grid" id="feature-grid-lz47">
+
+    <!-- Tile 1: Behavior Packs -->
+    <div data-id="13" class="tile" id="tile-behavior-xr29">
+      <div data-id="14" class="icon-wrap" id="icon-behavior-nv63">
+        <svg data-id="15" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path data-id="16" d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-5 0v-15A2.5 2.5 0 0 1 9.5 2z"/>
+          <path data-id="17" d="M14.5 2A2.5 2.5 0 0 1 17 4.5v15a2.5 2.5 0 0 1-5 0v-15A2.5 2.5 0 0 1 14.5 2z"/>
+          <circle data-id="18" cx="9.5" cy="9" r="1.5" fill="currentColor" stroke="none"/>
+          <circle data-id="19" cx="14.5" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+          <line data-id="20" x1="6" y1="12" x2="18" y2="12"/>
+        </svg>
+      </div>
+      <div data-id="21" class="tile-body">
+        <div data-id="22" class="tile-label">AI Behavior</div>
+        <h3 data-id="23" class="tile-title" id="tile-title-behavior-aq57">Behavior Packs</h3>
+        <p data-id="24" class="tile-desc" id="tile-desc-behavior-mw82">Specialized AI behavior modules — e-commerce assistant, support navigator, lead qualifier, booking concierge. Plug-in ORB personality and decision layers for specific use cases.</p>
+      </div>
+    </div>
+
+    <!-- Tile 2: Intent Libraries -->
+    <div data-id="25" class="tile" id="tile-intent-yd84">
+      <div data-id="26" class="icon-wrap" id="icon-intent-cs51">
+        <svg data-id="27" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path data-id="28" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <line data-id="29" x1="9" y1="10" x2="15" y2="10"/>
+          <line data-id="30" x1="9" y1="14" x2="13" y2="14"/>
+        </svg>
+      </div>
+      <div data-id="31" class="tile-body">
+        <div data-id="32" class="tile-label">Semantics</div>
+        <h3 data-id="33" class="tile-title" id="tile-title-intent-rk19">Intent Libraries</h3>
+        <p data-id="34" class="tile-desc" id="tile-desc-intent-fh73">Pre-built visitor-language alias libraries by vertical — retail, healthcare, SaaS, hospitality, finance. Instant semantic coverage without manual alias authoring.</p>
+      </div>
+    </div>
+
+    <!-- Tile 3: Workflow Modules -->
+    <div data-id="35" class="tile" id="tile-workflow-ep36">
+      <div data-id="36" class="icon-wrap" id="icon-workflow-bt08">
+        <svg data-id="37" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect data-id="38" x="3" y="3" width="5" height="5" rx="1"/>
+          <rect data-id="39" x="16" y="3" width="5" height="5" rx="1"/>
+          <rect data-id="40" x="9.5" y="16" width="5" height="5" rx="1"/>
+          <line data-id="41" x1="5.5" y1="8" x2="5.5" y2="12"/>
+          <line data-id="42" x1="18.5" y1="8" x2="18.5" y2="12"/>
+          <line data-id="43" x1="5.5" y1="12" x2="18.5" y2="12"/>
+          <line data-id="44" x1="12" y1="12" x2="12" y2="16"/>
+        </svg>
+      </div>
+      <div data-id="45" class="tile-body">
+        <div data-id="46" class="tile-label">Process</div>
+        <h3 data-id="47" class="tile-title" id="tile-title-workflow-jc44">Workflow Modules</h3>
+        <p data-id="48" class="tile-desc" id="tile-desc-workflow-vn91">Pre-validated flow maps for checkout, onboarding, account management, and support escalation. Drop-in, validated, immediately deployable.</p>
+      </div>
+    </div>
+
+    <!-- Tile 4: Multi-Language Packs -->
+    <div data-id="49" class="tile" id="tile-lang-wq65">
+      <div data-id="50" class="icon-wrap" id="icon-lang-dm37">
+        <svg data-id="51" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle data-id="52" cx="12" cy="12" r="10"/>
+          <path data-id="53" d="M2 12h20"/>
+          <path data-id="54" d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      </div>
+      <div data-id="55" class="tile-body">
+        <div data-id="56" class="tile-label">Localization</div>
+        <h3 data-id="57" class="tile-title" id="tile-title-lang-uh52">Multi-Language Packs</h3>
+        <p data-id="58" class="tile-desc" id="tile-desc-lang-yp28">Visitor-language alias expansion for non-English sites. Intent mapping translated and localized per market and region for global reach.</p>
+      </div>
+    </div>
+
+    <!-- Tile 5: Audit and QA Packs -->
+    <div data-id="59" class="tile" id="tile-audit-zx93">
+      <div data-id="60" class="icon-wrap" id="icon-audit-lk16">
+        <svg data-id="61" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path data-id="62" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+          <rect data-id="63" x="9" y="3" width="6" height="4" rx="1"/>
+          <path data-id="64" d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <div data-id="65" class="tile-body">
+        <div data-id="66" class="tile-label">QA &amp; Compliance</div>
+        <h3 data-id="67" class="tile-title" id="tile-title-audit-ew74">Audit &amp; QA Packs</h3>
+        <p data-id="68" class="tile-desc" id="tile-desc-audit-rc48">Extended pointer, control, and route audits. Accessibility compliance reports and broken-element remediation guides for dev and QA teams.</p>
+      </div>
+    </div>
+
+    <!-- Tile 6: Enterprise Integration Packs -->
+    <div data-id="69" class="tile" id="tile-api-fm58">
+      <div data-id="70" class="icon-wrap" id="icon-api-og83">
+        <svg data-id="71" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline data-id="72" points="16 18 22 12 16 6"/>
+          <polyline data-id="73" points="8 6 2 12 8 18"/>
+          <line data-id="74" x1="12" y1="2" x2="12" y2="22"/>
+        </svg>
+      </div>
+      <div data-id="75" class="tile-body">
+        <div data-id="76" class="tile-label">Enterprise</div>
+        <h3 data-id="77" class="tile-title" id="tile-title-api-tb21">Enterprise Integration Packs</h3>
+        <p data-id="78" class="tile-desc" id="tile-desc-api-xn69">Stage Governor inputs, ORB capability snapshots, structured endpoint maps, and public API route inventories for enterprise AI orchestration layers.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom strip -->
+  <div data-id="79" class="bottom-strip" id="bottom-strip-gv55">
+    <div data-id="80" class="strip-item" id="strip-item1-hn30">
+      <svg data-id="81" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7"><circle data-id="82" cx="12" cy="12" r="10"/><polyline data-id="83" points="12 6 12 12 16 14"/></svg>
+      3rd-party add-on marketplace opening Q3 2027
+    </div>
+    <div data-id="84" class="strip-dot"></div>
+    <div data-id="85" class="strip-item" id="strip-item2-qp14">
+      <svg data-id="86" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7"><polyline data-id="87" points="16 18 22 12 16 6"/><polyline data-id="88" points="8 6 2 12 8 18"/></svg>
+      Creator SDK in development
+    </div>
+    <div data-id="89" class="strip-dot"></div>
+    <div data-id="90" class="strip-item" id="strip-item3-wc87">
+      <svg data-id="91" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7"><line data-id="92" x1="12" y1="1" x2="12" y2="23"/><path data-id="93" d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      30% platform fee on all third-party modules
+    </div>
+  </div>
+
+</body>
+</html>

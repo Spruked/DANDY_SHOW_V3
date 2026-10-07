@@ -1,10 +1,10 @@
 """intro_outro.py — Intro and outro music + announcer synthesis for Dandy Show episodes.
 
-Intro/outro announcer speech is Kokoro-only. Dandy does not use Edge TTS or
-browser speech as a production fallback. If Kokoro is unavailable, preview or
-production fails visibly instead of changing voice providers.
+The configured theme can play alone when narration_enabled is false. Optional
+announcer speech still requires its explicitly configured Kokoro runtime.
 """
 
+import hashlib
 import logging
 import os
 import subprocess
@@ -41,10 +41,13 @@ _configure_pydub()
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "enabled": True,
-    "music_file": "./audio/jingles/intro_outro.mp3",
+    "narration_enabled": True,
+    "music_file": "./asset_library/sfx/introclip.mp3",
     "intro": {
         "clip_start_ms": 0,
-        "clip_duration_ms": 14000,
+        "clip_duration_ms": 10000,
+        "clip_start_variants_ms": [0, 3000, 6000],
+        "clip_duration_variants_ms": [8000, 10000, 12000],
         "music_fade_in_ms": 1200,
         "music_fade_out_ms": 2000,
         "duck_start_ms": 4000,
@@ -56,7 +59,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     },
     "outro": {
         "clip_start_ms": 0,
-        "clip_duration_ms": 12000,
+        "clip_duration_ms": 10000,
+        "clip_start_variants_ms": [0, 3000, 6000],
+        "clip_duration_variants_ms": [8000, 10000, 12000],
         "music_fade_in_ms": 2000,
         "music_fade_out_ms": 3000,
         "announcer_text": "Be sure and tune in next time when Phil[pause] and Jim talk about {topic}.",
@@ -67,6 +72,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 }
 
 PAUSE_MARKER = "[pause]"
+FULL_EPISODE_CLIP_MS = 18000
 
 
 def _load_music(music_file: str, base_path: Path) -> AudioSegment:
@@ -85,6 +91,17 @@ def _clip(music: AudioSegment, start_ms: int, duration_ms: int) -> AudioSegment:
         loops = (duration_ms // len(clipped)) + 2
         clipped = (clipped * loops)[:duration_ms]
     return clipped
+
+
+def _select_clip(cfg: Dict[str, Any], music: AudioSegment, variant_key: str) -> tuple[int, int]:
+    """Select a repeatable 8–12 second slice of the configured theme."""
+    starts = [int(v) for v in cfg.get("clip_start_variants_ms", [0, 3000, 6000])]
+    durations = [int(v) for v in cfg.get("clip_duration_variants_ms", [8000, 10000, 12000])]
+    starts = [v for v in starts if 0 <= v < len(music)] or [0]
+    durations = [v for v in durations if v > 0] or [8000]
+    digest = hashlib.sha256(variant_key.encode("utf-8")).digest()
+    index = digest[0] % max(len(starts), len(durations))
+    return starts[index % len(starts)], durations[index % len(durations)]
 
 
 _WSL_PYTHON = "/home/bryan/.venvs/gpu/bin/python"
@@ -146,13 +163,17 @@ def _synthesize_kokoro_sync(text: str, voice: str, output_path: Path, pause_ms: 
     combined.export(str(output_path), format="mp3")
 
 
-def build_intro(cfg: Dict[str, Any], base_path: Path, output_path: Path) -> Path:
+def build_intro(
+    cfg: Dict[str, Any], base_path: Path, output_path: Path, topic: str = "", full_episode: bool = False
+) -> Path:
     intro_cfg = cfg.get("intro", DEFAULT_CONFIG["intro"])
     music_file = cfg.get("music_file", DEFAULT_CONFIG["music_file"])
     music_full = _load_music(music_file, base_path)
 
-    clip_start = int(intro_cfg.get("clip_start_ms", 0))
-    clip_dur = int(intro_cfg.get("clip_duration_ms", 14000))
+    if full_episode:
+        clip_start, clip_dur = 0, min(FULL_EPISODE_CLIP_MS, len(music_full))
+    else:
+        clip_start, clip_dur = _select_clip(intro_cfg, music_full, f"intro:{topic}")
     fade_in = int(intro_cfg.get("music_fade_in_ms", 1200))
     fade_out = int(intro_cfg.get("music_fade_out_ms", 2000))
     duck_start = int(intro_cfg.get("duck_start_ms", 4000))
@@ -163,6 +184,11 @@ def build_intro(cfg: Dict[str, Any], base_path: Path, output_path: Path) -> Path
     pause_ms = int(intro_cfg.get("pause_duration_ms", 700))
 
     music = _clip(music_full, clip_start, clip_dur).fade_in(fade_in)
+    if not cfg.get("narration_enabled", True):
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        music.fade_out(fade_out).export(str(output_path), format="mp3").close()
+        logger.info("Intro built from existing theme: %s (%.1fs)", output_path, len(music) / 1000)
+        return output_path
     pre_duck = music[:duck_start]
     post_duck = music[duck_start:].apply_gain(duck_db).fade_out(fade_out)
     music_ducked = pre_duck + post_duck
@@ -190,13 +216,16 @@ def build_outro(
     base_path: Path,
     output_path: Path,
     topic: str = "",
+    full_episode: bool = False,
 ) -> Path:
     outro_cfg = cfg.get("outro", DEFAULT_CONFIG["outro"])
     music_file = cfg.get("music_file", DEFAULT_CONFIG["music_file"])
     music_full = _load_music(music_file, base_path)
 
-    clip_start = int(outro_cfg.get("clip_start_ms", 0))
-    clip_dur = int(outro_cfg.get("clip_duration_ms", 12000))
+    if full_episode:
+        clip_start, clip_dur = 0, min(FULL_EPISODE_CLIP_MS, len(music_full))
+    else:
+        clip_start, clip_dur = _select_clip(outro_cfg, music_full, f"outro:{topic}")
     fade_in = int(outro_cfg.get("music_fade_in_ms", 2000))
     fade_out = int(outro_cfg.get("music_fade_out_ms", 3000))
     announcer_text = str(outro_cfg.get("announcer_text", DEFAULT_CONFIG["outro"]["announcer_text"]))
@@ -206,6 +235,11 @@ def build_outro(
     pause_ms = int(outro_cfg.get("pause_duration_ms", 700))
 
     music = _clip(music_full, clip_start, clip_dur).fade_in(fade_in).fade_out(fade_out)
+    if not cfg.get("narration_enabled", True):
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        music.export(str(output_path), format="mp3").close()
+        logger.info("Outro built from existing theme: %s (%.1fs)", output_path, len(music) / 1000)
+        return output_path
 
     with tempfile.TemporaryDirectory() as td:
         ann_path = Path(td) / "outro_announcer.mp3"
@@ -237,8 +271,8 @@ def wrap_episode_audio(
         intro_path = Path(td) / "intro.mp3"
         outro_path = Path(td) / "outro.mp3"
 
-        build_intro(cfg, base_path, intro_path)
-        build_outro(cfg, base_path, outro_path, topic=topic)
+        build_intro(cfg, base_path, intro_path, topic=topic, full_episode=True)
+        build_outro(cfg, base_path, outro_path, topic=topic, full_episode=True)
 
         intro_seg = AudioSegment.from_file(str(intro_path))
         episode_seg = AudioSegment.from_file(str(episode_audio_path))

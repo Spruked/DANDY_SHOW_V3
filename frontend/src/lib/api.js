@@ -60,7 +60,7 @@ async function ensureJob(episodeId) {
     topic: topic || title || episodeId,
     description: config.description || '',
     key_points: Array.isArray(config.key_points) ? config.key_points : [],
-    target_duration: Number(config.target_duration) || 2400,
+    target_duration: Number(config.target_duration) || 300,
     intensity: config.intensity || 'medium',
     generation_mode: config.generation_mode || 'ai_generate',
   }
@@ -160,7 +160,7 @@ export const api = {
       title,
       topic: topic || title || episodeId,
       key_points: Array.isArray(body.key_points) ? body.key_points : [],
-      target_duration: Number(body.target_duration) || 2400,
+      target_duration: Number(body.target_duration) || 300,
       intensity: body.intensity || 'medium',
       generation_mode: body.generation_mode || 'ai_generate',
     }
@@ -176,6 +176,23 @@ export const api = {
     }),
 
   getScript: (id) => req(`/episodes/${encodeURIComponent(id)}/script`),
+  canonicalScripts: (id) => req(`/episodes/${encodeURIComponent(id)}/canonical-scripts`),
+  canonicalScript: (id, versionId) => req(`/episodes/${encodeURIComponent(id)}/canonical-scripts/${encodeURIComponent(versionId)}`),
+  previewReview: (id, versionId) => req(`/episodes/${encodeURIComponent(id)}/canonical-scripts/${encodeURIComponent(versionId)}/preview`),
+  selectedPreview: (id) => req(`/episodes/${encodeURIComponent(id)}/preview`),
+  savePreview: (id, body) => req(`/episodes/${encodeURIComponent(id)}/preview`, { method: 'PUT', body: JSON.stringify(body) }),
+  createProductionDraft: (id, canonical_version_id) => req(
+    `/episodes/${encodeURIComponent(id)}/production-editor/drafts`,
+    { method: 'POST', body: JSON.stringify({ canonical_version_id }) },
+  ),
+  saveProductionDraft: (id, body) => req(
+    `/episodes/${encodeURIComponent(id)}/production-editor/draft`,
+    { method: 'PUT', body: JSON.stringify(body) },
+  ),
+  approveProductionDraft: (id, draft_id) => req(
+    `/episodes/${encodeURIComponent(id)}/production-editor/approve`,
+    { method: 'POST', body: JSON.stringify({ draft_id }) },
+  ),
   generateScript: async (id, body = {}) => {
     const jobId = await ensureJob(id)
     return req(`/episodes/generate-script?job_id=${encodeURIComponent(jobId)}`, {
@@ -186,6 +203,10 @@ export const api = {
   generationStatus: async (id) => {
     const jobId = await ensureJob(id)
     return req(`/episodes/jobs/${encodeURIComponent(jobId)}`)
+  },
+  cancelJob: async (id) => {
+    const jobId = await ensureJob(id)
+    return req(`/episodes/jobs/${encodeURIComponent(jobId)}/cancel`, { method: 'POST' })
   },
   editScript: async (body) => {
     const normalized = await normalizeEditPayload(body)
@@ -214,7 +235,11 @@ export const api = {
   listAssetLibrary: (query = '', role = '') =>
     req(`/asset-library?query=${encodeURIComponent(query)}&role=${encodeURIComponent(role)}`),
   uploadAsset: (id, formData) =>
-    fetch(`${BASE}/episodes/${encodeURIComponent(id)}/assets`, { method: 'POST', body: formData }).then((r) => r.json()),
+    fetch(`${BASE}/episodes/${encodeURIComponent(id)}/assets`, { method: 'POST', body: formData }).then(async (r) => {
+      const data = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(data.detail || `Asset upload failed (${r.status})`)
+      return data
+    }),
   assetUrl: (id, assetId) => `${BASE}/episodes/${encodeURIComponent(id)}/assets/${encodeURIComponent(assetId)}/file`,
   libraryAssetUrl: (assetId) => `${BASE}/asset-library/${encodeURIComponent(assetId)}/file`,
 
@@ -305,6 +330,13 @@ export const api = {
   socialDownloadUrl: (exportId) => `${BASE}/social/${encodeURIComponent(exportId)}/download`,
 
   audioUrl: (id) => `${BASE}/audio/${encodeURIComponent(id)}/final.mp3`,
+  productionManifest: (id) => req(`/episodes/${encodeURIComponent(id)}/production-manifest`),
+  productionEditor: (id) => req(`/episodes/${encodeURIComponent(id)}/production-editor`),
+  productionRevision: (id) => req(`/episodes/${encodeURIComponent(id)}/production-revision`),
+  regenerateProductionLine: (id, segmentId, body) => req(
+    `/episodes/${encodeURIComponent(id)}/production/segments/${encodeURIComponent(segmentId)}/regenerate`,
+    { method: 'POST', body: JSON.stringify(body) },
+  ),
 
   getIntroOutroConfig: () => req('/intro-outro-config'),
   saveIntroOutroConfig: (body) =>

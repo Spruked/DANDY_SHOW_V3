@@ -110,7 +110,7 @@ export default function SystemTab() {
   const voiceKeys = Object.keys(diagnostics?.voice_registry || {})
   return <div className="tab-body"><div className="pane-main" style={{ overflow: 'auto' }}>
     <div className="section-head"><span className="section-label">System Status · Live Checks</span><button className="btn btn-steel btn-sm" onClick={checkHealth} disabled={checking}><RefreshCw size={12} />{checking ? 'CHECKING' : 'REFRESH'}</button></div>
-    <div style={{ padding: '8px 16px', fontSize: '.75rem' }} role="status">
+    <div style={{ padding: '8px 16px', fontSize: '0.98rem' }} role="status">
       <Badge type={stale || diagnostics?.status !== 'ready' ? 'steel' : 'green'}>{stale ? 'STALE / CHECK FAILED' : diagnostics?.status || 'not checked'}</Badge>
       {' '}Last response: {clock(diagnostics?.checked_at)} · refresh every 15 seconds while visible · WSL cache 60 seconds
       {error && <div style={{ color: 'var(--red)' }}>{error}</div>}
@@ -129,9 +129,9 @@ export default function SystemTab() {
       </div>
       {Object.entries(diagnostics?.checks || {}).map(([name, check]) => <div className="sys-card" key={name} style={{ minWidth: 0 }}>
         <div className="sys-card-title">{CHECK_NAMES[name] || name} <Badge type={stale ? 'steel' : check.status === 'ready' ? 'green' : check.status === 'reachable' ? 'gold' : 'steel'}>{stale ? 'stale (' + check.status + ')' : check.status}</Badge></div>
-        <div style={{ fontSize: '.75rem', lineHeight: 1.7, overflowWrap: 'anywhere' }}><Summary name={name} check={check} />{check.error && <div style={{ color: 'var(--red)' }}>{check.error}</div>}</div>
-        <div className="font-mono" style={{ fontSize: '.58rem', color: 'var(--steel)', marginTop: 8 }}>{check.source} · {clock(check.checked_at)} · {check.latency_ms} ms{check.cached ? ' · cached' : ''}</div>
-        <details><summary style={{ fontSize: '.68rem' }}>Measured details</summary><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: '.65rem', maxHeight: 220, overflow: 'auto' }}>{JSON.stringify(check, null, 2)}</pre></details>
+        <div style={{ fontSize: '0.98rem', lineHeight: 1.7, overflowWrap: 'anywhere' }}><Summary name={name} check={check} />{check.error && <div style={{ color: 'var(--red)' }}>{check.error}</div>}</div>
+        <div className="font-mono" style={{ fontSize: '0.75rem', color: 'var(--steel)', marginTop: 8 }}>{check.source} · {clock(check.checked_at)} · {check.latency_ms} ms{check.cached ? ' · cached' : ''}</div>
+        <details><summary style={{ fontSize: '0.88rem' }}>Measured details</summary><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: '0.85rem', maxHeight: 220, overflow: 'auto' }}>{JSON.stringify(check, null, 2)}</pre></details>
       </div>)}
       <div className="sys-card" style={{ gridColumn: '1 / -1' }}>
         <div className="sys-card-title">Intro / Outro</div>
@@ -149,7 +149,7 @@ export default function SystemTab() {
               <details><summary>Advanced timing and mix (milliseconds / dB)</summary>{Object.entries(ioCfg[section] || {}).filter(([key, value]) => typeof value === 'number' && key !== 'clip_duration_ms').map(([key, value]) => <Field key={key} label={key.replaceAll('_', ' ')}><input className="ds-input" type="number" value={value} onChange={e => setIo(section + '.' + key, Number(e.target.value))} /></Field>)}</details>
             </div>)}
           </div>
-          <div style={{ fontSize: '.72rem', marginTop: 12 }}>Intro/outro runs once around the assembled episode, not around each 15-minute section. Preview uses saved settings; save before previewing edits.</div>
+          <div style={{ fontSize: '0.94rem', marginTop: 12 }}>Intro/outro runs once around the assembled episode, not around each 15-minute section. Preview uses saved settings; save before previewing edits.</div>
         </>}
         {ioPreviewUrl && <audio controls src={ioPreviewUrl} style={{ width: '100%', marginTop: 12 }} />}
       </div>

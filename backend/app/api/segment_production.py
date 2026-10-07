@@ -1,32 +1,15 @@
-"""Segment-aware production routing.
+"""Compatibility route for segment production.
 
-For 1-15 minute targets, production renders the current approved script exactly
-as written: no 5,000-word floor, no canned expansion, and no automatic ad
-insertion. Reusable media cues are assembled by the worker during audio build.
-Legacy targets above 15 minutes delegate to the established production route.
+All episode durations use the same approved-production gate. Keeping this route
+registered first preserves the existing API URL while delegating to the single
+production implementation.
 """
 
-from __future__ import annotations
-
-from datetime import datetime
 from typing import Dict
 
-from fastapi import APIRouter, BackgroundTasks, Body, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Body, Query
 
-from .production import (
-    _assert_llm_script_publishable,
-    _run_produce_background,
-    _sanitize_script,
-    _script_as_text,
-    produce_episode as legacy_produce_episode,
-)
-from ..services.storage.episode_store import (
-    calculate_script_provenance,
-    episode_dir,
-    load_episode_detail,
-    load_job,
-    save_json,
-)
+from .production import produce_episode as approved_produce_episode
 
 
 router = APIRouter(tags=["segment-production"])
@@ -38,88 +21,8 @@ async def produce_segment_or_legacy(
     job_id: str = Query(...),
     payload: Dict | None = Body(default=None),
 ):
-    job = load_job(job_id)
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-
-    detail = load_episode_detail(job["episode_id"])
-    config = detail.get("config", {}) or {}
-    target_duration = int(config.get("target_duration") or 600)
-
-    if target_duration >= 15 * 60:
-        return await legacy_produce_episode(
-            background_tasks=background_tasks,
-            job_id=job_id,
-            payload=payload,
-        )
-
-    script = detail.get("script", [])
-    if not script:
-        raise HTTPException(status_code=400, detail="No script found. Generate or paste a script first.")
-
-    script = _sanitize_script(script)
-    provenance = calculate_script_provenance(script)
-    source_counts = provenance.get("line_source_counts", {}) or {}
-    manual_sources = {"script_feed", "manual_edit", "structured"}
-    source_keys = {str(key) for key, count in source_counts.items() if int(count or 0) > 0}
-    manual_only = bool(source_keys) and source_keys.issubset(manual_sources)
-    require_llm = config.get("generation_mode") != "script_feed" and not manual_only
-
-    est_words = sum(len(str(line.get("text", "")).split()) for line in script)
-    if est_words <= 0:
-        raise HTTPException(status_code=400, detail="Segment script contains no spoken words.")
-
-    try:
-        script_meta = _assert_llm_script_publishable(script, require_llm=require_llm)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    title = config.get("title") or job["episode_id"]
-    topic = config.get("topic") or title
-    script_text = _script_as_text(script)
-    personality_settings = (payload or {}).get("personality_settings") if payload else None
-    voice_settings = (payload or {}) if payload else {}
-    writer_engine = str(script_meta.get("writer_engine", "manual" if manual_only else "unknown"))
-    writer_online_at_start = writer_engine in {"llm_bridge", "governance_bridge", "llamacpp"}
-    target_minutes = max(1, min(15, round(target_duration / 60)))
-
-    save_json(
-        episode_dir(job["episode_id"]) / "status.json",
-        {
-            "status": "producing",
-            "updated_at": datetime.now().isoformat(),
-            "job_id": job_id,
-            "production_mode": "segment",
-            "target_minutes": target_minutes,
-            "writer_engine": writer_engine,
-            "writer_online_at_start": writer_online_at_start,
-            "manual_script": manual_only,
-            "fallback_used": script_meta.get("fallback_used"),
-            "line_source_counts": script_meta.get("line_source_counts", {}),
-        },
-    )
-
-    background_tasks.add_task(
-        _run_produce_background,
-        episode_id=job["episode_id"],
+    return await approved_produce_episode(
+        background_tasks=background_tasks,
         job_id=job_id,
-        script=script,
-        title=title,
-        topic=topic,
-        script_text=script_text,
-        personality_settings=personality_settings,
-        voice_settings=voice_settings,
-        writer_engine=writer_engine,
-        bridge_reachable_at_start=writer_online_at_start,
+        payload=payload,
     )
-
-    return {
-        "status": "queued",
-        "mode": "segment",
-        "job_id": job_id,
-        "episode_id": job["episode_id"],
-        "target_minutes": target_minutes,
-        "word_count": est_words,
-        "manual_script": manual_only,
-        "message": "Segment production started in background.",
-    }

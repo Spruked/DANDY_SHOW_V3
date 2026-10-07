@@ -1,11 +1,13 @@
 // App.jsx — Dandy Studio root
 import { useState, useEffect } from 'react'
-import { Mic2, Radio, Image, Settings, Sliders, Trash2 } from 'lucide-react'
+import { Mic2, Radio, Image, Settings, Sliders, Trash2, FileText, Eye } from 'lucide-react'
 import EpisodeTab from './components/EpisodeTab'
 import AdTab      from './components/AdTab'
 import SocialTab  from './components/SocialTab'
 import SystemTab  from './components/SystemTab'
 import StudioConsole from './components/StudioConsole'
+import ProductionEditorTab from './components/ProductionEditorTab'
+import PreviewTab from './components/PreviewTab'
 import { api, req } from './lib/api'
 
 const TABS = [
@@ -14,13 +16,48 @@ const TABS = [
   { id: 'social',   label: 'SOCIAL',    icon: Image,    component: SocialTab  },
   { id: 'studio',   label: 'STUDIO',    icon: Sliders,  component: StudioConsole },
   { id: 'system',   label: 'SYSTEM',    icon: Settings, component: SystemTab  },
+  { id: 'preview', label: 'PREVIEW', icon: Eye, component: PreviewTab },
+  { id: 'production-editor', label: 'PRODUCTION EDITOR', icon: FileText, component: ProductionEditorTab },
 ]
 
 export default function App() {
-  const [activeTab, setActiveTab]     = useState('studio')
+  const [activeTab, setActiveTab] = useState(() => {
+    const requestedTab = window.location.hash.slice(1)
+    const rememberedTab = window.localStorage.getItem('dandyActiveTab')
+    if (TABS.some(tab => tab.id === requestedTab)) return requestedTab
+    return TABS.some(tab => tab.id === rememberedTab) ? rememberedTab : 'studio'
+  })
   const [backendOk, setBackendOk]     = useState(null)   // null = checking
   const [episodeId, setEpisodeId] = useState(null)
   const [deletingEpisode, setDeletingEpisode] = useState(false)
+
+  const navigateTab = (tabId) => {
+    if (!TABS.some(tab => tab.id === tabId)) return
+    setActiveTab(tabId)
+    if (window.location.hash !== `#${tabId}`) {
+      window.history.pushState({ dandyTab: tabId }, '', `${window.location.pathname}${window.location.search}#${tabId}`)
+    }
+  }
+
+  useEffect(() => {
+    window.localStorage.setItem('dandyActiveTab', activeTab)
+    if (window.location.hash !== `#${activeTab}`) {
+      window.history.replaceState({ dandyTab: activeTab }, '', `${window.location.pathname}${window.location.search}#${activeTab}`)
+    }
+  }, [activeTab])
+
+  useEffect(() => {
+    const syncTabFromUrl = () => {
+      const requestedTab = window.location.hash.slice(1)
+      if (TABS.some(tab => tab.id === requestedTab)) setActiveTab(requestedTab)
+    }
+    window.addEventListener('popstate', syncTabFromUrl)
+    window.addEventListener('hashchange', syncTabFromUrl)
+    return () => {
+      window.removeEventListener('popstate', syncTabFromUrl)
+      window.removeEventListener('hashchange', syncTabFromUrl)
+    }
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -64,7 +101,7 @@ export default function App() {
             <button
               key={id}
               className={`tab-btn${activeTab === id ? ' active' : ''}`}
-              onClick={() => setActiveTab(id)}
+              onClick={() => navigateTab(id)}
             >
               <Icon size={12} />
               {label}
@@ -101,7 +138,7 @@ export default function App() {
       </nav>
 
       {/* ── Active tab ── */}
-      <ActiveComponent episodeId={episodeId} onEpisodeChange={setEpisodeId} />
+      <ActiveComponent episodeId={episodeId} onEpisodeChange={setEpisodeId} onNavigate={navigateTab} />
     </div>
   )
 }

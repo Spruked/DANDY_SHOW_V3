@@ -6,15 +6,16 @@ $LogDir = Join-Path $PackageRoot "logs"
 New-Item -ItemType Directory -Force $LogDir | Out-Null
 
 $Port = 8020
-Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
-    ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
-
 $env:DANDY_SHOW_ROOT = $ShowRoot
 $env:DANDY_QWEN_BRIDGE_HOST = "0.0.0.0"
 $env:DANDY_QWEN_BRIDGE_PORT = "$Port"
 $env:DANDY_QWEN_BACKENDS = "http://127.0.0.1:8031,http://127.0.0.1:8032,http://127.0.0.1:8033"
 if (-not $env:DANDY_FFMPEG) {
-    $env:DANDY_FFMPEG = Join-Path $ShowRoot "staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe"
+    $MediaBin = Join-Path $ShowRoot "staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin"
+    if (-not (Test-Path -LiteralPath (Join-Path $MediaBin 'ffmpeg.exe'))) {
+        $MediaBin = Join-Path (Split-Path -Parent $ShowRoot) "Dandy\staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin"
+    }
+    $env:DANDY_FFMPEG = Join-Path $MediaBin 'ffmpeg.exe'
 }
 if (-not $env:DANDY_FFPROBE) {
     $env:DANDY_FFPROBE = Join-Path (Split-Path -Parent $env:DANDY_FFMPEG) "ffprobe.exe"
@@ -30,6 +31,17 @@ $Python = if ($env:DANDY_QWEN_PYTHON) {
 if (-not (Test-Path $Python)) {
     throw "Qwen Python runtime not found: $Python. Set DANDY_QWEN_PYTHON to the Windows CUDA Python 3.12 runtime."
 }
+foreach ($Tool in @($env:DANDY_FFMPEG, $env:DANDY_FFPROBE)) {
+    if (-not (Test-Path -LiteralPath $Tool -PathType Leaf)) {
+        throw "Qwen media tool not found: $Tool. Set DANDY_FFMPEG and DANDY_FFPROBE to existing binaries."
+    }
+}
+$env:PATH = "$(Split-Path -Parent $env:DANDY_FFMPEG);$(Split-Path -Parent $env:DANDY_FFPROBE);$env:PATH"
+$env:PYTHONIOENCODING = 'utf-8'
+$env:PYTHONUNBUFFERED = '1'
+
+Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+    ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
 $OutLog = Join-Path $LogDir "qwen-bridge-$Port.out.log"
 $ErrLog = Join-Path $LogDir "qwen-bridge-$Port.err.log"
 
@@ -44,3 +56,5 @@ $Process = Start-Process `
 
 Write-Output "Started Qwen TTS bridge pid=$($Process.Id)"
 Write-Output "Ready target: http://127.0.0.1:$Port"
+Write-Output "FFmpeg: $env:DANDY_FFMPEG"
+Write-Output "FFprobe: $env:DANDY_FFPROBE"

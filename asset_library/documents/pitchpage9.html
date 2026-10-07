@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=1280, height=720, initial-scale=1.0" name="viewport" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080818;
+      --bg-card: #13132b;
+      --text: #eeeeff;
+      --text-muted: #9090b8;
+      --accent: #8b5cf6;
+      --accent-glow: rgba(139, 92, 246, 0.35);
+      --accent-dim: rgba(139, 92, 246, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0; padding: 0;
+      width: 1280px; height: 720px;
+      overflow: hidden;
+      font-family: 'Calibri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text) !important;
+      font-family: 'Calibri Light', sans-serif;
+    }
+
+    /* Subtle grid background */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Top ambient glow */
+    .ambient-glow {
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(139,92,246,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Header zone */
+    .header-zone {
+      position: relative;
+      z-index: 10;
+      padding: 28px 56px 0;
+    }
+
+    .slide-eyebrow {
+      font-family: 'Calibri', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .slide-title {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 30px;
+      font-weight: 300;
+      color: var(--text) !important;
+      line-height: 1.15;
+      margin: 0 0 4px;
+    }
+
+    .slide-title span {
+      color: var(--accent);
+    }
+
+    .slide-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      max-width: 820px;
+      margin: 0;
+    }
+
+    /* Columns layout */
+    .columns-wrapper {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      gap: 0;
+      padding: 16px 48px 0;
+      height: 470px;
+    }
+
+    .col {
+      flex: 1;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .col-left { padding-left: 8px; padding-right: 32px; }
+    .col-right { padding-left: 32px; padding-right: 8px; }
+
+    .col-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(139,92,246,0.25);
+    }
+
+    .col-header-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(139,92,246,0.4);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .col-header-icon svg {
+      color: var(--accent);
+    }
+
+    .col-header-title {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text) !important;
+      letter-spacing: 0.3px;
+      line-height: 1.2;
+    }
+
+    /* Bullet items */
+    .bullet-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bullet-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.35;
+      padding: 5px 8px;
+      border-radius: 6px;
+      transition: background 0.2s;
+      background: transparent;
+    }
+
+    .bullet-item:hover { background: var(--accent-dim); }
+
+    .bullet-dot {
+      flex-shrink: 0;
+      margin-top: 4px;
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 5px var(--accent-glow);
+    }
+
+    /* Glowing divider */
+    .divider-wrapper {
+      width: 2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
+      flex-shrink: 0;
+    }
+
+    .divider-line {
+      width: 2px;
+      flex: 1;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(139,92,246,0.6) 15%,
+        rgba(139,92,246,1) 40%,
+        rgba(139,92,246,1) 60%,
+        rgba(139,92,246,0.6) 85%,
+        transparent 100%
+      );
+      border-radius: 2px;
+      box-shadow: 0 0 12px 2px rgba(139,92,246,0.6), 0 0 28px 4px rgba(139,92,246,0.25);
+      position: relative;
+    }
+
+    .divider-line::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 16px 4px rgba(139,92,246,0.9);
+    }
+
+    /* Bottom strip */
+    .bottom-strip {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      height: 54px;
+      background: linear-gradient(90deg, rgba(139,92,246,0.22) 0%, rgba(139,92,246,0.10) 50%, rgba(139,92,246,0.22) 100%);
+      border-top: 1px solid rgba(139,92,246,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 0 56px;
+    }
+
+    .bottom-strip-icon {
+      flex-shrink: 0;
+      color: var(--accent);
+      opacity: 0.9;
+    }
+
+    .bottom-strip-text {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.2px;
+      text-align: center;
+    }
+
+    .bottom-strip-text em {
+      font-style: normal;
+      color: var(--accent);
+      font-family: 'Calibri', sans-serif;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body data-id="0">
+
+  <!-- Background grid -->
+  <div data-id="1" class="bg-grid"></div>
+  <!-- Ambient glow -->
+  <div data-id="2" class="ambient-glow"></div>
+
+  <!-- Header -->
+  <div data-id="3" id="header-zone-k2mx" class="header-zone">
+    <div data-id="4" id="eyebrow-r9vt" class="slide-eyebrow">The Pointer System</div>
+    <h2 data-id="5" id="slide-title-p8wq" class="slide-title">
+      Precision Targeting for <span data-id="6">AI Navigation.</span>
+    </h2>
+    <p data-id="7" id="slide-subtitle-j3nf" class="slide-subtitle">
+      ORB Weaver builds the world's only automated pointer intelligence layer for websites — making AI interaction exact.
+    </p>
+  </div>
+
+  <!-- Columns -->
+  <div data-id="8" id="columns-wrapper-b7ks" class="columns-wrapper">
+
+    <!-- LEFT COLUMN -->
+    <div data-id="9" id="col-left-m4xp" class="col col-left">
+      <div data-id="10" id="col-left-header-z9qr" class="col-header">
+        <div data-id="11" class="col-header-icon">
+          <!-- Crosshair / target icon -->
+          <svg data-id="12" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle data-id="13" cx="12" cy="12" r="10"/>
+            <circle data-id="14" cx="12" cy="12" r="3"/>
+            <line data-id="15" x1="12" y1="2" x2="12" y2="6"/>
+            <line data-id="16" x1="12" y1="18" x2="12" y2="22"/>
+            <line data-id="17" x1="2" y1="12" x2="6" y2="12"/>
+            <line data-id="18" x1="18" y1="12" x2="22" y2="12"/>
+          </svg>
+        </div>
+        <div data-id="19" id="col-left-title-n2ws" class="col-header-title">What the Pointer System Collects</div>
+      </div>
+      <ul data-id="20" id="bullet-list-left-c5ht" class="bullet-list">
+        <li data-id="21" class="bullet-item"><span data-id="22" class="bullet-dot"></span><span data-id="23">Element bounding-box and screen-position collection</span></li>
+        <li data-id="24" class="bullet-item"><span data-id="25" class="bullet-dot"></span><span data-id="26">Pointer-target extraction from every interactive element</span></li>
+        <li data-id="27" class="bullet-item"><span data-id="28" class="bullet-dot"></span><span data-id="29">Pointer-anchor generation and pointer-manifest generation</span></li>
+        <li data-id="30" class="bullet-item"><span data-id="31" class="bullet-dot"></span><span data-id="32">Pointer plot-map generation for full visual targeting</span></li>
+        <li data-id="33" class="bullet-item"><span data-id="34" class="bullet-dot"></span><span data-id="35">Pointer-target alias generation (multiple names per target)</span></li>
+        <li data-id="36" class="bullet-item"><span data-id="37" class="bullet-dot"></span><span data-id="38">Target-to-route, target-to-section, and target-to-control mapping</span></li>
+        <li data-id="39" class="bullet-item"><span data-id="40" class="bullet-dot"></span><span data-id="41">Scroll-target and viewport-target mapping</span></li>
+        <li data-id="42" class="bullet-item"><span data-id="43" class="bullet-dot"></span><span data-id="44">Fixed and sticky element detection</span></li>
+        <li data-id="45" class="bullet-item"><span data-id="46" class="bullet-dot"></span><span data-id="47">Overlay, z-order, and depth relationship detection</span></li>
+        <li data-id="48" class="bullet-item"><span data-id="49" class="bullet-dot"></span><span data-id="50">DOM anchor collection and ARIA-label binding</span></li>
+      </ul>
+    </div>
+
+    <!-- GLOWING DIVIDER -->
+    <div data-id="51" id="divider-wrapper-x7cv" class="divider-wrapper">
+      <div data-id="52" id="divider-line-q3ht" class="divider-line"></div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div data-id="53" id="col-right-w8jl" class="col col-right">
+      <div data-id="54" id="col-right-header-f2nk" class="col-header">
+        <div data-id="55" class="col-header-icon">
+          <!-- Zap / lightning icon -->
+          <svg data-id="56" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon data-id="57" points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div data-id="58" id="col-right-title-d6yp" class="col-header-title">What This Enables for AI Agents</div>
+      </div>
+      <ul data-id="59" id="bullet-list-right-v4mb" class="bullet-list">
+        <li data-id="60" class="bullet-item"><span data-id="61" class="bullet-dot"></span><span data-id="62">Zero-guess interaction — AI clicks exactly the right element every time</span></li>
+        <li data-id="63" class="bullet-item"><span data-id="64" class="bullet-dot"></span><span data-id="65">Separate mobile and desktop pointer maps for responsive sites</span></li>
+        <li data-id="66" class="bullet-item"><span data-id="67" class="bullet-dot"></span><span data-id="68">Alias resolution — AI understands <em data-id="69" style="color:var(--accent);font-style:normal;">login button</em>, <em data-id="70" style="color:var(--accent);font-style:normal;">sign in</em>, and <em data-id="71" style="color:var(--accent);font-style:normal;">account access</em> as one target</span></li>
+        <li data-id="72" class="bullet-item"><span data-id="73" class="bullet-dot"></span><span data-id="74">Broken, missing, duplicate, and ambiguous target detection before deployment</span></li>
+        <li data-id="75" class="bullet-item"><span data-id="76" class="bullet-dot"></span><span data-id="77">Pointer-map refresh when site changes</span></li>
+        <li data-id="78" class="bullet-item"><span data-id="79" class="bullet-dot"></span><span data-id="80">Stage-aware targeting — AI knows which pointer belongs to which workflow stage</span></li>
+      </ul>
+
+      <!-- Right-side decorative visual -->
+      <div data-id="81" id="deco-panel-r3wq" style="margin-top: auto; padding-top: 14px; display: flex; gap: 10px; align-items: stretch;">
+        <div data-id="82" style="flex: 1; background: var(--accent-dim); border: 1px solid rgba(139,92,246,0.25); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 8px;">
+          <svg data-id="83" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline data-id="84" points="20 6 9 17 4 12"/></svg>
+          <span data-id="85" style="font-size: 11.5px; color: var(--text-muted);">Zero ambiguity</span>
+        </div>
+        <div data-id="86" style="flex: 1; background: var(--accent-dim); border: 1px solid rgba(139,92,246,0.25); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 8px;">
+          <svg data-id="87" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline data-id="88" points="20 6 9 17 4 12"/></svg>
+          <span data-id="89" style="font-size: 11.5px; color: var(--text-muted);">Always current</span>
+        </div>
+        <div data-id="90" style="flex: 1; background: var(--accent-dim); border: 1px solid rgba(139,92,246,0.25); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 8px;">
+          <svg data-id="91" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline data-id="92" points="20 6 9 17 4 12"/></svg>
+          <span data-id="93" style="font-size: 11.5px; color: var(--text-muted);">Stage-aware</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom strip -->
+  <div data-id="94" id="bottom-strip-g6nq" class="bottom-strip">
+    <div data-id="95" class="bottom-strip-icon">
+      <svg data-id="96" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path data-id="97" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+    <p data-id="98" id="bottom-strip-text-h5jm" class="bottom-strip-text">
+      The Pointer System is what separates <em data-id="99">ORB Weaver</em> from every web scraper and crawler on the market.
+    </p>
+    <div data-id="100" class="bottom-strip-icon">
+      <svg data-id="101" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path data-id="102" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+  </div>
+
+</body>
+</html>

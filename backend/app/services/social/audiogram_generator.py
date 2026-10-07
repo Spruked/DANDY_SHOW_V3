@@ -84,6 +84,10 @@ def generate_audiogram(
     image_cues: List[Dict] | None = None,
     background_image_path: str | None = None,
     config_overrides: Dict | None = None,
+    visual_mode: str = "waveform",
+    visual_asset_path: str | None = None,
+    visual_asset_paths: List[str] | None = None,
+    visual_clip_start: float = 0.0,
 ) -> str:
     config = _load_config()
     config.update(config_overrides or {})
@@ -101,9 +105,14 @@ def generate_audiogram(
         return ""
 
     vcodec = config["codec_cuda"] if torch.cuda.is_available() else config["codec_cpu"]
+    show_waveform = bool(config.get("show_waveform", True))
+    if visual_mode == "waveform":
+        show_waveform = True
+    elif visual_mode == "plain":
+        show_waveform = False
     filter_parts = [
         f"[0:a]showwaves=s={config['width']}x{config['height']}:mode={config['wave_mode']}:colors={config['wave_color']}:scale={config['wave_scale']},format=rgba,colorkey=0x000000:0.12:0.08[wave]"
-    ] if config.get("show_waveform", True) else []
+    ] if show_waveform else []
 
     inputs = [
         ffmpeg_path,
@@ -112,28 +121,38 @@ def generate_audiogram(
         str(audio_path),
     ]
 
-    resolved_bg = _resolve_path(background_image_path) or _resolve_path(config.get("background_image_path"))
-    if resolved_bg and resolved_bg.exists():
+    resolved_bg = _resolve_path(visual_asset_path) or _resolve_path(background_image_path) or _resolve_path(config.get("background_image_path"))
+    resolved_slides = [_resolve_path(path) for path in (visual_asset_paths or [])]
+    resolved_slides = [path for path in resolved_slides if path and path.is_file()]
+    next_input_index = 1
+    if visual_mode == "video" and resolved_bg and resolved_bg.is_file():
+        inputs.extend(["-stream_loop", "-1", "-ss", str(max(0.0, float(visual_clip_start))), "-i", str(resolved_bg)])
+        filter_parts.append(f"[1:v]scale={config['width']}:{config['height']}:force_original_aspect_ratio=increase,crop={config['width']}:{config['height']},fps={config['fps']},setsar=1[bg]")
+        next_input_index = 2
+    elif visual_mode == "slideshow" and resolved_slides:
+        segment_duration = max(0.5, float(config.get("output_duration", 60.0)) / len(resolved_slides))
+        slide_labels = []
+        for idx, slide_path in enumerate(resolved_slides[:8]):
+            input_index = idx + 1
+            inputs.extend(["-loop", "1", "-t", str(segment_duration), "-i", str(slide_path)])
+            label = f"[slide{idx}]"
+            filter_parts.append(f"[{input_index}:v]scale={config['width']}:{config['height']}:force_original_aspect_ratio=increase,crop={config['width']}:{config['height']},fps={config['fps']},setsar=1,setpts=PTS-STARTPTS{label}")
+            slide_labels.append(label)
+        filter_parts.append(f"{''.join(slide_labels)}concat=n={len(slide_labels)}:v=1:a=0[bg]")
+        next_input_index = len(slide_labels) + 1
+    elif visual_mode in {"image", "slideshow", "waveform"} and resolved_bg and resolved_bg.is_file():
         inputs.extend(["-loop", "1", "-i", str(resolved_bg)])
-        filter_parts.append(
-            f"[1:v]scale={config['width']}:{config['height']}:force_original_aspect_ratio=increase,crop={config['width']}:{config['height']}[bg]"
-        )
-        bg_label = "[bg]"
+        filter_parts.append(f"[1:v]scale={config['width']}:{config['height']}:force_original_aspect_ratio=increase,crop={config['width']}:{config['height']},fps={config['fps']},setsar=1[bg]")
         next_input_index = 2
     else:
-        inputs.extend(
-            [
-                "-f",
-                "lavfi",
-                "-i",
-                f"color=c={config['background_color']}:s={config['width']}x{config['height']}:r={config['fps']}",
-            ]
-        )
+        inputs.extend(["-f", "lavfi", "-i", f"color=c={config['background_color']}:s={config['width']}x{config['height']}:r={config['fps']}"])
         filter_parts.append("[1:v]format=rgba[bg]")
-        bg_label = "[bg]"
         next_input_index = 2
 
-    filter_parts.append(f"{bg_label}[wave]overlay=0:0[base]" if config.get("show_waveform", True) else f"{bg_label}null[base]")
+    if show_waveform:
+        filter_parts.append("[bg][wave]overlay=0:0[base]")
+    else:
+        filter_parts.append("[bg]null[base]")
     current = "[base]"
 
     resolved_logo = _resolve_path(config.get("logo_path"))
@@ -223,6 +242,8 @@ def generate_audiogram(
         "-r",
         str(config["fps"]),
         "-shortest",
+        "-t",
+        str(config.get("output_duration", 600.0)),
         str(output_path),
     ]
 

@@ -1,0 +1,108 @@
+{
+  "episode_id": "ep_1791247143016",
+  "review_id": "preview_v0001",
+  "canonical_version_id": "canonical_v0001",
+  "canonical_source_hash": "032d25c2483de3b55384ac1e9b4dd246942a8b9edf215e2af7dd80db9a9624f8",
+  "overall_notes": "Test review: several lines are truncated, middle section becomes repetitive, and some claims need review before production.",
+  "line_reviews": {
+    "canonical_v0001_line_0022_257dc027": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0003_df5a8922": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0013_f340d1d0": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0019_04d75b12": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0017_0efa1260": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0005_7c101166": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0014_644ee798": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0001_65f651f2": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0004_d47f3f5c": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0012_fcf0153f": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0024_16ab7721": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0016_fec71bd5": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0020_67b21ca7": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0007_0d985a6e": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0021_dd13fc07": {
+      "mark": "needs_attention",
+      "note": ""
+    },
+    "canonical_v0001_line_0015_48ba0cdb": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0009_28c7745d": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0008_f0e6720a": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0011_7db30fb3": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0023_3dea20d3": {
+      "mark": "needs_attention",
+      "note": ""
+    },
+    "canonical_v0001_line_0006_bdd5e40e": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0002_279c9c32": {
+      "mark": "needs_attention",
+      "note": ""
+    },
+    "canonical_v0001_line_0018_7f518267": {
+      "mark": "none",
+      "note": ""
+    },
+    "canonical_v0001_line_0010_eda056fe": {
+      "mark": "needs_attention",
+      "note": ""
+    }
+  },
+  "section_notes": {},
+  "updated_at": "2026-10-07T05:36:18.588205",
+  "preview_hash": "698be25309fd4ef4385870aaad6c7c3c4b893f9f82caec86d0d89c4f231e1a5c"
+}

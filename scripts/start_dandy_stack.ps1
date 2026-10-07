@@ -5,7 +5,7 @@ param(
     [switch]$NoQwen,
     [switch]$Reload,
     [ValidateSet("custom", "clone", "design")]
-    [string]$QwenMode = "custom",
+    [string]$QwenMode = "clone",
     [int]$BackendPort = 8110,
     [int]$FrontendPort = 5173,
     [string]$LlamaCppBaseUrl = "http://127.0.0.1:40343/v1",

@@ -89,3 +89,7 @@ class SocialExportRequest(BaseModel):
     quote_text: str = Field("", max_length=600)
     post_text: str = Field("", max_length=10000)
     show_waveform: bool = True
+    visual_mode: Literal["plain", "waveform", "image", "slideshow", "video"] = "waveform"
+    visual_asset_id: str = ""
+    visual_asset_ids: List[str] = Field(default_factory=list, max_length=8)
+    visual_clip_start: float = Field(0, ge=0)

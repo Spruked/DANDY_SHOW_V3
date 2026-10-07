@@ -1,0 +1,2277 @@
+{
+  "episode_id": "ep_1791247143016",
+  "draft_id": "draft_v0001",
+  "revision": 1,
+  "canonical_version_id": "canonical_v0001",
+  "canonical_source_hash": "032d25c2483de3b55384ac1e9b4dd246942a8b9edf215e2af7dd80db9a9624f8",
+  "production_copy_hash": "1a7e301efc98c6d838aefea6594923a1a442287228c6dabdd90caaf44a8cabb0",
+  "environment_hash": "6e818c1e2b2fbc41ee8014f3ca61c89a42d2070ce5200c81e7faae483654ca37",
+  "environment_snapshot": {
+    "episode_config": {
+      "episode_id": "ep_1791247143016",
+      "title": "When Everything Became Disposable — Why We Stopped Fixing Things",
+      "topic": "Phil and Jim explore why everyday products, vehicles, appliances, electronics, tools, and machinery have become increasingly difficult or expensive to repair. The discussion should compare the older repair culture they grew up around—where equipment was expected to be opened, diagnosed, repaired, rebuilt, and kept in service—with today's products that may depend on sealed components, proprietary software, specialized diagnostic equipment, serialized parts, unavailable schematics, or complete module replacement. The conversation is not simply about blaming manufacturers. Examine the economic and technical reasons this happened: cheaper mass production, miniaturization, labor costs, safety requirements, software integration, consumer demand for smaller and more capable products, supply chains, warranties, and rapid product cycles. Phil and Jim should also consider the consequences for consumers, independent repair shops, mechanics, farmers, hobbyists, and small businesses.",
+      "description": "There was a time when a broken machine usually meant somebody grabbed a toolbox.\nA washing machine could be opened. A television repairman could replace a component instead of the entire television. A farmer could work on a tractor without connecting it to a manufacturer's computer. A mechanic could diagnose a vehicle with experience, a service manual, and a meter. Even household appliances were often expected to last long enough that repairing them made economic sense.\nThat world has changed.\nModern products are enormously more capable than the equipment Phil and Jim grew up around, but that capability has also brought complexity. Mechanical controls became electronic modules. Electronic modules became networked computers. Individual components became integrated assemblies. Software became part of the product, and increasingly, software determines whether replacement hardware will even function.\nSometimes replacing an entire module really is cheaper and more reliable than repairing one component inside it. Sometimes sealed construction improves safety, waterproofing, efficiency, or manufacturing cost. But sometimes repair becomes difficult because parts, documentation, diagnostic access, software tools, or authorization remain controlled by the manufacturer.\nThat creates a larger question than whether somebody can fix a broken toaster.\nWhat happens to ownership when buying something no longer necessarily gives the owner full control over maintaining it?\nWhat happens to independent mechanics and repair shops when diagnostics become proprietary?\nWhy can a technically sophisticated product sometimes become economically disposable because a twenty-dollar component is buried inside a five-hundred-dollar assembly?\nAnd are consumers partly responsible because we continually demand cheaper, smaller, faster, thinner, more complicated products?\nPhil and Jim should examine both sides rather than treating modern manufacturing as automatically bad. Older machines were often repairable, but they could also be inefficient, dangerous, heavy, unreliable, or expensive to manufacture. Modern products frequently offer capabilities that would have seemed impossible thirty years ago.\nThe real discussion is about the tradeoff:\nHave we gained so much capability and manufacturing efficiency that we accidentally designed repairability out of everyday life?\nThe brothers can draw from machinery, automobiles, farm equipment, appliances, electronics, tools, and ordinary experiences of trying to repair something that should have been simple.\nThe episode should ultimately ask whether the next generation of products can combine modern technology with something older machines often had naturally: the expectation that they could be understood, serviced, repaired, and kept running.\n",
+      "key_points": [
+        "The old expectation that machines were designed to be repaired rather than replaced.",
+        "Why modern electronics and software made products both better and harder to service.",
+        "Repairing individual components versus replacing entire assemblies.",
+        "Why inexpensive mass production sometimes makes professional repair economically irrational.",
+        "Proprietary diagnostics, serialized components, software locks, and manufacturer-controlled service tools.",
+        "What independent mechanics and repair businesses lose when technical information becomes restricted.",
+        "Examples from cars, tractors, appliances, power tools, phones, televisions, and industrial machinery.",
+        "How miniaturization, waterproofing, safety requirements, and efficiency can legitimately reduce repairability.",
+        "The difference between deliberate planned obsolescence and products simply becoming obsolete quickly because technology advances.",
+        "Whether consumers helped create the problem by prioritizing low prices and constant upgrades.",
+        "Environmental consequences of replacing products instead of repairing them.",
+        "The right-to-repair movement and the larger question of what ownership actually means.",
+        "Whether modern manufacturing could deliberately restore modularity and serviceability without giving up modern capability.",
+        "What Phil and Jim personally consider worth repairing versus replacing.",
+        "Whether knowing how things work is itself becoming a disappearing skill."
+      ],
+      "target_duration": 300,
+      "segment_duration_seconds": 300,
+      "custom_instructions": "Keep the discussion practical and conversational. Phil and Jim should not lecture from a prepared article. They should question each other, disagree occasionally, introduce examples, challenge assumptions, and progressively discover the larger issue.\nDo not repeatedly redefine repairability or right-to-repair.\nEach new part of the conversation should introduce a new mechanism, example, consequence, objection, or implication.\nEnd with a practical question rather than a grand political conclusion: when we buy something, should we expect to be able to understand it, maintain it, and keep it alive?\n",
+      "intensity": "medium",
+      "generation_mode": "ai_generate",
+      "provided_script": null,
+      "expand_short_script": false,
+      "target_word_count": 450,
+      "target_minutes": 5,
+      "updated_at": "2026-10-06T12:51:12.400524"
+    },
+    "ads": [],
+    "ad_settings": {},
+    "saved_media_cues": [],
+    "project_config": {
+      "project": {
+        "name": "Phil and Jim Dandy Show",
+        "mode": "private_internal_studio",
+        "operator_count": 1
+      },
+      "paths": {
+        "project_root": ".",
+        "episodes_root": "./episodes",
+        "logs_root": "./logs",
+        "staging_root": "./staging",
+        "archive_root": "./archive",
+        "frontend_root": "./frontend",
+        "backend_root": "./backend",
+        "config_root": "./config"
+      },
+      "dashboard": {
+        "ui_reference_source": "frontend/src/components/StudioTab.jsx",
+        "preserve_high_control_surface": true,
+        "minimal_redesign": true
+      },
+      "tts": {
+        "primary_engine": "qwen",
+        "fallback_engine": "none",
+        "preferred_device": "cuda",
+        "fallback_device": "cpu",
+        "allow_cpu_fallback": true,
+        "kokoro_repo_path": "./backend/app/services/tts/kokoro-tts",
+        "voices_config": "./config/voices.json",
+        "allowed_engines": [
+          "kokoro",
+          "qwen"
+        ]
+      },
+      "production": {
+        "default_target_duration_seconds": 2400,
+        "spoken_wpm": 90,
+        "default_intensity": "medium",
+        "auto_save_drafts": true,
+        "drafts_root": "./episodes/.drafts"
+      },
+      "social": {
+        "enabled": true,
+        "templates_root": "./social/templates",
+        "generated_root": "./social/generated",
+        "presets_config": "./config/social_presets.json",
+        "default_brand_theme": "midnight_amber",
+        "default_disclosure_text": "Sponsored",
+        "generate_platform_package": true
+      },
+      "audio": {
+        "jingles_root": "./audio/jingles",
+        "jingles": {
+          "intro": "./asset_library/sfx/introclip.mp3",
+          "outro": "./asset_library/sfx/introclip.mp3",
+          "bumper_in": null,
+          "bumper_out": null,
+          "bed_loop": null
+        },
+        "intro_trim_seconds": 0,
+        "outro_trim_seconds": 0,
+        "intro_fade_out_seconds": 2.0,
+        "outro_fade_in_seconds": 2.0,
+        "jingle_gain_db": -6
+      },
+      "intro_outro": {
+        "enabled": true,
+        "narration_enabled": false,
+        "music_file": "./asset_library/sfx/introclip.mp3",
+        "intro": {
+          "clip_start_ms": 0,
+          "clip_duration_ms": 10000,
+          "clip_start_variants_ms": [
+            0,
+            3000,
+            6000
+          ],
+          "clip_duration_variants_ms": [
+            8000,
+            10000,
+            12000
+          ],
+          "music_fade_in_ms": 1200,
+          "music_fade_out_ms": 2000,
+          "duck_start_ms": 4000,
+          "duck_db": -18,
+          "announcer_text": "And now... the Phil and Jiiiiiimmmmm Dandyyyy Shooowwwww!",
+          "announcer_voice": "am_eric",
+          "silence_after_ms": 800,
+          "pause_duration_ms": 700
+        },
+        "outro": {
+          "clip_start_ms": 0,
+          "clip_duration_ms": 10000,
+          "clip_start_variants_ms": [
+            0,
+            3000,
+            6000
+          ],
+          "clip_duration_variants_ms": [
+            8000,
+            10000,
+            12000
+          ],
+          "music_fade_in_ms": 2000,
+          "music_fade_out_ms": 3000,
+          "announcer_text": "That is a wrap on today's Phil and Jim Dandy Show.[pause] Thanks for listening. We will see you next time.",
+          "announcer_voice": "am_eric",
+          "silence_before_ms": 600,
+          "pause_duration_ms": 700
+        }
+      },
+      "sfx": {
+        "enabled": true,
+        "gain_db": -12,
+        "events": [
+          {
+            "slug": "papers_rustling",
+            "mode": "overlay",
+            "position": "after_intro",
+            "offset_ms": 800,
+            "gain_db": -18,
+            "fade_in_ms": 600,
+            "fade_out_ms": 2000
+          },
+          {
+            "slug": "papers_shuffling",
+            "mode": "overlay",
+            "position": "after_intro",
+            "offset_ms": 3000,
+            "gain_db": -20,
+            "fade_in_ms": 400,
+            "fade_out_ms": 1500
+          },
+          {
+            "slug": "phone_ring_distant",
+            "mode": "overlay",
+            "position": "before_outro",
+            "offset_ms": 5000,
+            "gain_db": -16,
+            "fade_in_ms": 0,
+            "fade_out_ms": 800
+          },
+          {
+            "slug": "drawer_open",
+            "mode": "overlay",
+            "position": "after_intro",
+            "offset_ms": 1200,
+            "gain_db": -14,
+            "fade_in_ms": 0,
+            "fade_out_ms": 400
+          },
+          {
+            "slug": "keyboard_typing",
+            "mode": "overlay",
+            "position": "after_intro",
+            "offset_ms": 2000,
+            "gain_db": -20,
+            "fade_in_ms": 500,
+            "fade_out_ms": 2000
+          }
+        ]
+      },
+      "obs": {
+        "host": "127.0.0.1",
+        "port": 4455,
+        "password": "5Fxn3K1EsgjQH4TO",
+        "timeout_seconds": 2.5
+      }
+    },
+    "voices_config": {
+      "phil": {
+        "character_file": "./phil_dandy_skg.py",
+        "display_name": "Phil Dandy",
+        "primary_engine": "qwen",
+        "primary_voice": "am_michael",
+        "qwen_voice_prompt": null,
+        "qwen_reference_audio": "./asset_library/voice/phildandyclone.wav",
+        "qwen_reference_text": "Well, Jim, that's the thing about a good idea. It usually sounds a little crazy right up until somebody actually builds it. Then everybody wonders why we weren't doing it that way all along.",
+        "qwen_voice_instruction": "Phil Dandy: curious, energetic younger-brother host; warm, quick, conversational cadence.",
+        "defaults": {
+          "speed": 1.1,
+          "pitch": 0.2,
+          "volume": 1.0
+        }
+      },
+      "jim": {
+        "character_file": "./Jim_dandy_skg.py",
+        "display_name": "Jim Dandy",
+        "primary_engine": "qwen",
+        "primary_voice": "am_liam",
+        "qwen_voice_prompt": null,
+        "qwen_reference_audio": "./asset_library/voice/jimdandyclone.wav",
+        "qwen_reference_text": "Phil, that sounds good on paper, but I want to know what happens when somebody actually has to use it. If it saves money, makes sense, and doesn't create three new problems, then you've got my attention.",
+        "qwen_voice_instruction": "Jim Dandy: grounded, practical older-brother host; dry, measured, skeptical, clear.",
+        "defaults": {
+          "speed": 1.0,
+          "pitch": 0.0,
+          "volume": 0.95
+        }
+      },
+      "bryan": {
+        "character_file": "",
+        "display_name": "Bryan — Producer",
+        "primary_engine": "qwen",
+        "primary_voice": "bryan",
+        "qwen_voice_prompt": "./asset_library/voice/bryan_voice.pt",
+        "qwen_voice_instruction": "Bryan, the off-mic producer in the background: natural, conversational, occasionally amused or exasperated by the show noise.",
+        "producer_mode_default": "producer_background",
+        "modes": {
+          "producer_background": {
+            "gain_db": -8,
+            "instruction": "Bryan is the off-mic producer physically in the room. Speak softly, briefly, and from a slight distance. React only to studio activity or when Phil or Jim addresses you. Do not explain the episode topic."
+          },
+          "producer_on_mic": {
+            "gain_db": 0,
+            "instruction": "Bryan is intentionally on mic for a special announcement or producer segment. Speak clearly and naturally as the producer, without becoming a regular host."
+          }
+        },
+        "defaults": {
+          "speed": 1.0,
+          "pitch": 0.0,
+          "volume": 0.9
+        }
+      },
+      "host": {
+        "display_name": "Host",
+        "primary_engine": "kokoro",
+        "primary_voice": "am_eric",
+        "defaults": {
+          "speed": 1.0,
+          "pitch": 0.0,
+          "volume": 1.0
+        }
+      },
+      "guest": {
+        "display_name": "Guest",
+        "primary_engine": "kokoro",
+        "primary_voice": "bf_emma",
+        "defaults": {
+          "speed": 1.0,
+          "pitch": 0.0,
+          "volume": 1.0
+        }
+      },
+      "announcer_male": {
+        "display_name": "Announcer Male",
+        "primary_engine": "kokoro",
+        "primary_voice": "am_eric",
+        "defaults": {
+          "speed": 1.05,
+          "pitch": 0.0,
+          "volume": 1.0
+        }
+      },
+      "announcer_female": {
+        "display_name": "Announcer Female",
+        "primary_engine": "kokoro",
+        "primary_voice": "bf_emma",
+        "defaults": {
+          "speed": 1.05,
+          "pitch": 0.3,
+          "volume": 1.0
+        }
+      }
+    },
+    "qwen_tts_config": {
+      "enabled": true,
+      "role": "selectable",
+      "bridge_url": "http://127.0.0.1:8020",
+      "operator_ui_url": "http://127.0.0.1:7861",
+      "custom_voice_url": "http://127.0.0.1:8031",
+      "clone_voice_url": "http://127.0.0.1:8032",
+      "chunking": {
+        "preferred_min": 120,
+        "preferred_max": 190,
+        "hard_max": 220,
+        "sentence_pause_ms": 425,
+        "clause_pause_ms": 200,
+        "speaker_change_pause_ms": 550
+      },
+      "timeouts": {
+        "health_seconds": 3,
+        "synthesis_seconds": 180
+      },
+      "voices": {
+        "phil": "Ryan",
+        "jim": "Eric",
+        "bryan": "Bryan",
+        "announcer_male": "Ryan",
+        "announcer_female": "Serena",
+        "host": "Ryan",
+        "guest": "Aiden"
+      },
+      "instructions": {
+        "phil": "A curious, energetic younger-brother host voice. Warm, quick, conversational, with clean cadence.",
+        "jim": "A grounded, practical older-brother host voice. Dry, measured, skeptical, and clear.",
+        "bryan": "The off-mic producer in the background. Natural, conversational, occasionally amused or exasperated by studio noise.",
+        "announcer_male": "A confident radio announcer voice with polished articulation.",
+        "announcer_female": "A warm professional announcer voice with steady pacing.",
+        "host": "A clear studio host voice with natural pacing.",
+        "guest": "A natural guest voice with clear pronunciation."
+      },
+      "production": {
+        "enabled": true,
+        "explicit_selection_enabled": true,
+        "use_as_secondary_fallback": false,
+        "fallback_provider": "none",
+        "store_outputs_under_episode": true
+      }
+    },
+    "saved_cue_asset_hashes": [],
+    "ad_audio_hashes": []
+  },
+  "script": [
+    {
+      "speaker": "phil",
+      "text": "Why do everyday products become more expensive to repair over time?",
+      "emotion": "warm",
+      "pause_after": 0.2,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 1,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0001_65f651f2",
+      "source_canonical_line_id": "canonical_v0001_line_0001_65f651f2",
+      "production_line_id": "pl_8e4d31bc0eb64190a83fd737991e6dd0",
+      "original_text": "Why do everyday products become more expensive to repair over time?",
+      "spoken_text": "Why do everyday products become more expensive to repair over time?",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "Because they get smarter. Like how cars used to come with a manual and you could fix anything on it without any special tools... but now they're all about black boxes and you need",
+      "emotion": "neutral",
+      "pause_after": 0.24,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 2,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0002_279c9c32",
+      "source_canonical_line_id": "canonical_v0001_line_0002_279c9c32",
+      "production_line_id": "pl_53b5bf80dba444f6acc9c568005d165f",
+      "original_text": "Because they get smarter. Like how cars used to come with a manual and you could fix anything on it without any special tools... but now they're all about black boxes and you need",
+      "spoken_text": "Because they get smarter. Like how cars used to come with a manual and you could fix anything on it without any special tools... but now they're all about black boxes and you need",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "Oh, that's right! The shift from mechanical to electrical systems made diagnosis easier because of the digital information in cars. But wait, why does that make repairs harder? It",
+      "emotion": "warm",
+      "pause_after": 0.38,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 3,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0003_df5a8922",
+      "source_canonical_line_id": "canonical_v0001_line_0003_df5a8922",
+      "production_line_id": "pl_efd19d3b0f2c4ed8a0b6a5afe3074052",
+      "original_text": "Oh, that's right! The shift from mechanical to electrical systems made diagnosis easier because of the digital information in cars. But wait, why does that make repairs harder? It",
+      "spoken_text": "Oh, that's right! The shift from mechanical to electrical systems made diagnosis easier because of the digital information in cars. But wait, why does that make repairs harder? It",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "Because with each upgrade, manufacturers add more layers of complexity. Each new feature requires additional sensors and software, so the tools needed become more specialized. You",
+      "emotion": "neutral",
+      "pause_after": 0.38,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 4,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0004_d47f3f5c",
+      "source_canonical_line_id": "canonical_v0001_line_0004_d47f3f5c",
+      "production_line_id": "pl_dc735d26e93a498e9b3a685a0654a5ef",
+      "original_text": "Because with each upgrade, manufacturers add more layers of complexity. Each new feature requires additional sensors and software, so the tools needed become more specialized. You",
+      "spoken_text": "Because with each upgrade, manufacturers add more layers of complexity. Each new feature requires additional sensors and software, so the tools needed become more specialized. You",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "The idea of cars being more complex now seems a bit daunting. I can see how each upgrade adds layers.",
+      "emotion": "warm",
+      "pause_after": 0.22,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 5,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0005_7c101166",
+      "source_canonical_line_id": "canonical_v0001_line_0005_7c101166",
+      "production_line_id": "pl_6ac06823330e406f8c9b5331c3593503",
+      "original_text": "The idea of cars being more complex now seems a bit daunting. I can see how each upgrade adds layers.",
+      "spoken_text": "The idea of cars being more complex now seems a bit daunting. I can see how each upgrade adds layers.",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "Oh! So the problem isn't just about having more tools, but each tool being more specialized for specific models? That makes sense.",
+      "emotion": "warm",
+      "pause_after": 0.24,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 6,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0006_bdd5e40e",
+      "source_canonical_line_id": "canonical_v0001_line_0006_bdd5e40e",
+      "production_line_id": "pl_acf103076e784b16a3a5e3d607cfaa36",
+      "original_text": "Oh! So the problem isn't just about having more tools, but each tool being more specialized for specific models? That makes sense.",
+      "spoken_text": "Oh! So the problem isn't just about having more tools, but each tool being more specialized for specific models? That makes sense.",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "Exactly. Each car model might have its own unique software configuration. So if I fix a Tesla with a key fob, it doesn't help when I try to fix my SUV because the diagnostics are",
+      "emotion": "neutral",
+      "pause_after": 0.38,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 7,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0007_0d985a6e",
+      "source_canonical_line_id": "canonical_v0001_line_0007_0d985a6e",
+      "production_line_id": "pl_c3c47db39e594ee3a607caf7dde8744d",
+      "original_text": "Exactly. Each car model might have its own unique software configuration. So if I fix a Tesla with a key fob, it doesn't help when I try to fix my SUV because the diagnostics are",
+      "spoken_text": "Exactly. Each car model might have its own unique software configuration. So if I fix a Tesla with a key fob, it doesn't help when I try to fix my SUV because the diagnostics are",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "Interesting! It must be frustrating for mechanics to keep up with all these changes without proper training or access to updated diagnostic equipment.",
+      "emotion": "warm",
+      "pause_after": 0.22,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 8,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0008_f0e6720a",
+      "source_canonical_line_id": "canonical_v0001_line_0008_f0e6720a",
+      "production_line_id": "pl_9369156f61844908864e7ce91c1417e0",
+      "original_text": "Interesting! It must be frustrating for mechanics to keep up with all these changes without proper training or access to updated diagnostic equipment.",
+      "spoken_text": "Interesting! It must be frustrating for mechanics to keep up with all these changes without proper training or access to updated diagnostic equipment.",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "So if a car manufacturer updates its software, does that mean all existing mechanics lose access to the old diagnostics? That's scary because I know people who still use the same",
+      "emotion": "warm",
+      "pause_after": 0.24,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 9,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0009_28c7745d",
+      "source_canonical_line_id": "canonical_v0001_line_0009_28c7745d",
+      "production_line_id": "pl_a3c81942082d4b4c88d6d03bd80373d4",
+      "original_text": "So if a car manufacturer updates its software, does that mean all existing mechanics lose access to the old diagnostics? That's scary because I know people who still use the same",
+      "spoken_text": "So if a car manufacturer updates its software, does that mean all existing mechanics lose access to the old diagnostics? That's scary because I know people who still use the same",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "Exactly! Updates are usually backward incompatible with older diagnostic tools. So when Tesla updated their software for Model S, owners couldn't use their old key fobs anymore. It",
+      "emotion": "neutral",
+      "pause_after": 0.38,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 10,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0010_eda056fe",
+      "source_canonical_line_id": "canonical_v0001_line_0010_eda056fe",
+      "production_line_id": "pl_6eca0984b76b4188a553f9aa295284d8",
+      "original_text": "Exactly! Updates are usually backward incompatible with older diagnostic tools. So when Tesla updated their software for Model S, owners couldn't use their old key fobs anymore. It",
+      "spoken_text": "Exactly! Updates are usually backward incompatible with older diagnostic tools. So when Tesla updated their software for Model S, owners couldn't use their old key fobs anymore. It",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "That makes a lot of sense now. I can see how manufacturers would prioritize keeping the latest diagnostics to prevent issues and ensure compatibility without disrupting existing",
+      "emotion": "warm",
+      "pause_after": 0.24,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 11,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0011_7db30fb3",
+      "source_canonical_line_id": "canonical_v0001_line_0011_7db30fb3",
+      "production_line_id": "pl_7665b5f59ca14c74adc0d5bcabb81163",
+      "original_text": "That makes a lot of sense now. I can see how manufacturers would prioritize keeping the latest diagnostics to prevent issues and ensure compatibility without disrupting existing",
+      "spoken_text": "That makes a lot of sense now. I can see how manufacturers would prioritize keeping the latest diagnostics to prevent issues and ensure compatibility without disrupting existing",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "But wait, are all updates like that? What about older devices or appliances where they might have made some backward compatible options?",
+      "emotion": "neutral",
+      "pause_after": 0.32,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 12,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0012_fcf0153f",
+      "source_canonical_line_id": "canonical_v0001_line_0012_fcf0153f",
+      "production_line_id": "pl_80d61301d688451ebb004be724ce5e42",
+      "original_text": "But wait, are all updates like that? What about older devices or appliances where they might have made some backward compatible options?",
+      "spoken_text": "But wait, are all updates like that? What about older devices or appliances where they might have made some backward compatible options?",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "Interesting point! Maybe not all, but certainly many. I wonder if there's a trend towards making more backward compatible features available as manufacturers push for more updated",
+      "emotion": "warm",
+      "pause_after": 0.24,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 13,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0013_f340d1d0",
+      "source_canonical_line_id": "canonical_v0001_line_0013_f340d1d0",
+      "production_line_id": "pl_e15d74db9f724c5194c87eb044c19a53",
+      "original_text": "Interesting point! Maybe not all, but certainly many. I wonder if there's a trend towards making more backward compatible features available as manufacturers push for more updated",
+      "spoken_text": "Interesting point! Maybe not all, but certainly many. I wonder if there's a trend towards making more backward compatible features available as manufacturers push for more updated",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "Yes, the industry is noticing that too. There are now services where you can buy an updated version of older tools or even modify some devices to work with legacy diagnostics.",
+      "emotion": "neutral",
+      "pause_after": 0.38,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 14,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0014_644ee798",
+      "source_canonical_line_id": "canonical_v0001_line_0014_644ee798",
+      "production_line_id": "pl_032b8f27c1a44543b9bf2acec4bc4ca7",
+      "original_text": "Yes, the industry is noticing that too. There are now services where you can buy an updated version of older tools or even modify some devices to work with legacy diagnostics.",
+      "spoken_text": "Yes, the industry is noticing that too. There are now services where you can buy an updated version of older tools or even modify some devices to work with legacy diagnostics.",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "It's concerning how manufacturers are prioritizing software updates over hardware maintenance. It must be a huge financial burden on mechanics and hobbyists alike.",
+      "emotion": "warm",
+      "pause_after": 0.24,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 15,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0015_48ba0cdb",
+      "source_canonical_line_id": "canonical_v0001_line_0015_48ba0cdb",
+      "production_line_id": "pl_e53d033808d8430a90ab04a6ad78ec3b",
+      "original_text": "It's concerning how manufacturers are prioritizing software updates over hardware maintenance. It must be a huge financial burden on mechanics and hobbyists alike.",
+      "spoken_text": "It's concerning how manufacturers are prioritizing software updates over hardware maintenance. It must be a huge financial burden on mechanics and hobbyists alike.",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "But I suppose it's more about maximizing profit rather than customer satisfaction. After all, fixing tools becomes less feasible as the tech gets more complex and proprietary.",
+      "emotion": "neutral",
+      "pause_after": 0.22,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 16,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0016_fec71bd5",
+      "source_canonical_line_id": "canonical_v0001_line_0016_fec71bd5",
+      "production_line_id": "pl_e589d4f171f34d5e96ae2d63fd60fafc",
+      "original_text": "But I suppose it's more about maximizing profit rather than customer satisfaction. After all, fixing tools becomes less feasible as the tech gets more complex and proprietary.",
+      "spoken_text": "But I suppose it's more about maximizing profit rather than customer satisfaction. After all, fixing tools becomes less feasible as the tech gets more complex and proprietary.",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "Exactly! I remember when my car had a computerized emissions system; the diagnostics were all over the place. Mechanics said they couldn't even recognize the old codes anymore. It",
+      "emotion": "neutral",
+      "pause_after": 0.38,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 17,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0017_0efa1260",
+      "source_canonical_line_id": "canonical_v0001_line_0017_0efa1260",
+      "production_line_id": "pl_adda944d87b649da977a67175d1cb9c3",
+      "original_text": "Exactly! I remember when my car had a computerized emissions system; the diagnostics were all over the place. Mechanics said they couldn't even recognize the old codes anymore. It",
+      "spoken_text": "Exactly! I remember when my car had a computerized emissions system; the diagnostics were all over the place. Mechanics said they couldn't even recognize the old codes anymore. It",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "That was frustrating for sure. How did they manage before diagnostic tools? Did they have to manually troubleshoot or use different methods?",
+      "emotion": "warm",
+      "pause_after": 0.32,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 18,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0018_7f518267",
+      "source_canonical_line_id": "canonical_v0001_line_0018_7f518267",
+      "production_line_id": "pl_5a92b2f9b7cb4bb8a7db861b91b8237c",
+      "original_text": "That was frustrating for sure. How did they manage before diagnostic tools? Did they have to manually troubleshoot or use different methods?",
+      "spoken_text": "That was frustrating for sure. How did they manage before diagnostic tools? Did they have to manually troubleshoot or use different methods?",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "Definitely manual inspection and trial-and-error. It took forever, but you could figure it out with enough patience. Modern tech just makes things so much more complex.",
+      "emotion": "neutral",
+      "pause_after": 0.38,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 19,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0019_04d75b12",
+      "source_canonical_line_id": "canonical_v0001_line_0019_04d75b12",
+      "production_line_id": "pl_d5d115d49c9644a6a57f8471b4044d8f",
+      "original_text": "Definitely manual inspection and trial-and-error. It took forever, but you could figure it out with enough patience. Modern tech just makes things so much more complex.",
+      "spoken_text": "Definitely manual inspection and trial-and-error. It took forever, but you could figure it out with enough patience. Modern tech just makes things so much more complex.",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "As we delve deeper into this topic, I'm starting to understand how the shift from traditional repair shops to online platforms has changed things. It's like the old days when you'd",
+      "emotion": "warm",
+      "pause_after": 0.38,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 20,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0020_67b21ca7",
+      "source_canonical_line_id": "canonical_v0001_line_0020_67b21ca7",
+      "production_line_id": "pl_e38822c8193f4a118cefae7191865028",
+      "original_text": "As we delve deeper into this topic, I'm starting to understand how the shift from traditional repair shops to online platforms has changed things. It's like the old days when you'd",
+      "spoken_text": "As we delve deeper into this topic, I'm starting to understand how the shift from traditional repair shops to online platforms has changed things. It's like the old days when you'd",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "That's more of a nostalgic memory than anything else.",
+      "emotion": "neutral",
+      "pause_after": 0.38,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 21,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0021_dd13fc07",
+      "source_canonical_line_id": "canonical_v0001_line_0021_dd13fc07",
+      "production_line_id": "pl_0a86bb7a4bb046b791db612660d80a49",
+      "original_text": "That's more of a nostalgic memory than anything else.",
+      "spoken_text": "That's more of a nostalgic memory than anything else.",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "So if they're moving towards online diagnostics or parts, that could really complicate repairs further. How does that affect consumers who don't have access to those services?",
+      "emotion": "warm",
+      "pause_after": 0.22,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 22,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0022_257dc027",
+      "source_canonical_line_id": "canonical_v0001_line_0022_257dc027",
+      "production_line_id": "pl_d1ab2b58680b447cbd7f5f9714369916",
+      "original_text": "So if they're moving towards online diagnostics or parts, that could really complicate repairs further. How does that affect consumers who don't have access to those services?",
+      "spoken_text": "So if they're moving towards online diagnostics or parts, that could really complicate repairs further. How does that affect consumers who don't have access to those services?",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "phil",
+      "text": "Yeah, there's a risk of dependency on these online platforms because they offer quick solutions. But without them, mechanics have to dig deeper into the machinery and understand it",
+      "emotion": "warm",
+      "pause_after": 0.24,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 23,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0023_3dea20d3",
+      "source_canonical_line_id": "canonical_v0001_line_0023_3dea20d3",
+      "production_line_id": "pl_0ba38df82c024de581a1fb5a843dfaf7",
+      "original_text": "Yeah, there's a risk of dependency on these online platforms because they offer quick solutions. But without them, mechanics have to dig deeper into the machinery and understand it",
+      "spoken_text": "Yeah, there's a risk of dependency on these online platforms because they offer quick solutions. But without them, mechanics have to dig deeper into the machinery and understand it",
+      "delivery_notes": "",
+      "production_cues": []
+    },
+    {
+      "speaker": "jim",
+      "text": "Exactly! It forces them to be more proficient with diagnostics tools and software, which isn't always easy for someone who just started out.",
+      "emotion": "neutral",
+      "pause_after": 0.75,
+      "rhythm": {
+        "human_load": 0.45,
+        "desync_risk": 0.448,
+        "turn_latency_ms": 0.0,
+        "tempo": "normal",
+        "intensity": "medium",
+        "verbosity": "medium",
+        "cooldown_until_ms": 1791293139759,
+        "version": 1,
+        "interaction_tempo": "normal",
+        "cognitive_intensity": "medium",
+        "last_turn_ms": 0.0
+      },
+      "line_number": 24,
+      "generated_by": "llamacpp",
+      "segment_index": 1,
+      "segment_title": "Part 1",
+      "canonical_line_id": "canonical_v0001_line_0024_16ab7721",
+      "source_canonical_line_id": "canonical_v0001_line_0024_16ab7721",
+      "production_line_id": "pl_8ce44ecfc3d243c0be12fe357dd50bdf",
+      "original_text": "Exactly! It forces them to be more proficient with diagnostics tools and software, which isn't always easy for someone who just started out.",
+      "spoken_text": "Exactly! It forces them to be more proficient with diagnostics tools and software, which isn't always easy for someone who just started out.",
+      "delivery_notes": "",
+      "production_cues": []
+    }
+  ],
+  "media_cues": [],
+  "morb_proposals": [
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_002",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_53b5bf80dba444f6acc9c568005d165f_flag",
+      "production_line_id": "pl_53b5bf80dba444f6acc9c568005d165f",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_003",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_efd19d3b0f2c4ed8a0b6a5afe3074052_flag",
+      "production_line_id": "pl_efd19d3b0f2c4ed8a0b6a5afe3074052",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_004",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_dc735d26e93a498e9b3a685a0654a5ef_flag",
+      "production_line_id": "pl_dc735d26e93a498e9b3a685a0654a5ef",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_007",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_c3c47db39e594ee3a607caf7dde8744d_flag",
+      "production_line_id": "pl_c3c47db39e594ee3a607caf7dde8744d",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_009",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_a3c81942082d4b4c88d6d03bd80373d4_flag",
+      "production_line_id": "pl_a3c81942082d4b4c88d6d03bd80373d4",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_010",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_6eca0984b76b4188a553f9aa295284d8_flag",
+      "production_line_id": "pl_6eca0984b76b4188a553f9aa295284d8",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_011",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_7665b5f59ca14c74adc0d5bcabb81163_flag",
+      "production_line_id": "pl_7665b5f59ca14c74adc0d5bcabb81163",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_013",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_e15d74db9f724c5194c87eb044c19a53_flag",
+      "production_line_id": "pl_e15d74db9f724c5194c87eb044c19a53",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_017",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_adda944d87b649da977a67175d1cb9c3_flag",
+      "production_line_id": "pl_adda944d87b649da977a67175d1cb9c3",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_020",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_e38822c8193f4a118cefae7191865028_flag",
+      "production_line_id": "pl_e38822c8193f4a118cefae7191865028",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Editorial MORB",
+      "segment_id": "line_023",
+      "action": "FLAG",
+      "severity": "review",
+      "reason": "Line may end mid-sentence; no automatic completion",
+      "proposal_id": "pl_0ba38df82c024de581a1fb5a843dfaf7_flag",
+      "production_line_id": "pl_0ba38df82c024de581a1fb5a843dfaf7",
+      "decision": "flagged",
+      "authority": "Operator review; source text preserved",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_001",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.2,
+      "reason": "Immediate answer to a question",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "Why do everyday products become more expensive to repair over time?"
+          },
+          {
+            "speaker": "jim",
+            "text": "Because they get smarter. Like how cars used to come with a manual and you could fix anything on it without any special tools... but now they're all about black boxes and you need"
+          },
+          {
+            "speaker": "phil",
+            "text": "Oh, that's right! The shift from mechanical to electrical systems made diagnosis easier because of the digital information in cars. But wait, why does that make repairs harder? It"
+          }
+        ]
+      },
+      "proposal_id": "pl_8e4d31bc0eb64190a83fd737991e6dd0_perform",
+      "production_line_id": "pl_8e4d31bc0eb64190a83fd737991e6dd0",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_002",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.24,
+      "reason": "Next speaker reacts to this turn",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "Why do everyday products become more expensive to repair over time?"
+          },
+          {
+            "speaker": "jim",
+            "text": "Because they get smarter. Like how cars used to come with a manual and you could fix anything on it without any special tools... but now they're all about black boxes and you need"
+          },
+          {
+            "speaker": "phil",
+            "text": "Oh, that's right! The shift from mechanical to electrical systems made diagnosis easier because of the digital information in cars. But wait, why does that make repairs harder? It"
+          },
+          {
+            "speaker": "jim",
+            "text": "Because with each upgrade, manufacturers add more layers of complexity. Each new feature requires additional sensors and software, so the tools needed become more specialized. You"
+          }
+        ]
+      },
+      "proposal_id": "pl_53b5bf80dba444f6acc9c568005d165f_perform",
+      "production_line_id": "pl_53b5bf80dba444f6acc9c568005d165f",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_003",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.38,
+      "reason": "Ordinary conversational handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "Why do everyday products become more expensive to repair over time?"
+          },
+          {
+            "speaker": "jim",
+            "text": "Because they get smarter. Like how cars used to come with a manual and you could fix anything on it without any special tools... but now they're all about black boxes and you need"
+          },
+          {
+            "speaker": "phil",
+            "text": "Oh, that's right! The shift from mechanical to electrical systems made diagnosis easier because of the digital information in cars. But wait, why does that make repairs harder? It"
+          },
+          {
+            "speaker": "jim",
+            "text": "Because with each upgrade, manufacturers add more layers of complexity. Each new feature requires additional sensors and software, so the tools needed become more specialized. You"
+          },
+          {
+            "speaker": "phil",
+            "text": "The idea of cars being more complex now seems a bit daunting. I can see how each upgrade adds layers."
+          }
+        ]
+      },
+      "proposal_id": "pl_efd19d3b0f2c4ed8a0b6a5afe3074052_perform",
+      "production_line_id": "pl_efd19d3b0f2c4ed8a0b6a5afe3074052",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_004",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.38,
+      "reason": "Ordinary conversational handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "Because they get smarter. Like how cars used to come with a manual and you could fix anything on it without any special tools... but now they're all about black boxes and you need"
+          },
+          {
+            "speaker": "phil",
+            "text": "Oh, that's right! The shift from mechanical to electrical systems made diagnosis easier because of the digital information in cars. But wait, why does that make repairs harder? It"
+          },
+          {
+            "speaker": "jim",
+            "text": "Because with each upgrade, manufacturers add more layers of complexity. Each new feature requires additional sensors and software, so the tools needed become more specialized. You"
+          },
+          {
+            "speaker": "phil",
+            "text": "The idea of cars being more complex now seems a bit daunting. I can see how each upgrade adds layers."
+          },
+          {
+            "speaker": "phil",
+            "text": "Oh! So the problem isn't just about having more tools, but each tool being more specialized for specific models? That makes sense."
+          }
+        ]
+      },
+      "proposal_id": "pl_dc735d26e93a498e9b3a685a0654a5ef_perform",
+      "production_line_id": "pl_dc735d26e93a498e9b3a685a0654a5ef",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_005",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.22,
+      "reason": "Same speaker continues",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "Oh, that's right! The shift from mechanical to electrical systems made diagnosis easier because of the digital information in cars. But wait, why does that make repairs harder? It"
+          },
+          {
+            "speaker": "jim",
+            "text": "Because with each upgrade, manufacturers add more layers of complexity. Each new feature requires additional sensors and software, so the tools needed become more specialized. You"
+          },
+          {
+            "speaker": "phil",
+            "text": "The idea of cars being more complex now seems a bit daunting. I can see how each upgrade adds layers."
+          },
+          {
+            "speaker": "phil",
+            "text": "Oh! So the problem isn't just about having more tools, but each tool being more specialized for specific models? That makes sense."
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly. Each car model might have its own unique software configuration. So if I fix a Tesla with a key fob, it doesn't help when I try to fix my SUV because the diagnostics are"
+          }
+        ]
+      },
+      "proposal_id": "pl_6ac06823330e406f8c9b5331c3593503_perform",
+      "production_line_id": "pl_6ac06823330e406f8c9b5331c3593503",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_006",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.24,
+      "reason": "Next speaker reacts to this turn",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "Because with each upgrade, manufacturers add more layers of complexity. Each new feature requires additional sensors and software, so the tools needed become more specialized. You"
+          },
+          {
+            "speaker": "phil",
+            "text": "The idea of cars being more complex now seems a bit daunting. I can see how each upgrade adds layers."
+          },
+          {
+            "speaker": "phil",
+            "text": "Oh! So the problem isn't just about having more tools, but each tool being more specialized for specific models? That makes sense."
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly. Each car model might have its own unique software configuration. So if I fix a Tesla with a key fob, it doesn't help when I try to fix my SUV because the diagnostics are"
+          },
+          {
+            "speaker": "phil",
+            "text": "Interesting! It must be frustrating for mechanics to keep up with all these changes without proper training or access to updated diagnostic equipment."
+          }
+        ]
+      },
+      "proposal_id": "pl_acf103076e784b16a3a5e3d607cfaa36_perform",
+      "production_line_id": "pl_acf103076e784b16a3a5e3d607cfaa36",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_007",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.38,
+      "reason": "Ordinary conversational handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "The idea of cars being more complex now seems a bit daunting. I can see how each upgrade adds layers."
+          },
+          {
+            "speaker": "phil",
+            "text": "Oh! So the problem isn't just about having more tools, but each tool being more specialized for specific models? That makes sense."
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly. Each car model might have its own unique software configuration. So if I fix a Tesla with a key fob, it doesn't help when I try to fix my SUV because the diagnostics are"
+          },
+          {
+            "speaker": "phil",
+            "text": "Interesting! It must be frustrating for mechanics to keep up with all these changes without proper training or access to updated diagnostic equipment."
+          },
+          {
+            "speaker": "phil",
+            "text": "So if a car manufacturer updates its software, does that mean all existing mechanics lose access to the old diagnostics? That's scary because I know people who still use the same"
+          }
+        ]
+      },
+      "proposal_id": "pl_c3c47db39e594ee3a607caf7dde8744d_perform",
+      "production_line_id": "pl_c3c47db39e594ee3a607caf7dde8744d",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_008",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.22,
+      "reason": "Same speaker continues",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "Oh! So the problem isn't just about having more tools, but each tool being more specialized for specific models? That makes sense."
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly. Each car model might have its own unique software configuration. So if I fix a Tesla with a key fob, it doesn't help when I try to fix my SUV because the diagnostics are"
+          },
+          {
+            "speaker": "phil",
+            "text": "Interesting! It must be frustrating for mechanics to keep up with all these changes without proper training or access to updated diagnostic equipment."
+          },
+          {
+            "speaker": "phil",
+            "text": "So if a car manufacturer updates its software, does that mean all existing mechanics lose access to the old diagnostics? That's scary because I know people who still use the same"
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! Updates are usually backward incompatible with older diagnostic tools. So when Tesla updated their software for Model S, owners couldn't use their old key fobs anymore. It"
+          }
+        ]
+      },
+      "proposal_id": "pl_9369156f61844908864e7ce91c1417e0_perform",
+      "production_line_id": "pl_9369156f61844908864e7ce91c1417e0",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_009",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.24,
+      "reason": "Next speaker reacts to this turn",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "Exactly. Each car model might have its own unique software configuration. So if I fix a Tesla with a key fob, it doesn't help when I try to fix my SUV because the diagnostics are"
+          },
+          {
+            "speaker": "phil",
+            "text": "Interesting! It must be frustrating for mechanics to keep up with all these changes without proper training or access to updated diagnostic equipment."
+          },
+          {
+            "speaker": "phil",
+            "text": "So if a car manufacturer updates its software, does that mean all existing mechanics lose access to the old diagnostics? That's scary because I know people who still use the same"
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! Updates are usually backward incompatible with older diagnostic tools. So when Tesla updated their software for Model S, owners couldn't use their old key fobs anymore. It"
+          },
+          {
+            "speaker": "phil",
+            "text": "That makes a lot of sense now. I can see how manufacturers would prioritize keeping the latest diagnostics to prevent issues and ensure compatibility without disrupting existing"
+          }
+        ]
+      },
+      "proposal_id": "pl_a3c81942082d4b4c88d6d03bd80373d4_perform",
+      "production_line_id": "pl_a3c81942082d4b4c88d6d03bd80373d4",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_010",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.38,
+      "reason": "Ordinary conversational handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "Interesting! It must be frustrating for mechanics to keep up with all these changes without proper training or access to updated diagnostic equipment."
+          },
+          {
+            "speaker": "phil",
+            "text": "So if a car manufacturer updates its software, does that mean all existing mechanics lose access to the old diagnostics? That's scary because I know people who still use the same"
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! Updates are usually backward incompatible with older diagnostic tools. So when Tesla updated their software for Model S, owners couldn't use their old key fobs anymore. It"
+          },
+          {
+            "speaker": "phil",
+            "text": "That makes a lot of sense now. I can see how manufacturers would prioritize keeping the latest diagnostics to prevent issues and ensure compatibility without disrupting existing"
+          },
+          {
+            "speaker": "jim",
+            "text": "But wait, are all updates like that? What about older devices or appliances where they might have made some backward compatible options?"
+          }
+        ]
+      },
+      "proposal_id": "pl_6eca0984b76b4188a553f9aa295284d8_perform",
+      "production_line_id": "pl_6eca0984b76b4188a553f9aa295284d8",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_011",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.24,
+      "reason": "Next speaker reacts to this turn",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "So if a car manufacturer updates its software, does that mean all existing mechanics lose access to the old diagnostics? That's scary because I know people who still use the same"
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! Updates are usually backward incompatible with older diagnostic tools. So when Tesla updated their software for Model S, owners couldn't use their old key fobs anymore. It"
+          },
+          {
+            "speaker": "phil",
+            "text": "That makes a lot of sense now. I can see how manufacturers would prioritize keeping the latest diagnostics to prevent issues and ensure compatibility without disrupting existing"
+          },
+          {
+            "speaker": "jim",
+            "text": "But wait, are all updates like that? What about older devices or appliances where they might have made some backward compatible options?"
+          },
+          {
+            "speaker": "phil",
+            "text": "Interesting point! Maybe not all, but certainly many. I wonder if there's a trend towards making more backward compatible features available as manufacturers push for more updated"
+          }
+        ]
+      },
+      "proposal_id": "pl_7665b5f59ca14c74adc0d5bcabb81163_perform",
+      "production_line_id": "pl_7665b5f59ca14c74adc0d5bcabb81163",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_012",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.32,
+      "reason": "Question handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "Exactly! Updates are usually backward incompatible with older diagnostic tools. So when Tesla updated their software for Model S, owners couldn't use their old key fobs anymore. It"
+          },
+          {
+            "speaker": "phil",
+            "text": "That makes a lot of sense now. I can see how manufacturers would prioritize keeping the latest diagnostics to prevent issues and ensure compatibility without disrupting existing"
+          },
+          {
+            "speaker": "jim",
+            "text": "But wait, are all updates like that? What about older devices or appliances where they might have made some backward compatible options?"
+          },
+          {
+            "speaker": "phil",
+            "text": "Interesting point! Maybe not all, but certainly many. I wonder if there's a trend towards making more backward compatible features available as manufacturers push for more updated"
+          },
+          {
+            "speaker": "jim",
+            "text": "Yes, the industry is noticing that too. There are now services where you can buy an updated version of older tools or even modify some devices to work with legacy diagnostics."
+          }
+        ]
+      },
+      "proposal_id": "pl_80d61301d688451ebb004be724ce5e42_perform",
+      "production_line_id": "pl_80d61301d688451ebb004be724ce5e42",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_013",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.24,
+      "reason": "Next speaker reacts to this turn",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "That makes a lot of sense now. I can see how manufacturers would prioritize keeping the latest diagnostics to prevent issues and ensure compatibility without disrupting existing"
+          },
+          {
+            "speaker": "jim",
+            "text": "But wait, are all updates like that? What about older devices or appliances where they might have made some backward compatible options?"
+          },
+          {
+            "speaker": "phil",
+            "text": "Interesting point! Maybe not all, but certainly many. I wonder if there's a trend towards making more backward compatible features available as manufacturers push for more updated"
+          },
+          {
+            "speaker": "jim",
+            "text": "Yes, the industry is noticing that too. There are now services where you can buy an updated version of older tools or even modify some devices to work with legacy diagnostics."
+          },
+          {
+            "speaker": "phil",
+            "text": "It's concerning how manufacturers are prioritizing software updates over hardware maintenance. It must be a huge financial burden on mechanics and hobbyists alike."
+          }
+        ]
+      },
+      "proposal_id": "pl_e15d74db9f724c5194c87eb044c19a53_perform",
+      "production_line_id": "pl_e15d74db9f724c5194c87eb044c19a53",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_014",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.38,
+      "reason": "Ordinary conversational handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "But wait, are all updates like that? What about older devices or appliances where they might have made some backward compatible options?"
+          },
+          {
+            "speaker": "phil",
+            "text": "Interesting point! Maybe not all, but certainly many. I wonder if there's a trend towards making more backward compatible features available as manufacturers push for more updated"
+          },
+          {
+            "speaker": "jim",
+            "text": "Yes, the industry is noticing that too. There are now services where you can buy an updated version of older tools or even modify some devices to work with legacy diagnostics."
+          },
+          {
+            "speaker": "phil",
+            "text": "It's concerning how manufacturers are prioritizing software updates over hardware maintenance. It must be a huge financial burden on mechanics and hobbyists alike."
+          },
+          {
+            "speaker": "jim",
+            "text": "But I suppose it's more about maximizing profit rather than customer satisfaction. After all, fixing tools becomes less feasible as the tech gets more complex and proprietary."
+          }
+        ]
+      },
+      "proposal_id": "pl_032b8f27c1a44543b9bf2acec4bc4ca7_perform",
+      "production_line_id": "pl_032b8f27c1a44543b9bf2acec4bc4ca7",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_015",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.24,
+      "reason": "Next speaker reacts to this turn",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "Interesting point! Maybe not all, but certainly many. I wonder if there's a trend towards making more backward compatible features available as manufacturers push for more updated"
+          },
+          {
+            "speaker": "jim",
+            "text": "Yes, the industry is noticing that too. There are now services where you can buy an updated version of older tools or even modify some devices to work with legacy diagnostics."
+          },
+          {
+            "speaker": "phil",
+            "text": "It's concerning how manufacturers are prioritizing software updates over hardware maintenance. It must be a huge financial burden on mechanics and hobbyists alike."
+          },
+          {
+            "speaker": "jim",
+            "text": "But I suppose it's more about maximizing profit rather than customer satisfaction. After all, fixing tools becomes less feasible as the tech gets more complex and proprietary."
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! I remember when my car had a computerized emissions system; the diagnostics were all over the place. Mechanics said they couldn't even recognize the old codes anymore. It"
+          }
+        ]
+      },
+      "proposal_id": "pl_e53d033808d8430a90ab04a6ad78ec3b_perform",
+      "production_line_id": "pl_e53d033808d8430a90ab04a6ad78ec3b",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_016",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.22,
+      "reason": "Same speaker continues",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "Yes, the industry is noticing that too. There are now services where you can buy an updated version of older tools or even modify some devices to work with legacy diagnostics."
+          },
+          {
+            "speaker": "phil",
+            "text": "It's concerning how manufacturers are prioritizing software updates over hardware maintenance. It must be a huge financial burden on mechanics and hobbyists alike."
+          },
+          {
+            "speaker": "jim",
+            "text": "But I suppose it's more about maximizing profit rather than customer satisfaction. After all, fixing tools becomes less feasible as the tech gets more complex and proprietary."
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! I remember when my car had a computerized emissions system; the diagnostics were all over the place. Mechanics said they couldn't even recognize the old codes anymore. It"
+          },
+          {
+            "speaker": "phil",
+            "text": "That was frustrating for sure. How did they manage before diagnostic tools? Did they have to manually troubleshoot or use different methods?"
+          }
+        ]
+      },
+      "proposal_id": "pl_e589d4f171f34d5e96ae2d63fd60fafc_perform",
+      "production_line_id": "pl_e589d4f171f34d5e96ae2d63fd60fafc",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_017",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.38,
+      "reason": "Ordinary conversational handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "It's concerning how manufacturers are prioritizing software updates over hardware maintenance. It must be a huge financial burden on mechanics and hobbyists alike."
+          },
+          {
+            "speaker": "jim",
+            "text": "But I suppose it's more about maximizing profit rather than customer satisfaction. After all, fixing tools becomes less feasible as the tech gets more complex and proprietary."
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! I remember when my car had a computerized emissions system; the diagnostics were all over the place. Mechanics said they couldn't even recognize the old codes anymore. It"
+          },
+          {
+            "speaker": "phil",
+            "text": "That was frustrating for sure. How did they manage before diagnostic tools? Did they have to manually troubleshoot or use different methods?"
+          },
+          {
+            "speaker": "jim",
+            "text": "Definitely manual inspection and trial-and-error. It took forever, but you could figure it out with enough patience. Modern tech just makes things so much more complex."
+          }
+        ]
+      },
+      "proposal_id": "pl_adda944d87b649da977a67175d1cb9c3_perform",
+      "production_line_id": "pl_adda944d87b649da977a67175d1cb9c3",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_018",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.32,
+      "reason": "Question handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "But I suppose it's more about maximizing profit rather than customer satisfaction. After all, fixing tools becomes less feasible as the tech gets more complex and proprietary."
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! I remember when my car had a computerized emissions system; the diagnostics were all over the place. Mechanics said they couldn't even recognize the old codes anymore. It"
+          },
+          {
+            "speaker": "phil",
+            "text": "That was frustrating for sure. How did they manage before diagnostic tools? Did they have to manually troubleshoot or use different methods?"
+          },
+          {
+            "speaker": "jim",
+            "text": "Definitely manual inspection and trial-and-error. It took forever, but you could figure it out with enough patience. Modern tech just makes things so much more complex."
+          },
+          {
+            "speaker": "phil",
+            "text": "As we delve deeper into this topic, I'm starting to understand how the shift from traditional repair shops to online platforms has changed things. It's like the old days when you'd"
+          }
+        ]
+      },
+      "proposal_id": "pl_5a92b2f9b7cb4bb8a7db861b91b8237c_perform",
+      "production_line_id": "pl_5a92b2f9b7cb4bb8a7db861b91b8237c",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_019",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.38,
+      "reason": "Ordinary conversational handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "Exactly! I remember when my car had a computerized emissions system; the diagnostics were all over the place. Mechanics said they couldn't even recognize the old codes anymore. It"
+          },
+          {
+            "speaker": "phil",
+            "text": "That was frustrating for sure. How did they manage before diagnostic tools? Did they have to manually troubleshoot or use different methods?"
+          },
+          {
+            "speaker": "jim",
+            "text": "Definitely manual inspection and trial-and-error. It took forever, but you could figure it out with enough patience. Modern tech just makes things so much more complex."
+          },
+          {
+            "speaker": "phil",
+            "text": "As we delve deeper into this topic, I'm starting to understand how the shift from traditional repair shops to online platforms has changed things. It's like the old days when you'd"
+          },
+          {
+            "speaker": "jim",
+            "text": "That's more of a nostalgic memory than anything else."
+          }
+        ]
+      },
+      "proposal_id": "pl_d5d115d49c9644a6a57f8471b4044d8f_perform",
+      "production_line_id": "pl_d5d115d49c9644a6a57f8471b4044d8f",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_020",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.38,
+      "reason": "Ordinary conversational handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "That was frustrating for sure. How did they manage before diagnostic tools? Did they have to manually troubleshoot or use different methods?"
+          },
+          {
+            "speaker": "jim",
+            "text": "Definitely manual inspection and trial-and-error. It took forever, but you could figure it out with enough patience. Modern tech just makes things so much more complex."
+          },
+          {
+            "speaker": "phil",
+            "text": "As we delve deeper into this topic, I'm starting to understand how the shift from traditional repair shops to online platforms has changed things. It's like the old days when you'd"
+          },
+          {
+            "speaker": "jim",
+            "text": "That's more of a nostalgic memory than anything else."
+          },
+          {
+            "speaker": "phil",
+            "text": "So if they're moving towards online diagnostics or parts, that could really complicate repairs further. How does that affect consumers who don't have access to those services?"
+          }
+        ]
+      },
+      "proposal_id": "pl_e38822c8193f4a118cefae7191865028_perform",
+      "production_line_id": "pl_e38822c8193f4a118cefae7191865028",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_021",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.38,
+      "reason": "Ordinary conversational handoff",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "Definitely manual inspection and trial-and-error. It took forever, but you could figure it out with enough patience. Modern tech just makes things so much more complex."
+          },
+          {
+            "speaker": "phil",
+            "text": "As we delve deeper into this topic, I'm starting to understand how the shift from traditional repair shops to online platforms has changed things. It's like the old days when you'd"
+          },
+          {
+            "speaker": "jim",
+            "text": "That's more of a nostalgic memory than anything else."
+          },
+          {
+            "speaker": "phil",
+            "text": "So if they're moving towards online diagnostics or parts, that could really complicate repairs further. How does that affect consumers who don't have access to those services?"
+          },
+          {
+            "speaker": "phil",
+            "text": "Yeah, there's a risk of dependency on these online platforms because they offer quick solutions. But without them, mechanics have to dig deeper into the machinery and understand it"
+          }
+        ]
+      },
+      "proposal_id": "pl_0a86bb7a4bb046b791db612660d80a49_perform",
+      "production_line_id": "pl_0a86bb7a4bb046b791db612660d80a49",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_022",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.22,
+      "reason": "Same speaker continues",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "As we delve deeper into this topic, I'm starting to understand how the shift from traditional repair shops to online platforms has changed things. It's like the old days when you'd"
+          },
+          {
+            "speaker": "jim",
+            "text": "That's more of a nostalgic memory than anything else."
+          },
+          {
+            "speaker": "phil",
+            "text": "So if they're moving towards online diagnostics or parts, that could really complicate repairs further. How does that affect consumers who don't have access to those services?"
+          },
+          {
+            "speaker": "phil",
+            "text": "Yeah, there's a risk of dependency on these online platforms because they offer quick solutions. But without them, mechanics have to dig deeper into the machinery and understand it"
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! It forces them to be more proficient with diagnostics tools and software, which isn't always easy for someone who just started out."
+          }
+        ]
+      },
+      "proposal_id": "pl_d1ab2b58680b447cbd7f5f9714369916_perform",
+      "production_line_id": "pl_d1ab2b58680b447cbd7f5f9714369916",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_023",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.35,
+      "after": 0.24,
+      "reason": "Next speaker reacts to this turn",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "jim",
+            "text": "That's more of a nostalgic memory than anything else."
+          },
+          {
+            "speaker": "phil",
+            "text": "So if they're moving towards online diagnostics or parts, that could really complicate repairs further. How does that affect consumers who don't have access to those services?"
+          },
+          {
+            "speaker": "phil",
+            "text": "Yeah, there's a risk of dependency on these online platforms because they offer quick solutions. But without them, mechanics have to dig deeper into the machinery and understand it"
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! It forces them to be more proficient with diagnostics tools and software, which isn't always easy for someone who just started out."
+          }
+        ]
+      },
+      "proposal_id": "pl_0ba38df82c024de581a1fb5a843dfaf7_perform",
+      "production_line_id": "pl_0ba38df82c024de581a1fb5a843dfaf7",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    },
+    {
+      "morb": "Performance MORB",
+      "segment_id": "line_024",
+      "action": "PERFORM",
+      "field": "pause_after",
+      "before": 0.55,
+      "after": 0.75,
+      "reason": "Section or show transition",
+      "context": {
+        "topic": "Part 1",
+        "window": [
+          {
+            "speaker": "phil",
+            "text": "So if they're moving towards online diagnostics or parts, that could really complicate repairs further. How does that affect consumers who don't have access to those services?"
+          },
+          {
+            "speaker": "phil",
+            "text": "Yeah, there's a risk of dependency on these online platforms because they offer quick solutions. But without them, mechanics have to dig deeper into the machinery and understand it"
+          },
+          {
+            "speaker": "jim",
+            "text": "Exactly! It forces them to be more proficient with diagnostics tools and software, which isn't always easy for someone who just started out."
+          }
+        ]
+      },
+      "proposal_id": "pl_8ce44ecfc3d243c0be12fe357dd50bdf_perform",
+      "production_line_id": "pl_8ce44ecfc3d243c0be12fe357dd50bdf",
+      "decision": "accepted",
+      "authority": "Bounded pause",
+      "reviewed": false,
+      "operator_decision": null
+    }
+  ],
+  "change_ledger": [],
+  "preview_review_id": "preview_v0001",
+  "preview_hash": "698be25309fd4ef4385870aaad6c7c3c4b893f9f82caec86d0d89c4f231e1a5c",
+  "preview_review": {
+    "episode_id": "ep_1791247143016",
+    "review_id": "preview_v0001",
+    "canonical_version_id": "canonical_v0001",
+    "canonical_source_hash": "032d25c2483de3b55384ac1e9b4dd246942a8b9edf215e2af7dd80db9a9624f8",
+    "overall_notes": "Test review: several lines are truncated, middle section becomes repetitive, and some claims need review before production.",
+    "line_reviews": {
+      "canonical_v0001_line_0022_257dc027": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0003_df5a8922": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0013_f340d1d0": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0019_04d75b12": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0017_0efa1260": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0005_7c101166": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0014_644ee798": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0001_65f651f2": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0004_d47f3f5c": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0012_fcf0153f": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0024_16ab7721": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0016_fec71bd5": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0020_67b21ca7": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0007_0d985a6e": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0021_dd13fc07": {
+        "mark": "needs_attention",
+        "note": ""
+      },
+      "canonical_v0001_line_0015_48ba0cdb": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0009_28c7745d": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0008_f0e6720a": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0011_7db30fb3": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0023_3dea20d3": {
+        "mark": "needs_attention",
+        "note": ""
+      },
+      "canonical_v0001_line_0006_bdd5e40e": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0002_279c9c32": {
+        "mark": "needs_attention",
+        "note": ""
+      },
+      "canonical_v0001_line_0018_7f518267": {
+        "mark": "none",
+        "note": ""
+      },
+      "canonical_v0001_line_0010_eda056fe": {
+        "mark": "needs_attention",
+        "note": ""
+      }
+    },
+    "section_notes": {},
+    "updated_at": "2026-10-07T05:36:18.588205",
+    "preview_hash": "698be25309fd4ef4385870aaad6c7c3c4b893f9f82caec86d0d89c4f231e1a5c"
+  },
+  "created_at": "2026-10-07T05:37:01.871533",
+  "updated_at": "2026-10-07T05:37:01.871533"
+}

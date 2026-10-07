@@ -31,6 +31,7 @@
   },
   "production": {
     "default_target_duration_seconds": 2400,
+    "spoken_wpm": 90,
     "default_intensity": "medium",
     "auto_save_drafts": true,
     "drafts_root": "./episodes/.drafts"
@@ -47,8 +48,8 @@
   "audio": {
     "jingles_root": "./audio/jingles",
     "jingles": {
-      "intro": "./audio/jingles/phil_jim_theme.mp3",
-      "outro": "./audio/jingles/phil_jim_theme.mp3",
+      "intro": "./asset_library/sfx/introclip.mp3",
+      "outro": "./asset_library/sfx/introclip.mp3",
       "bumper_in": null,
       "bumper_out": null,
       "bed_loop": null
@@ -61,10 +62,13 @@
   },
   "intro_outro": {
     "enabled": true,
-    "music_file": "./audio/jingles/phil_jim_theme.mp3",
+    "narration_enabled": false,
+    "music_file": "./asset_library/sfx/introclip.mp3",
     "intro": {
       "clip_start_ms": 0,
-      "clip_duration_ms": 14000,
+      "clip_duration_ms": 10000,
+      "clip_start_variants_ms": [0, 3000, 6000],
+      "clip_duration_variants_ms": [8000, 10000, 12000],
       "music_fade_in_ms": 1200,
       "music_fade_out_ms": 2000,
       "duck_start_ms": 4000,
@@ -75,8 +79,10 @@
       "pause_duration_ms": 700
     },
     "outro": {
-      "clip_start_ms": 3000,
-      "clip_duration_ms": 14000,
+      "clip_start_ms": 0,
+      "clip_duration_ms": 10000,
+      "clip_start_variants_ms": [0, 3000, 6000],
+      "clip_duration_variants_ms": [8000, 10000, 12000],
       "music_fade_in_ms": 2000,
       "music_fade_out_ms": 3000,
       "announcer_text": "That is a wrap on today's Phil and Jim Dandy Show.[pause] Thanks for listening. We will see you next time.",

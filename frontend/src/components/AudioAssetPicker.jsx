@@ -80,28 +80,28 @@ export default function AudioAssetPicker({ value = '', onChange, label = 'Audio 
         </button>
       </div>
 
-      {value && <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, fontSize: '.72rem' }}>
+      {value && <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, fontSize: '0.94rem' }}>
         <span style={{ color: 'var(--gold)' }}>Selected:</span>
         <span style={{ overflowWrap: 'anywhere' }}>{selected?.label || value}</span>
         <button className="icon-btn" type="button" title="Clear selection" onClick={() => onChange('')}><X size={12} /></button>
       </div>}
 
-      {error && <div style={{ color: 'var(--red)', fontSize: '.72rem', marginBottom: 8 }}>{error}</div>}
-      {!loading && !error && filtered.length === 0 && <div style={{ fontSize: '.72rem', color: 'var(--steel)', padding: '8px 0' }}>No matching audio assets found.</div>}
+      {error && <div style={{ color: 'var(--red)', fontSize: '0.94rem', marginBottom: 8 }}>{error}</div>}
+      {!loading && !error && filtered.length === 0 && <div style={{ fontSize: '0.94rem', color: 'var(--steel)', padding: '8px 0' }}>No matching audio assets found.</div>}
 
       {filtered.length > 0 && <div style={{ maxHeight: 280, overflow: 'auto', border: '1px solid var(--line)', borderRadius: 4 }}>
         {[...grouped.entries()].map(([role, items]) => <div key={role}>
-          <div style={{ position: 'sticky', top: 0, zIndex: 1, padding: '6px 10px', background: 'var(--panel-2)', color: 'var(--gold)', fontSize: '.68rem', fontWeight: 700, letterSpacing: '.08em' }}>
+          <div style={{ position: 'sticky', top: 0, zIndex: 1, padding: '6px 10px', background: 'var(--panel-2)', color: 'var(--gold)', fontSize: '0.88rem', fontWeight: 700, letterSpacing: '.08em' }}>
             {ROLE_LABELS[role] || role.toUpperCase()} · {items.length}
           </div>
           {items.map(item => {
             const active = item.relative_path === value
             return <div key={item.asset_id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', gap: 8, alignItems: 'center', padding: '8px 10px', borderTop: '1px solid var(--line)', background: active ? 'rgba(199,153,54,.08)' : 'transparent' }}>
               <button type="button" onClick={() => onChange(item.relative_path)} style={{ minWidth: 0, border: 0, background: 'transparent', color: 'inherit', textAlign: 'left', cursor: 'pointer', padding: 0 }}>
-                <div style={{ fontSize: '.76rem', color: active ? 'var(--gold)' : 'var(--text)' }}>{item.label || item.filename}</div>
-                <div className="font-mono" style={{ fontSize: '.6rem', color: 'var(--steel)', overflowWrap: 'anywhere' }}>{item.relative_path}</div>
+                <div style={{ fontSize: '0.99rem', color: active ? 'var(--gold)' : 'var(--text)' }}>{item.label || item.filename}</div>
+                <div className="font-mono" style={{ fontSize: '0.78rem', color: 'var(--steel)', overflowWrap: 'anywhere' }}>{item.relative_path}</div>
               </button>
-              <span style={{ fontSize: '.62rem', color: 'var(--steel)', whiteSpace: 'nowrap' }}>{formatBytes(item.size_bytes)}</span>
+              <span style={{ fontSize: '0.81rem', color: 'var(--steel)', whiteSpace: 'nowrap' }}>{formatBytes(item.size_bytes)}</span>
               <button className="icon-btn" type="button" title="Preview audio" onClick={() => setPreviewId(previewId === item.asset_id ? '' : item.asset_id)}><Play size={12} /></button>
               {previewId === item.asset_id && <div style={{ gridColumn: '1 / -1' }}><audio controls autoPlay src={api.libraryAssetUrl(item.asset_id)} style={{ width: '100%' }} /></div>}
             </div>

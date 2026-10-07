@@ -20,6 +20,7 @@
   "voices": {
     "phil": "Ryan",
     "jim": "Eric",
+    "bryan": "Bryan",
     "announcer_male": "Ryan",
     "announcer_female": "Serena",
     "host": "Ryan",
@@ -28,6 +29,7 @@
   "instructions": {
     "phil": "A curious, energetic younger-brother host voice. Warm, quick, conversational, with clean cadence.",
     "jim": "A grounded, practical older-brother host voice. Dry, measured, skeptical, and clear.",
+    "bryan": "The off-mic producer in the background. Natural, conversational, occasionally amused or exasperated by studio noise.",
     "announcer_male": "A confident radio announcer voice with polished articulation.",
     "announcer_female": "A warm professional announcer voice with steady pacing.",
     "host": "A clear studio host voice with natural pacing.",

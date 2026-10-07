@@ -179,7 +179,7 @@ def _storage_probe():
     from .social import brand_assets_status
     disk = shutil.disk_usage(PROJECT_ROOT)
     config = load_project_config()
-    music = Path(config.get("intro_outro", {}).get("music_file", "./audio/jingles/phil_jim_theme.mp3"))
+    music = Path(config.get("intro_outro", {}).get("music_file", "./asset_library/sfx/introclip.mp3"))
     if not music.is_absolute():
         music = PROJECT_ROOT / music
     music_required = bool(config.get("intro_outro", {}).get("enabled"))

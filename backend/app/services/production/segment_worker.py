@@ -13,15 +13,18 @@ script line before intro/outro wrapping.
 from __future__ import annotations
 
 from datetime import datetime
+import json
 import logging
 from pathlib import Path
 import re
+import time
 from typing import Any, Callable, Dict, List, Optional
 
 from pydub import AudioSegment
 
 from .context_builder import build_rich_context
-from .llm_writer import generate_segment
+from .episode_governor import EpisodeGovernor, TurnDirective
+from . import llm_writer
 from .rhythm import RhythmState
 from .worker import HardenedPodcastWorker
 from ..storage.asset_library import load_library_asset
@@ -32,6 +35,9 @@ logger = logging.getLogger(__name__)
 
 class SegmentAwarePodcastWorker(HardenedPodcastWorker):
     """Use a bounded, forward-only LLM plan for 1-15 minute segments."""
+
+    def _spoken_wpm(self) -> int:
+        return max(1, int(self.project_config.get("production", {}).get("spoken_wpm", 90)))
 
     _SIMILARITY_STOPWORDS = {
         "a", "an", "and", "are", "as", "at", "be", "because", "but", "by",
@@ -57,10 +63,16 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
 
     @classmethod
     def _is_near_duplicate(cls, text: str, prior_texts: List[str]) -> bool:
+        return cls._repetition_score(text, prior_texts) >= 0.86
+
+    @classmethod
+    def _repetition_score(cls, text: str, prior_texts: List[str]) -> float:
+        """Return the strongest overlap score without treating shared topics as duplicates."""
         current = cls._similarity_tokens(text)
         if len(current) < 4:
-            return False
+            return 0.0
 
+        strongest = 0.0
         for prior in prior_texts:
             previous = cls._similarity_tokens(prior)
             if len(previous) < 4:
@@ -70,9 +82,8 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 continue
             containment = shared / max(1, min(len(current), len(previous)))
             jaccard = shared / max(1, len(current | previous))
-            if containment >= 0.74 or jaccard >= 0.56:
-                return True
-        return False
+            strongest = max(strongest, containment, jaccard)
+        return strongest
 
     @classmethod
     def _looks_incomplete(cls, text: str) -> bool:
@@ -100,7 +111,7 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             or (episode_config.get("target_duration", 600) // 60)
             or 10
         )
-        if target_minutes >= 15:
+        if target_minutes >= 5:
             return self._generate_episode_sections(episode_config, line_callback)
 
         topic = str(episode_config.get("topic", "general")).strip()
@@ -139,8 +150,12 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             if not text or "[unknown]" in text.lower() or self._looks_incomplete(text):
                 continue
             repeat_key = self.communication_layer._repeat_key(text) if self.communication_layer else " ".join(text.lower().split())
-            if not repeat_key or repeat_key in seen or self._is_near_duplicate(text, prior_texts):
+            if not repeat_key or repeat_key in seen:
                 continue
+            if self._is_near_duplicate(text, prior_texts):
+                continue
+            if self._repetition_score(text, prior_texts) >= 0.56:
+                line["repetition_warning"] = "possible_repetition"
             seen.add(repeat_key)
             prior_texts.append(text)
             accepted.append(line)
@@ -151,7 +166,7 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
         for idx, line in enumerate(accepted, start=1):
             line["line_number"] = idx
 
-        target_words = max(1, target_minutes * 155)
+        target_words = max(1, round(target_minutes * self._spoken_wpm()))
         word_count = sum(len(str(line.get("text", "")).split()) for line in accepted)
         logger.info(
             "[SegmentWorker] Forward-only final: %d lines / %d words for %d-minute target (%.0f%%)",
@@ -161,21 +176,32 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
 
     def _generate_episode_sections(self, config, line_callback=None):
         target_seconds = int(config.get("target_duration") or 1800)
-        if not 900 <= target_seconds <= 2700:
-            raise ValueError("Episodes must target 15 to 45 minutes")
-        reserve = float(config.get("ad_break_duration_seconds") or 0)
-        if self.project_config.get("intro_outro", {}).get("enabled"):
-            reserve += 40
-        content_seconds = max(780, target_seconds - reserve)
-        section_seconds = int(config.get("segment_duration_seconds") or 900)
+        if not 300 <= target_seconds <= 2700:
+            raise ValueError("Episodes must target 5 to 45 minutes")
+        # The requested duration is the total dialogue target. Generation is
+        # internally bounded to five-minute sections plus the exact remainder.
+        content_seconds = target_seconds
+        section_seconds = 5 * 60
         count = __import__('math').ceil(content_seconds / section_seconds)
         result, history = [], []
         progress = config.get("_progress_callback")
+        section_phases = [
+            ("Setup / define the issue", "establish the topic, why it matters, and the first concrete example"),
+            ("Mechanics / deeper explanation", "explain how it works and add technical or practical detail"),
+            ("Consequences / challenge", "surface limitations, objections, tradeoffs, and a different perspective"),
+            ("Resolution / takeaway", "draw implications, lessons, what happens next, and a natural close"),
+        ]
         for index in range(count):
             seconds = min(section_seconds, content_seconds - index * section_seconds)
+            phase_index = 0 if count <= 1 else round(index * 3 / (count - 1))
+            section_angle, new_ground = section_phases[phase_index]
+            prior_section_excerpt = "\n".join(history[-12:]) if history else "(none — this is the opening section)"
             section_config = {**config, "target_duration_minutes": seconds / 60,
-                              "target_duration": round(seconds), "target_word_count": round(seconds / 60 * 150),
+                              "target_duration": round(seconds), "target_word_count": round(seconds / 60 * self._spoken_wpm()),
                               "_prior_texts": [line["text"] for line in result], "_prior_history": history,
+                              "_previous_section_summary": prior_section_excerpt,
+                              "_section_angle": section_angle, "_section_new_ground": new_ground,
+                              "_section_transition": "Open the show naturally." if index == 0 else "Pick up naturally from the previous section without summarizing it.",
                               "_section_index": index, "_section_count": count,
                               "generation_nonce": f"{config.get('generation_nonce', 'episode')}-section-{index + 1}"}
             if callable(progress):
@@ -189,8 +215,13 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             if not lines:
                 raise RuntimeError(f"Section {index + 1} produced no fresh dialogue; no repeated filler was added")
             words = sum(len(line["text"].split()) for line in lines)
-            if words < section_config["target_word_count"] * .90:
-                raise RuntimeError(f"Section {index + 1} too short: {words}/{section_config['target_word_count']} words. Existing saved episode was preserved.")
+            nominal_words = section_config["target_word_count"]
+            hard_floor = round(seconds / 60 * 60)
+            if words < nominal_words:
+                logger.warning(
+                    "Section %d below spoken-word target: %d/%d words (hard save floor %d); preserving generated dialogue",
+                    index + 1, words, nominal_words, hard_floor,
+                )
             for line in lines:
                 line.update(segment_index=index + 1, segment_title=f"Part {index + 1}", line_number=len(result) + 1)
                 result.append(line)
@@ -232,7 +263,7 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
 
         try:
             self._apply_personality_settings(episode_config.get("personality_settings"))
-            target_words = int(episode_config.get("target_word_count") or target_minutes * 155)
+            target_words = int(episode_config.get("target_word_count") or target_minutes * 90)
             rhythm = RhythmState.from_context(episode_config)
 
             script_definition = {
@@ -263,6 +294,15 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                     f"{persona_brief}\n\nRUNTIME CREATIVE INSTRUCTIONS:\n"
                     f"{custom_instructions[:1200]}"
                 )
+            persona_brief += (
+                "\n\nSECTION CONTINUITY BRIEF:\n"
+                f"PREVIOUS SECTION SUMMARY:\n{str(episode_config.get('_previous_section_summary') or '(none)')[:1800]}\n\n"
+                f"THIS SECTION'S ANGLE:\n{episode_config.get('_section_angle', 'Continue the discussion with a new angle.')}\n\n"
+                f"TRANSITION:\n{episode_config.get('_section_transition', 'Pick up naturally without repeating earlier material.')}\n\n"
+                "DO NOT REPEAT:\n"
+                "- the topic definition\n- the first example or analogy\n- previously established claims\n\n"
+                f"NEW GROUND TO COVER:\n- {episode_config.get('_section_new_ground', 'a specific new angle, consequence, or practical example')}"
+            )
 
             generation_nonce = str(
                 episode_config.get("generation_nonce")
@@ -273,8 +313,31 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             seen_text: set[str] = {self.communication_layer._repeat_key(text) for text in prior_episode_texts}
             history_lines: List[str] = list(episode_config.get("_prior_history") or [])
             stage_counter = 0
+            governor = EpisodeGovernor(
+                getattr(self.communication_layer, "phil", None),
+                getattr(self.communication_layer, "jim", None),
+                history=history_lines,
+            )
+            beat_templates = [
+                "introduce the central question",
+                "explain why people should care",
+                "give one concrete example",
+                "explain the mechanism behind it",
+                "have Jim challenge the main assumption",
+                "have Phil answer with a different concrete example",
+                "discuss a limitation or tradeoff",
+                "show the practical consequence for real people",
+                "draw the section's takeaway",
+                "create a natural transition to the next section",
+            ]
+            beat_count = 10 if target_minutes >= 4 else max(4, int(round(target_minutes * 2)))
+            section_beats = [
+                {"number": index + 1, "description": description}
+                for index, description in enumerate(beat_templates[:beat_count])
+            ]
+            completed_beats: List[int] = []
 
-            def append_fresh(lines: List[Dict[str, Any]]) -> int:
+            def append_fresh(lines: List[Dict[str, Any]], rejection_stats: Dict[str, int], directives: List[TurnDirective]) -> int:
                 accepted = 0
                 prior_texts = prior_episode_texts + [str(exchange.get("text", "")) for exchange in exchanges]
                 for line in lines:
@@ -284,12 +347,19 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                     if self._looks_incomplete(text):
                         logger.info("[SegmentWorker] Dropped incomplete turn: %s", text[:90])
                         continue
+                    directive = next((item for item in directives if item.speaker.lower() == str(line.get("speaker", "")).lower()), None)
+                    if directive and not governor.validate_completion(directive, text):
+                        rejection_stats["directive_rejected_lines"] += 1
+                        logger.info("[EpisodeGovernor] Rejected completion for %s", directive.speaker)
+                        continue
                     repeat_key = self.communication_layer._repeat_key(text)
                     if not repeat_key or repeat_key in seen_text:
+                        rejection_stats["duplicate_rejected_lines"] += 1
                         logger.info("[SegmentWorker] Dropped exact repeat: %s", text[:90])
                         continue
                     if self._is_near_duplicate(text, prior_texts):
-                        logger.info("[SegmentWorker] Dropped near-repeat: %s", text[:90])
+                        rejection_stats["duplicate_rejected_lines"] += 1
+                        logger.info("[SegmentWorker] Dropped very-close repeat: %s", text[:90])
                         continue
 
                     seen_text.add(repeat_key)
@@ -302,6 +372,9 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                         "timing": context.get("timing_profile", "balanced"),
                         "generated_by": line.get("generated_by", "llamacpp"),
                     }
+                    if self._repetition_score(text, prior_texts) >= 0.56:
+                        exchange["repetition_warning"] = "possible_repetition"
+                        logger.info("[SegmentWorker] Kept possible repetition for editor review: %s", text[:90])
                     exchanges.append(exchange)
                     prior_texts.append(text)
                     accepted += 1
@@ -310,74 +383,105 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                     history_lines.append(
                         f"{str(exchange['speaker']).upper()}{emotion_tag}: {text}"
                     )
+                    governor.record_turn(str(exchange["speaker"]), text)
                 return accepted
 
-            def request_stage(stage: str, n_exchanges: int) -> int:
+            def request_stage(stage: str, n_exchanges: int, assigned_beats: List[Dict[str, Any]]) -> int:
                 nonlocal stage_counter
                 stage_counter += 1
-                lines = generate_segment(
-                    topic=topic,
-                    key_points=key_points[stage_counter % len(key_points):] + key_points[:stage_counter % len(key_points)],
-                    stage=stage,
-                    history_lines=history_lines,
-                    primary_source_summary=context.get("primary_source_summary", ""),
-                    n_exchanges=n_exchanges,
-                    persona_brief=persona_brief + f"\nEpisode section {episode_config.get('_section_index', 0) + 1}/{episode_config.get('_section_count', 1)}. Continue forward. Discuss a new concrete angle; no restart or repeated examples.",
-                    generation_nonce=(
-                        f"{generation_nonce}-forward-{stage_counter}-{stage}-{len(exchanges)}"
-                    ),
+                started = time.perf_counter()
+                beat_numbers = [int(beat["number"]) for beat in assigned_beats]
+                beat_descriptions = [str(beat["description"]) for beat in assigned_beats]
+                beat_block = "\n".join(f"- Beat {number}: {description}" for number, description in zip(beat_numbers, beat_descriptions))
+                completed_block = ", ".join(str(number) for number in completed_beats) or "none"
+                directives = [
+                    governor.plan_next_turn(stage=stage, beat_number=number, beat_description=description)
+                    for number, description in zip(beat_numbers, beat_descriptions)
+                ]
+                directive_block = "\n\n".join(item.to_prompt_block() for item in directives)
+                agenda_brief = (
+                    f"\n\nBEAT-OWNED GENERATION:\n"
+                    f"COMPLETED BEATS: {completed_block}\n"
+                    "CRITICAL: Do not repeat any exact phrase, greeting, question, example, or claim used earlier.\n"
+                    "DO NOT REPEAT the completed beat ideas above. Move the conversation forward immediately.\n"
+                    f"CURRENT ASSIGNMENT:\n{beat_block}\n"
+                    f"GOVERNOR DIRECTIVES:\n{directive_block}\n"
+                    "RETURN ONLY DIALOGUE FOR THESE BEATS. DO NOT DISCUSS ANY OTHER BEAT."
                 )
+                rejection_stats = {"duplicate_rejected_lines": 0, "directive_rejected_lines": 0}
+                try:
+                    lines = llm_writer.generate_segment(
+                        topic=topic,
+                        key_points=key_points[stage_counter % len(key_points):] + key_points[:stage_counter % len(key_points)],
+                        stage=stage,
+                        history_lines=history_lines,
+                        primary_source_summary=context.get("primary_source_summary", ""),
+                        n_exchanges=n_exchanges,
+                        persona_brief=persona_brief + f"\nEpisode section {episode_config.get('_section_index', 0) + 1}/{episode_config.get('_section_count', 1)}. Continue forward. Do not restart or repeat earlier material.{agenda_brief}",
+                        generation_nonce=(
+                            f"{generation_nonce}-forward-{stage_counter}-{stage}-{len(exchanges)}"
+                        ),
+                    )
+                except Exception as exc:
+                    lines = []
+                    logger.exception("Segment stage call crashed: stage=%s requested=%d", stage, n_exchanges)
+                    diagnostic = {"status": "exception", "error": str(exc)}
+                else:
+                    diagnostic = llm_writer.last_call_diagnostic()
+                elapsed = round(time.perf_counter() - started, 3)
+                returned = len(lines or [])
+                stage_words = sum(len(str(line.get("text", "")).split()) for line in (lines or []))
+                stage_record = {
+                    "section": episode_config.get("_section_index", 0) + 1,
+                    "stage": stage,
+                    "requested_exchanges": n_exchanges,
+                    "returned_lines": returned,
+                    "returned_exchanges": returned // 2,
+                    "stage_words": stage_words,
+                    "cumulative_section_words": sum(len(str(e.get("text", "")).split()) for e in exchanges),
+                    "elapsed_seconds": elapsed,
+                    "status": diagnostic.get("status", "parse_empty" if not returned else "success"),
+                    "error": diagnostic.get("error"),
+                    "beat_numbers": beat_numbers,
+                    "beat_descriptions": beat_descriptions,
+                    "completed_beats": list(completed_beats),
+                    "duplicate_rejected_lines": 0,
+                    "directive_rejected_lines": 0,
+                    "accepted_lines": 0,
+                }
+                stage_telemetry = list(episode_config.get("_stage_telemetry") or [])
+                stage_telemetry.append(stage_record)
+                episode_config["_stage_telemetry"] = stage_telemetry
+                logger.info("LLM segment stage telemetry: %s", stage_record)
                 if not lines:
+                    progress = episode_config.get("_progress_callback")
+                    if callable(progress):
+                        progress({"section": episode_config.get("_section_index", 0) + 1, "section_count": episode_config.get("_section_count", 1),
+                                  "stage": stage, "batch": stage_counter,
+                                  "accepted_words": sum(len(text.split()) for text in prior_episode_texts) + sum(len(line["text"].split()) for line in exchanges),
+                                  "stage_telemetry": stage_telemetry})
                     return 0
-                count = append_fresh(lines)
+                count = append_fresh(lines, rejection_stats, directives)
+                stage_record["accepted_lines"] = count
+                stage_record["duplicate_rejected_lines"] = rejection_stats["duplicate_rejected_lines"]
+                stage_record["directive_rejected_lines"] = rejection_stats["directive_rejected_lines"]
+                stage_record["cumulative_section_words"] = sum(len(str(e.get("text", "")).split()) for e in exchanges)
+                completed_beats.extend(beat_numbers)
+                stage_record["completed_beats"] = list(completed_beats)
                 progress = episode_config.get("_progress_callback")
                 if callable(progress):
                     progress({"section": episode_config.get("_section_index", 0) + 1, "section_count": episode_config.get("_section_count", 1),
                               "stage": stage, "batch": stage_counter,
-                              "accepted_words": sum(len(text.split()) for text in prior_episode_texts) + sum(len(line["text"].split()) for line in exchanges)})
+                              "accepted_words": sum(len(text.split()) for text in prior_episode_texts) + sum(len(line["text"].split()) for line in exchanges),
+                              "stage_telemetry": stage_telemetry})
                 return count
 
-            opening_exchanges = 1 if target_minutes <= 3 else 2
-            first_stage = "opening" if not prior_episode_texts else "expansion"
-            if request_stage(first_stage, opening_exchanges) <= 0:
-                return None
-
-            if target_minutes <= 3:
-                middle_exchanges = 1
-                max_middle_batches = 10
-            elif target_minutes <= 8:
-                middle_exchanges = 3
-                max_middle_batches = 12
-            else:
-                middle_exchanges = 4
-                max_middle_batches = max(14, __import__('math').ceil(target_words / 160) + 8)
-
-            stalled_batches = 0
-            for batch_index in range(max_middle_batches):
-                current_words = sum(len(e["text"].split()) for e in exchanges)
-                if current_words >= target_words * 0.98:
-                    break
-                stage = "expansion" if batch_index % 2 == 0 else "deepening"
-                accepted_count = request_stage(stage, middle_exchanges)
-                stalled_batches = stalled_batches + 1 if accepted_count <= 0 else 0
-                if stalled_batches >= 3:
-                    break
-
-            continuation_budget = 4
-            while continuation_budget > 0:
-                current_words = sum(len(e["text"].split()) for e in exchanges)
-                if current_words >= target_words * 0.88:
-                    break
-                accepted_count = request_stage("deepening", 1)
-                continuation_budget -= 1
-                if accepted_count <= 0 and continuation_budget <= 1:
-                    break
-
-            current_words = sum(len(e["text"].split()) for e in exchanges)
-            if current_words < target_words * 0.96:
-                request_stage("reflection", 1)
-            if episode_config.get('_section_index', 0) == episode_config.get('_section_count', 1) - 1:
-                request_stage("closing", 1)
+            for beat_offset in range(0, len(section_beats), 2):
+                assigned_beats = section_beats[beat_offset:beat_offset + 2]
+                stage = "opening" if beat_offset == 0 and not prior_episode_texts else "expansion"
+                exchanges_requested = 2 if beat_offset == 0 else 3
+                if request_stage(stage, exchanges_requested, assigned_beats) <= 0 and beat_offset == 0:
+                    return None
 
             if not exchanges:
                 return None
@@ -447,17 +551,35 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             offset = end
         return segments
 
-    def _concatenate_segments(self, segments: List[Dict[str, Any]], output_path: Path) -> None:
+    def _concatenate_segments(
+        self, segments: List[Dict[str, Any]], output_path: Path,
+        media_cues_override: Optional[List[Dict[str, Any]]] = None,
+    ) -> None:
         """Build dialogue audio, then apply episode media cues before wrapping."""
-        super()._concatenate_segments(segments, output_path)
+        super()._concatenate_segments(segments, output_path, media_cues_override=[])
         if not output_path.exists():
             return
 
         episode_id = output_path.stem
         if episode_id.endswith("_raw_mix"):
             episode_id = episode_id[: -len("_raw_mix")]
-        cue_payload = load_media_cues(episode_id)
-        cues = list(cue_payload.get("cues", []) or [])
+        if media_cues_override is None:
+            cue_payload = load_media_cues(episode_id)
+            cues = list(cue_payload.get("cues", []) or [])
+        else:
+            cues = list(media_cues_override)
+        seen_line_cues = set()
+        for segment in segments:
+            for cue in segment.get("production_cues", []) or []:
+                identity = (segment.get("production_line_id"), json.dumps(cue, sort_keys=True, ensure_ascii=False))
+                if identity in seen_line_cues:
+                    continue
+                seen_line_cues.add(identity)
+                try:
+                    line_index = int(segment.get("line_index", 1)) - 1
+                except (TypeError, ValueError):
+                    line_index = 0
+                cues.append({**cue, "line_number": line_index})
         if not cues:
             return
 

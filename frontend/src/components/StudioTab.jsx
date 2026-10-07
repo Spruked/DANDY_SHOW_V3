@@ -60,7 +60,7 @@ function Fader({ label, value, onChange, color = 'var(--gold)', unit = 'dB', min
   const pos   = ((value - min) / range) * 100
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 44 }}>
-      <div style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', letterSpacing: '.08em' }}>
+      <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', letterSpacing: '.08em' }}>
         {label}
       </div>
       {/* vertical slider track */}
@@ -78,7 +78,7 @@ function Fader({ label, value, onChange, color = 'var(--gold)', unit = 'dB', min
           }}
         />
       </div>
-      <div style={{ fontSize: '.52rem', color, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+      <div style={{ fontSize: '0.68rem', color, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
         {value > 0 ? '+' : ''}{value}
       </div>
     </div>
@@ -109,12 +109,12 @@ function Knob({ label, value, onChange, max = 100, color = 'var(--gold)' }) {
         />
         <div style={{
           position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '.52rem', fontFamily: 'var(--font-mono)', color, fontWeight: 600,
+          fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color, fontWeight: 600,
         }}>
           {value}
         </div>
       </div>
-      <div style={{ fontSize: '.46rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', textAlign: 'center', maxWidth: 52 }}>
+      <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', textAlign: 'center', maxWidth: 52 }}>
         {label}
       </div>
     </div>
@@ -138,7 +138,7 @@ function VUMeter({ level = 0, label = '' }) {
           }} />
         ))}
       </div>
-      <div style={{ fontSize: '.42rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{label}</div>
+      <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{label}</div>
     </div>
   )
 }
@@ -161,7 +161,7 @@ function SectionCard({ title, icon: Icon, children, accent = 'var(--gold)', defa
         }}
       >
         {Icon && <Icon size={12} style={{ color: accent }} />}
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.1em', flex: 1, textAlign: 'left' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', letterSpacing: '.1em', flex: 1, textAlign: 'left' }}>
           {title}
         </span>
         {open ? <ChevronUp size={10} style={{ color: 'var(--steel)' }} /> : <ChevronDown size={10} style={{ color: 'var(--steel)' }} />}
@@ -183,7 +183,7 @@ function StatusPill({ ok, label }) {
         ? <CheckCircle size={10} style={{ color: 'var(--green)' }} />
         : <XCircle    size={10} style={{ color: 'var(--red)' }} />
       }
-      <span style={{ fontSize: '.52rem', fontFamily: 'var(--font-mono)', color: ok ? 'var(--green)' : 'var(--red)' }}>
+      <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: ok ? 'var(--green)' : 'var(--red)' }}>
         {label}
       </span>
     </div>
@@ -200,7 +200,7 @@ function MacroBtn({ label, color = 'var(--gold)', onClick, active = false, disab
         border: `1px solid ${color}`,
         borderRadius: 'var(--radius)', padding: '6px 10px',
         color: active ? '#000' : color,
-        fontFamily: 'var(--font-mono)', fontSize: '.55rem',
+        fontFamily: 'var(--font-mono)', fontSize: '0.72rem',
         letterSpacing: '.06em', cursor: 'pointer', transition: 'all .15s',
         fontWeight: active ? 700 : 400,
         opacity: disabled ? 0.5 : 1,
@@ -769,7 +769,7 @@ export default function StudioTab() {
         display: 'flex', alignItems: 'center', gap: 10, padding: '6px 16px',
         background: 'var(--surface)', borderBottom: '1px solid var(--rim)', flexShrink: 0, flexWrap: 'wrap',
       }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', color: 'var(--gold)', letterSpacing: '.12em', marginRight: 8 }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', color: 'var(--gold)', letterSpacing: '.12em', marginRight: 8 }}>
           STUDIO CONTROL
         </span>
         <StatusPill ok={obs.connected} label="OBS WS" />
@@ -780,18 +780,18 @@ export default function StudioTab() {
           onClick={() => void Promise.all([refreshObsStatus(), refreshObsScenes()])}
           style={{
             background: 'var(--bg)', border: '1px solid var(--rim)', borderRadius: 6,
-            color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '.5rem', padding: '4px 8px', cursor: 'pointer',
+            color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '4px 8px', cursor: 'pointer',
           }}
         >
           REFRESH OBS
         </button>
         {obsError && (
-          <span style={{ fontSize: '.48rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
+          <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
             {obsError}
           </span>
         )}
         {macroError && (
-          <span style={{ fontSize: '.48rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
+          <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
             {macroError}
           </span>
         )}
@@ -832,7 +832,7 @@ export default function StudioTab() {
               background: studioView === id ? 'var(--gold-dim)' : 'var(--panel)',
               color: studioView === id ? 'var(--gold)' : 'var(--steel)',
               fontFamily: 'var(--font-mono)',
-              fontSize: '.54rem',
+              fontSize: '0.7rem',
               letterSpacing: '.08em',
               padding: '5px 10px',
               cursor: 'pointer',
@@ -858,7 +858,7 @@ export default function StudioTab() {
 
         {/* Channel mixer */}
         <SectionCard title="AUDIO MIXER â€” CHANNEL MIXER" icon={Sliders} accent="var(--gold)" defaultOpen={true}>
-          <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
             {mixerConnected
               ? 'LIVE: channel controls wired to audio mixer Remote API.'
               : 'OFFLINE: waiting for audio mixer Remote API.'}
@@ -875,7 +875,7 @@ export default function StudioTab() {
                   border: `1px solid ${ch.mute ? 'var(--red)' : ch.solo ? ch.color : 'var(--rim)'}`,
                   opacity: disabled ? 0.5 : 1,
                 }}>
-                  <div style={{ fontSize: '.44rem', fontFamily: 'var(--font-mono)', color: ch.color, textAlign: 'center', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: ch.color, textAlign: 'center', lineHeight: 1.3 }}>
                     {ch.label}
                   </div>
                   <VUMeter level={ch.vu} />
@@ -891,7 +891,7 @@ export default function StudioTab() {
                           disabled={disabled}
                           style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
                       </div>
-                      <div style={{ fontSize: '.38rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>GATE</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>GATE</div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                       <div style={{ position: 'relative' }}>
@@ -901,13 +901,13 @@ export default function StudioTab() {
                           disabled={disabled}
                           style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
                       </div>
-                      <div style={{ fontSize: '.38rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>COMP</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>COMP</div>
                     </div>
                   </div>
                   {/* EQ toggle */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                     <Toggle on={ch.eq} onClick={() => !disabled && updateChannel(k, { eq: !ch.eq })} color="var(--blue)" />
-                    <span style={{ fontSize: '.4rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>EQ</span>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>EQ</span>
                   </div>
                   {/* Mute / Solo */}
                   <div style={{ display: 'flex', gap: 3 }}>
@@ -915,13 +915,13 @@ export default function StudioTab() {
                       background: ch.mute ? 'var(--red)' : 'var(--bg)',
                       border: '1px solid var(--red)', borderRadius: 4,
                       color: ch.mute ? '#fff' : 'var(--red)',
-                      fontFamily: 'var(--font-mono)', fontSize: '.42rem', padding: '2px 5px', cursor: 'pointer',
+                      fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '2px 5px', cursor: 'pointer',
                     }}>M</button>
                     <button disabled={disabled} onClick={() => !disabled && updateChannel(k, { solo: !ch.solo })} style={{
                       background: ch.solo ? 'var(--gold)' : 'var(--bg)',
                       border: '1px solid var(--gold)', borderRadius: 4,
                       color: ch.solo ? '#000' : 'var(--gold)',
-                      fontFamily: 'var(--font-mono)', fontSize: '.42rem', padding: '2px 5px', cursor: 'pointer',
+                      fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '2px 5px', cursor: 'pointer',
                     }}>S</button>
                   </div>
                   {/* Bus routing */}
@@ -932,7 +932,7 @@ export default function StudioTab() {
                           background: ch[bus.toLowerCase()] ? ch.color : 'var(--bg)',
                           border: `1px solid ${ch.color}`, borderRadius: 3,
                           color: ch[bus.toLowerCase()] ? '#000' : ch.color,
-                          fontFamily: 'var(--font-mono)', fontSize: '.38rem', padding: '1px 2px', cursor: 'pointer',
+                          fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '1px 2px', cursor: 'pointer',
                         }}>{bus}</button>
                     ))}
                   </div>
@@ -948,7 +948,7 @@ export default function StudioTab() {
               border: `2px solid var(--gold)`,
               opacity: mixerConnected ? 1 : 0.5,
             }}>
-              <div style={{ fontSize: '.44rem', fontFamily: 'var(--font-mono)', color: 'var(--gold)', textAlign: 'center' }}>MASTER</div>
+              <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--gold)', textAlign: 'center' }}>MASTER</div>
               <VUMeter level={master.mute ? 0 : (master.vu || 0)} />
               <Fader label="OUT" value={master.gain} min={-60} max={12} color="var(--gold)"
                 onChange={v => mixerConnected && updateMaster({ gain: v })} />
@@ -959,17 +959,17 @@ export default function StudioTab() {
                     onChange={e => setMaster(m => ({ ...m, comp: +e.target.value }))}
                     style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
                 </div>
-                <div style={{ fontSize: '.38rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>COMP</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>COMP</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                 <Toggle on={master.limiter} onClick={() => setMaster(m => ({ ...m, limiter: !m.limiter }))} color="var(--red)" />
-                <span style={{ fontSize: '.38rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>LIM</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>LIM</span>
               </div>
               <button disabled={!mixerConnected} onClick={() => mixerConnected && updateMaster({ mute: !master.mute })} style={{
                 background: master.mute ? 'var(--red)' : 'var(--bg)',
                 border: '1px solid var(--red)', borderRadius: 4,
                 color: master.mute ? '#fff' : 'var(--red)',
-                fontFamily: 'var(--font-mono)', fontSize: '.42rem', padding: '3px 8px', cursor: 'pointer', width: '100%',
+                fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '3px 8px', cursor: 'pointer', width: '100%',
               }}>MUTE ALL</button>
             </div>
           </div>
@@ -981,7 +981,7 @@ export default function StudioTab() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {/* Monitor controls */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: '.5rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>MONITOR OUTPUT</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>MONITOR OUTPUT</div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <Knob label="VOLUME" value={monitor.volume} onChange={updateMonitorVolume} color="var(--blue)" />
                 <Knob label="REVERB" value={monitor.comfortReverb} onChange={v => setMonitor(m => ({ ...m, comfortReverb: v }))} color="var(--guest)" />
@@ -1005,13 +1005,13 @@ export default function StudioTab() {
                       }}
                       color={color}
                     />
-                    <span style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>{label}</span>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>{label}</span>
                   </div>
                 ))}
               </div>
               {monitor.clickTrack && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: '.46rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>CLICK LVL</span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>CLICK LVL</span>
                   <input type="range" min={0} max={100} value={monitor.clickLevel}
                     onChange={e => setMonitor(m => ({ ...m, clickLevel: +e.target.value }))}
                     style={{ flex: 1, accentColor: 'var(--green)' }} />
@@ -1020,18 +1020,18 @@ export default function StudioTab() {
             </div>
             {/* Headphone mixes */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: '.5rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>HEADPHONE MIXES</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>HEADPHONE MIXES</div>
               {[
                 { key: 'philHP', label: 'PHIL HP', color: 'var(--phil)' },
                 { key: 'jimHP',  label: 'JIM HP',  color: 'var(--jim)'  },
               ].map(({ key, label, color }) => (
                 <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Headphones size={10} style={{ color }} />
-                  <span style={{ fontSize: '.46rem', fontFamily: 'var(--font-mono)', color, width: 48, flexShrink: 0 }}>{label}</span>
+                  <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color, width: 48, flexShrink: 0 }}>{label}</span>
                   <input type="range" min={0} max={100} value={monitor[key]}
                     onChange={e => setMonitor(m => ({ ...m, [key]: +e.target.value }))}
                     style={{ flex: 1, accentColor: color }} />
-                  <span style={{ fontSize: '.46rem', fontFamily: 'var(--font-mono)', color, width: 24, textAlign: 'right' }}>
+                  <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color, width: 24, textAlign: 'right' }}>
                     {monitor[key]}
                   </span>
                 </div>
@@ -1062,12 +1062,12 @@ export default function StudioTab() {
                 background: audacity.recording ? 'var(--red)' : 'var(--bg)',
                 border: '1px solid var(--red)', borderRadius: 'var(--radius)',
                 color: audacity.recording ? '#fff' : 'var(--red)',
-                fontFamily: 'var(--font-mono)', fontSize: '.55rem', padding: '8px 14px', cursor: 'pointer',
+                fontFamily: 'var(--font-mono)', fontSize: '0.72rem', padding: '8px 14px', cursor: 'pointer',
               }}>
                 {audacity.recording ? <Square size={10} /> : <Circle size={10} />}
                 {audacity.recording ? 'STOP' : 'RECORD'}
               </button>
-              <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', lineHeight: 1.6 }}>
+              <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', lineHeight: 1.6 }}>
                 <div>Pre-processing chain</div>
                 <div style={{ color: 'var(--bone)' }}>ReaFIR â†’ ReaComp â†’ ReaEQ</div>
                 <div style={{ color: 'var(--bone)' }}>Spitfish â†’ LoudMax</div>
@@ -1096,7 +1096,7 @@ export default function StudioTab() {
                   border: `1px solid ${obs.activeScene === scene ? 'var(--blue)' : 'var(--rim)'}`,
                   borderRadius: 'var(--radius)', padding: '6px 8px',
                   color: obs.activeScene === scene ? '#fff' : 'var(--steel)',
-                  fontFamily: 'var(--font-mono)', fontSize: '.52rem',
+                  fontFamily: 'var(--font-mono)', fontSize: '0.68rem',
                   cursor: 'pointer', transition: 'all .15s', textAlign: 'left',
                   opacity: (obsBusy || !obs.connected) ? 0.5 : 1,
                 }}>
@@ -1105,13 +1105,13 @@ export default function StudioTab() {
             ))}
           </div>
           {obs.scenes.length === 0 && (
-            <div style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 8 }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 8 }}>
               No OBS scenes available.
             </div>
           )}
           {/* Transition */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <span style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>TRANSITION</span>
+            <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>TRANSITION</span>
             <div style={{ display: 'flex', gap: 4 }}>
               {obs.transitions.map(t => (
                 <button key={t} onClick={() => setObs(o => ({ ...o, transition: t }))} style={{
@@ -1119,7 +1119,7 @@ export default function StudioTab() {
                   border: `1px solid ${obs.transition === t ? 'var(--gold)' : 'var(--rim)'}`,
                   borderRadius: 4, padding: '2px 7px',
                   color: obs.transition === t ? '#000' : 'var(--steel)',
-                  fontFamily: 'var(--font-mono)', fontSize: '.44rem', cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)', fontSize: '0.68rem', cursor: 'pointer',
                 }}>{t}</button>
               ))}
             </div>
@@ -1131,7 +1131,7 @@ export default function StudioTab() {
             ].map(({ key, label, color }) => (
               <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Toggle on={obs[key]} onClick={() => setObs(o => ({ ...o, [key]: !o[key] }))} color={color} />
-                <span style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>{label}</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>{label}</span>
               </div>
             ))}
           </div>
@@ -1139,7 +1139,7 @@ export default function StudioTab() {
 
         {/* OBS Audio levels */}
         <SectionCard title="OBS â€” AUDIO SOURCES" icon={Volume2} accent="var(--blue)" defaultOpen={true}>
-          <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
             {mixerConnected ? 'LIVE: levels mirrored from audio mixer.' : 'OFFLINE: waiting on audio mixer levels.'}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -1151,14 +1151,14 @@ export default function StudioTab() {
               { label: 'MASTER OUT',  level: master.mute         ? 0 : (master.vu || 0), color: 'var(--gold)' },
             ].map(({ label, level, color }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: '.46rem', fontFamily: 'var(--font-mono)', color: 'var(--steel)', width: 64, flexShrink: 0 }}>{label}</span>
+                <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--steel)', width: 64, flexShrink: 0 }}>{label}</span>
                 <div style={{ flex: 1, height: 6, background: 'var(--rim)', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{
                     height: '100%', width: pct(level), background: color,
                     borderRadius: 3, transition: 'width .1s',
                   }} />
                 </div>
-                <span style={{ fontSize: '.46rem', fontFamily: 'var(--font-mono)', color, width: 24, textAlign: 'right' }}>
+                <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color, width: 24, textAlign: 'right' }}>
                   {Math.round(level)}
                 </span>
               </div>
@@ -1179,8 +1179,8 @@ export default function StudioTab() {
               { label: 'RESOLUTION',  value: stream.resolution,        color: 'var(--bone)' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ background: 'var(--bg)', borderRadius: 'var(--radius)', padding: '6px 8px' }}>
-                <div style={{ fontSize: '.42rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 2 }}>{label}</div>
-                <div style={{ fontSize: '.65rem', color, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{value}</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 2 }}>{label}</div>
+                <div style={{ fontSize: '0.85rem', color, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{value}</div>
               </div>
             ))}
           </div>
@@ -1195,10 +1195,10 @@ export default function StudioTab() {
             <div style={{ background: '#050505', border: '1px solid var(--rim)', borderRadius: 'var(--radius)', minHeight: 170, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {cameraConnected
                 ? <video ref={cameraVideoRef} muted playsInline autoPlay style={{ display: 'block', width: '100%', maxHeight: 280, objectFit: 'contain' }} />
-                : <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.55rem', color: 'var(--steel)' }}>NO CAMERA PREVIEW</span>}
+                : <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--steel)' }}>NO CAMERA PREVIEW</span>}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '.55rem', color: cameraConnected ? 'var(--green)' : 'var(--steel)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: cameraConnected ? 'var(--green)' : 'var(--steel)' }}>
                 {cameraConnected ? 'LIVE CAMERA CONNECTED' : 'CAMERA NOT CONNECTED'}
               </div>
               <select className="ds-select" value={cameraDeviceId} onChange={e => { setCameraDeviceId(e.target.value); setCameraConnected(false) }}>
@@ -1210,8 +1210,8 @@ export default function StudioTab() {
                 {cameraConnected && <button className="btn btn-steel btn-sm" onClick={stopBrowserCamera}>DISCONNECT</button>}
               </div>
               <button className="btn btn-steel btn-sm" onClick={() => void refreshBrowserCameras()}>REFRESH DEVICES</button>
-              {cameraError && <div style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: '.52rem' }}>{cameraError}</div>}
-              <div style={{ color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '.48rem', lineHeight: 1.5 }}>Uses the browser camera permission and feeds the local studio preview.</div>
+              {cameraError && <div style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: '0.68rem' }}>{cameraError}</div>}
+              <div style={{ color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', lineHeight: 1.5 }}>Uses the browser camera permission and feeds the local studio preview.</div>
             </div>
           </div>
         </SectionCard>
@@ -1222,7 +1222,7 @@ export default function StudioTab() {
 
         {/* PTZ Camera controls */}
         <SectionCard title="PTZ CAMERAS" icon={Camera} accent="var(--guest)" defaultOpen={true}>
-          <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
             SIMULATED: waiting on backend PTZ route.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1233,7 +1233,7 @@ export default function StudioTab() {
                 background: cam.active ? 'rgba(192,132,252,0.05)' : 'var(--bg)',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.55rem', color: cam.active ? 'var(--guest)' : 'var(--steel)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: cam.active ? 'var(--guest)' : 'var(--steel)' }}>
                     {cam.label} {cam.active && 'â— LIVE'}
                   </span>
                   <Toggle on={cam.active} onClick={() => {
@@ -1257,11 +1257,11 @@ export default function StudioTab() {
                   { key: 'exposure', label: 'EXPOSURE', color: 'var(--gold)'  },
                 ].map(({ key, label, color }) => (
                   <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 }}>
-                    <span style={{ fontSize: '.42rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', width: 44, flexShrink: 0 }}>{label}</span>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', width: 44, flexShrink: 0 }}>{label}</span>
                     <input type="range" min={0} max={100} value={cam[key]}
                       onChange={e => updateCamera(k, { [key]: +e.target.value })}
                       style={{ flex: 1, accentColor: color, height: 3 }} />
-                    <span style={{ fontSize: '.42rem', color, fontFamily: 'var(--font-mono)', width: 20, textAlign: 'right' }}>
+                    <span style={{ fontSize: '0.68rem', color, fontFamily: 'var(--font-mono)', width: 20, textAlign: 'right' }}>
                       {cam[key]}
                     </span>
                   </div>
@@ -1277,7 +1277,7 @@ export default function StudioTab() {
           <>
         {/* Macro buttons */}
         <SectionCard title="MACRO BUTTONS" icon={Zap} accent="var(--gold)" defaultOpen={true}>
-          <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
             LIVE: macro actions use OBS and mixer endpoints when available.
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
@@ -1311,8 +1311,8 @@ export default function StudioTab() {
                 onClick={() => navigator.clipboard?.writeText(cmd)}
                 title="Click to copy"
               >
-                <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 2 }}>{label}</div>
-                <div style={{ fontSize: '.52rem', color: 'var(--gold)', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>{cmd}</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 2 }}>{label}</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--gold)', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>{cmd}</div>
               </div>
             ))}
           </div>

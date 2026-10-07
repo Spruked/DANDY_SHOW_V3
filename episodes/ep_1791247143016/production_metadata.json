@@ -1,0 +1,29 @@
+{
+  "episode_id": "ep_1791247143016",
+  "title": "When Everything Became Disposable \u2014 Why We Stopped Fixing Things",
+  "topic": "Phil and Jim explore why everyday products, vehicles, appliances, electronics, tools, and machinery have become increasingly difficult or expensive to repair. The discussion should compare the older repair culture they grew up around\u2014where equipment was expected to be opened, diagnosed, repaired, rebuilt, and kept in service\u2014with today's products that may depend on sealed components, proprietary software, specialized diagnostic equipment, serialized parts, unavailable schematics, or complete module replacement. The conversation is not simply about blaming manufacturers. Examine the economic and technical reasons this happened: cheaper mass production, miniaturization, labor costs, safety requirements, software integration, consumer demand for smaller and more capable products, supply chains, warranties, and rapid product cycles. Phil and Jim should also consider the consequences for consumers, independent repair shops, mechanics, farmers, hobbyists, and small businesses.",
+  "audio_file": "C:\\dev\\Desktop\\The Real Dandy\\Dandy-Studio-Qwen\\episodes\\ep_1791247143016\\audio.mp3",
+  "segment_count": 24,
+  "generated_at": "2026-10-06T19:04:32.706858",
+  "processing": {
+    "input_file": "C:\\dev\\Desktop\\The Real Dandy\\Dandy-Studio-Qwen\\staging\\tmpxc7dn5pn\\ep_1791247143016_raw_mix.mp3",
+    "output_file": "C:\\dev\\Desktop\\The Real Dandy\\Dandy-Studio-Qwen\\episodes\\ep_1791247143016\\audio.mp3",
+    "measured_loudness": "-15.14",
+    "final_loudness": "-15.96",
+    "true_peak": "-1.22",
+    "loudness_range": "1.60",
+    "compliant": true,
+    "processing_chain": "two_pass_ffmpeg",
+    "intro_outro": "wrapped"
+  },
+  "voice_assignments": {
+    "phil": {
+      "primary": "am_michael",
+      "fallback": null
+    },
+    "jim": {
+      "primary": "am_liam",
+      "fallback": null
+    }
+  }
+}

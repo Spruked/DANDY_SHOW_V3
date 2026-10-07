@@ -23,7 +23,7 @@ router = APIRouter(tags=["library"])
 
 _SCRIPT_LINE_RE = re.compile(
     r"^\s*(?:#\s*\d+\s*)?(?:\*\*)?"
-    r"(PHIL|JIM|HOST|GUEST|INTRO_MALE|INTRO_FEMALE)"
+    r"(PHIL|JIM|BRYAN|HOST|GUEST|INTRO_MALE|INTRO_FEMALE)"
     r"(?:\*\*)?\s*[:\-]?\s*(.+?)\s*$",
     re.IGNORECASE,
 )

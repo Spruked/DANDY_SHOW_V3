@@ -1,0 +1,7 @@
+{
+  "job_id": "job_ep_1791247143016_552a3253",
+  "episode_id": "ep_1791247143016",
+  "status": "failed",
+  "updated_at": "2026-10-05T20:31:19.571593",
+  "error": "Section 1 too short: 236/2250 words. Existing saved episode was preserved."
+}

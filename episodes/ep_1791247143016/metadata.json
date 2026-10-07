@@ -1,0 +1,33 @@
+{
+  "line_count": 24,
+  "phil_count": 13,
+  "jim_count": 11,
+  "host_count": 0,
+  "ads_count": 0,
+  "word_count": 612,
+  "estimated_runtime_seconds": 248,
+  "runtime_source": "word-count plus pauses estimate; final audio requires ffprobe",
+  "segment_count": 1,
+  "writer_engine": "llm_bridge",
+  "writer_engine_actual": "llm_bridge",
+  "fallback_used": false,
+  "fallback_sources": [],
+  "fallback_line_count": 0,
+  "llm_sources": [
+    "llamacpp"
+  ],
+  "llm_line_count": 24,
+  "structural_sources": [],
+  "structural_line_count": 0,
+  "unknown_line_count": 0,
+  "line_source_counts": {
+    "llamacpp": 24
+  },
+  "provenance_reliable": true,
+  "repetition_guard_passed": true,
+  "repetition_guard_max_allowed": 1,
+  "max_repeated_line_count": 1,
+  "repeated_line_count": 0,
+  "duplicate_line_instances": 0,
+  "top_repeated_lines": []
+}

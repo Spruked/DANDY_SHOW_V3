@@ -31,7 +31,7 @@ _SCAN_ROOTS = (
 
 _AUDIO_EXTS = {".mp3", ".wav", ".ogg", ".flac", ".aac", ".m4a"}
 _IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
-_VIDEO_EXTS = {".mp4", ".mov", ".webm", ".mkv"}
+_VIDEO_EXTS = {".mp4", ".mov", ".webm", ".mkv", ".avi"}
 _DOCUMENT_EXTS = {".txt", ".md", ".json", ".csv", ".pdf", ".doc", ".docx", ".rtf", ".html", ".htm"}
 
 
@@ -142,7 +142,7 @@ def load_library_asset(asset_id: str) -> Optional[Dict[str, Any]]:
 
 
 def list_episode_ad_assets(episode_id: str) -> List[Dict[str, Any]]:
-    """Expose produced ad MP3s as callable assets without touching ad metadata."""
+    """Expose produced ad audio and attached ad visuals as reusable episode assets."""
     ads_dir = PROJECT_ROOT / "episodes" / episode_id / "ads"
     if not ads_dir.exists():
         return []
@@ -183,6 +183,48 @@ def list_episode_ad_assets(episode_id: str) -> List[Dict[str, Any]]:
             "description": f"Produced episode ad: {ad_id}",
             "ad_id": ad_id,
         })
+
+    visual_exts = _IMAGE_EXTS | _VIDEO_EXTS
+    for manifest in sorted(ads_dir.glob("*_assets.json")):
+        ad_id = manifest.name[:-len("_assets.json")]
+        try:
+            records = json.loads(manifest.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(records, list):
+            continue
+        for record in records:
+            if not isinstance(record, dict):
+                continue
+            stored_path = Path(str(record.get("stored_path") or ""))
+            if not stored_path.is_absolute():
+                stored_path = (PROJECT_ROOT / stored_path).resolve()
+            try:
+                resolved_path = stored_path.resolve()
+                if not resolved_path.is_relative_to(ads_dir.resolve()) or not resolved_path.is_file():
+                    continue
+            except (OSError, ValueError):
+                continue
+            suffix = resolved_path.suffix.lower()
+            if suffix not in visual_exts:
+                continue
+            asset_type = "image" if suffix in _IMAGE_EXTS else "video"
+            source_asset_id = str(record.get("asset_id") or resolved_path.stem)
+            assets.append({
+                **record,
+                "asset_id": f"adlib_{ad_id}_{source_asset_id}",
+                "source": "episode_ad",
+                "scope": "episode",
+                "role": "ad_visual",
+                "asset_type": asset_type,
+                "label": record.get("label") or record.get("original_name") or resolved_path.name,
+                "original_name": record.get("original_name") or resolved_path.name,
+                "filename": resolved_path.name,
+                "stored_path": str(resolved_path),
+                "content_type": record.get("content_type") or mimetypes.guess_type(resolved_path.name)[0] or "application/octet-stream",
+                "size_bytes": resolved_path.stat().st_size,
+                "ad_id": ad_id,
+            })
     return assets
 
 

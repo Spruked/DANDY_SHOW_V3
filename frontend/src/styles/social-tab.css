@@ -25,7 +25,7 @@
   color: var(--dandy-muted);
   border: 1px solid transparent;
   padding: 6px 16px;
-  font-size: 12px;
+  font-size: 16px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
@@ -39,9 +39,59 @@
   border-bottom: 2px solid var(--dandy-gold);
 }
 
+.social-tab-shell {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .social-mode-body {
   display: flex;
-  height: calc(100vh - 140px);
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Let the export list and asset rail scroll inside their own columns. */
+.pane-main,
+.pane-right { min-height: 0; }
+.social-exports-layout > .pane-right { width: 390px; }
+.social-exports-list,
+.social-right-scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: #8994a3 #0b0e12;
+}
+.social-exports-list::-webkit-scrollbar,
+.social-right-scroll::-webkit-scrollbar {
+  width: 14px;
+}
+.social-exports-list::-webkit-scrollbar-track,
+.social-right-scroll::-webkit-scrollbar-track {
+  background: #0b0e12;
+  border-left: 1px solid var(--rim);
+}
+.social-exports-list::-webkit-scrollbar-thumb,
+.social-right-scroll::-webkit-scrollbar-thumb {
+  background: #8994a3;
+  border: 3px solid #0b0e12;
+  border-radius: 99px;
+}
+.social-exports-list::-webkit-scrollbar-thumb:hover,
+.social-right-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+.social-right-scroll { display: flex; flex-direction: column; }
+.social-assets-list { flex: 0 0 auto; }
+
+@media (max-width: 1200px) {
+  .social-exports-layout > .pane-right { width: 300px; }
 }
 
 /* ---------- shared 3-panel layout ---------- */
@@ -62,7 +112,7 @@
 }
 
 .panel-header {
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dandy-muted);
@@ -85,7 +135,7 @@
 
 .panel label {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--dandy-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -101,7 +151,7 @@
   color: var(--dandy-text);
   padding: 6px 8px;
   margin-top: 4px;
-  font-size: 13px;
+  font-size: 17px;
   font-family: inherit;
 }
 
@@ -122,7 +172,7 @@
   background: var(--dandy-bg);
   border: 1px solid transparent;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .slide-list-item:hover, .card-list-item:hover {
@@ -149,7 +199,7 @@
 
 .card-type {
   color: var(--dandy-gold);
-  font-size: 10px;
+  font-size: 13px;
   text-transform: uppercase;
 }
 
@@ -158,7 +208,7 @@
   border: none;
   color: var(--dandy-muted);
   cursor: pointer;
-  font-size: 10px;
+  font-size: 13px;
 }
 .slide-actions button:hover { color: var(--dandy-gold); }
 
@@ -175,7 +225,7 @@
   color: var(--dandy-text);
   padding: 8px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 16px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -216,7 +266,7 @@
 
 .slide-preview-content h2 { margin: 0 0 12px; }
 .slide-preview-content h3 { margin: 0 0 8px; opacity: 0.85; font-weight: 400; }
-.slide-preview-content p  { margin: 0; font-size: 0.6em; opacity: 0.8; }
+.slide-preview-content p  { margin: 0; font-size: 0.78em; opacity: 0.8; }
 
 .adcard-overlay {
   padding: 24px;
@@ -235,7 +285,7 @@
   color: var(--dandy-muted);
   text-align: center;
   padding: 80px 20px;
-  font-size: 13px;
+  font-size: 17px;
 }
 
 /* ---------- editor & templates ---------- */
@@ -262,7 +312,7 @@
   border: 1px solid var(--dandy-border);
   color: var(--dandy-text);
   padding: 10px 8px;
-  font-size: 11px;
+  font-size: 14px;
   cursor: pointer;
   text-align: left;
 }
@@ -275,7 +325,7 @@
 .duration-readout {
   color: var(--dandy-gold);
   font-family: monospace;
-  font-size: 12px;
+  font-size: 16px;
   padding: 6px 0;
   margin-bottom: 12px;
 }

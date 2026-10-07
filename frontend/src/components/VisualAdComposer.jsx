@@ -44,17 +44,17 @@ export default function VisualAdComposer({ episodeId, ad, assets, onSaved }) {
   const allTimed = [...composition.text_layers, ...composition.visuals]
   return <div style={{ borderTop: '1px solid var(--rim)', paddingTop: 12 }}>
     <div className="section-head"><span className="section-label">Visual Ad Composer</span><button className="btn btn-solid btn-sm" onClick={saveClick} disabled={busy}>{busy ? <Spinner /> : null}{dirty ? 'SAVE CHANGES' : 'SAVE COMPOSITION'}</button><button className="btn btn-gold btn-sm" onClick={render} disabled={busy || !ad.audio_file}>{busy ? 'WORKING' : 'RENDER VIDEO'}</button></div>
-    <div style={{ fontSize: '.72rem', color: 'var(--steel)', marginBottom: 10 }}>Upload images, videos, and sounds above. Voice must be produced first. All tracks are saved with this ad; render uses that same state. No voice trimming or provider substitution.</div>
+    <div style={{ fontSize: '0.94rem', color: 'var(--steel)', marginBottom: 10 }}>Upload images, videos, and sounds above. Voice must be produced first. All tracks are saved with this ad; render uses that same state. No voice trimming or provider substitution.</div>
     <div style={grid}>
       <Field label="Video aspect"><select className="ds-select" value={composition.aspect} disabled={busy} onChange={e => set('aspect', e.target.value)}>{['16:9', '1:1', '9:16', '4:5'].map(value => <option key={value}>{value}</option>)}</select></Field>
       <Field label="Background color"><input type="color" value={composition.background_color} disabled={busy} onChange={e => set('background_color', e.target.value)} /></Field>
     </div>
     <div aria-label="Ad timeline" style={{ border: '1px solid var(--rim)', padding: 10, margin: '12px 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.65rem' }}><span>0s</span><span>{duration}s requested</span></div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}><span>0s</span><span>{duration}s requested</span></div>
       {[['TEXT', composition.text_layers], ['VISUAL', composition.visuals], ['VOICE', [{ id: 'voice', start: 0, end: Number(ad.actual_duration_seconds || duration) }]], ['SFX', composition.sfx_tracks.map(track => ({ ...track, end: Math.min(duration, track.start + .4) }))]].map(([name, layers]) => <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-        <span style={{ width: 55, fontSize: '.62rem' }}>{name}</span><div style={{ flex: 1, height: 18, position: 'relative', background: 'var(--bg)' }}>{layers.map(layer => <span key={layer.id} title={name + ' · ' + layer.start + '–' + layer.end + 's'} style={{ position: 'absolute', left: (layer.start / duration * 100) + '%', width: Math.max(.8, Math.min(duration - layer.start, layer.end - layer.start) / duration * 100) + '%', height: 12, top: 3, background: name === 'SFX' ? 'var(--blue)' : 'var(--gold)', opacity: .7 }} />)}</div>
+        <span style={{ width: 55, fontSize: '0.81rem' }}>{name}</span><div style={{ flex: 1, height: 18, position: 'relative', background: 'var(--bg)' }}>{layers.map(layer => <span key={layer.id} title={name + ' · ' + layer.start + '–' + layer.end + 's'} style={{ position: 'absolute', left: (layer.start / duration * 100) + '%', width: Math.max(.8, Math.min(duration - layer.start, layer.end - layer.start) / duration * 100) + '%', height: 12, top: 3, background: name === 'SFX' ? 'var(--blue)' : 'var(--gold)', opacity: .7 }} />)}</div>
       </div>)}
-      <div style={{ fontSize: '.65rem', color: 'var(--steel)', marginTop: 6 }}>SFX marks show start offsets; the renderer validates actual sound length.</div>
+      <div style={{ fontSize: '0.85rem', color: 'var(--steel)', marginTop: 6 }}>SFX marks show start offsets; the renderer validates actual sound length.</div>
     </div>
     <details open><summary>Text track · {composition.text_layers.length} layers</summary>
       <button className="btn btn-steel btn-sm" disabled={busy} onClick={() => set('text_layers', [...composition.text_layers, { ...timed(), role: 'headline', content: ad.product || ad.sponsor || '', x: .5, y: .45, font: 'Arial Bold', size: 64, align: 'center', color: '#ffffff' }])}>ADD TEXT</button>
@@ -70,13 +70,13 @@ export default function VisualAdComposer({ episodeId, ad, assets, onSaved }) {
     </details>
     <details open><summary>Animation track · entrance / exit</summary>{allTimed.map(layer => {
       const track = composition.text_layers.some(text => text.id === layer.id) ? 'text_layers' : 'visuals'
-      return <div key={layer.id} style={{ padding: '10px 0' }}><div style={{ fontSize: '.72rem' }}>{layer.content || layer.role}</div><div style={grid}>{select(track, layer, 'animation_in', 'Entrance', MOTIONS)}{select(track, layer, 'animation_out', 'Exit', MOTIONS)}{number(track, layer, 'animation_duration', 'Motion duration (s)', .05, 5, .05)}{select(track, layer, 'easing', 'Easing', ['linear', 'ease_in_out'])}</div></div>
+      return <div key={layer.id} style={{ padding: '10px 0' }}><div style={{ fontSize: '0.94rem' }}>{layer.content || layer.role}</div><div style={grid}>{select(track, layer, 'animation_in', 'Entrance', MOTIONS)}{select(track, layer, 'animation_out', 'Exit', MOTIONS)}{number(track, layer, 'animation_duration', 'Motion duration (s)', .05, 5, .05)}{select(track, layer, 'easing', 'Easing', ['linear', 'ease_in_out'])}</div></div>
     })}</details>
     <details open><summary>SFX track · {composition.sfx_tracks.length} sounds</summary>
       <button className="btn btn-steel btn-sm" disabled={busy} onClick={() => set('sfx_tracks', [...composition.sfx_tracks, { id: id(), asset_id: '', start: 0, volume_db: -12, fade_in: .05, fade_out: .1 }])}>ADD SOUND EFFECT</button>
       {composition.sfx_tracks.map(layer => <div key={layer.id} style={{ padding: '10px 0' }}><div style={grid}>{assetPicker('sfx_tracks', layer, true)}{number('sfx_tracks', layer, 'start', 'Offset (s)', 0, duration)}{number('sfx_tracks', layer, 'volume_db', 'Volume (dB)', -60, 12, 1)}{number('sfx_tracks', layer, 'fade_in', 'Fade in (s)', 0, 10)}{number('sfx_tracks', layer, 'fade_out', 'Fade out (s)', 0, 10)}</div>{layer.asset_id && <audio controls preload="none" src={api.adAssetFileUrl(episodeId, ad.ad_id, layer.asset_id)} />}<button className="btn btn-steel btn-sm" disabled={busy} onClick={() => remove('sfx_tracks', layer.id)}>REMOVE SOUND</button></div>)}
     </details>
-    {message && <div role="status" style={{ padding: '10px 0', fontSize: '.8rem' }}>{message}</div>}
+    {message && <div role="status" style={{ padding: '10px 0', fontSize: '1.04rem' }}>{message}</div>}
     {output?.download_url && <><video controls preload="metadata" src={output.download_url} style={{ width: '100%', maxHeight: 360, marginTop: 10 }} /><a className="btn btn-gold btn-sm" href={output.download_url} download>DOWNLOAD RENDERED AD</a></>}
   </div>
 }

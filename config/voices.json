@@ -4,7 +4,9 @@
     "display_name": "Phil Dandy",
     "primary_engine": "qwen",
     "primary_voice": "am_michael",
-    "qwen_voice_prompt": "./audio/voices/phil.pt",
+    "qwen_voice_prompt": null,
+    "qwen_reference_audio": "./asset_library/voice/phildandyclone.wav",
+    "qwen_reference_text": "Well, Jim, that's the thing about a good idea. It usually sounds a little crazy right up until somebody actually builds it. Then everybody wonders why we weren't doing it that way all along.",
     "qwen_voice_instruction": "Phil Dandy: curious, energetic younger-brother host; warm, quick, conversational cadence.",
     "defaults": {
       "speed": 1.1,
@@ -17,12 +19,38 @@
     "display_name": "Jim Dandy",
     "primary_engine": "qwen",
     "primary_voice": "am_liam",
-    "qwen_voice_prompt": "./audio/voices/jim.pt",
+    "qwen_voice_prompt": null,
+    "qwen_reference_audio": "./asset_library/voice/jimdandyclone.wav",
+    "qwen_reference_text": "Phil, that sounds good on paper, but I want to know what happens when somebody actually has to use it. If it saves money, makes sense, and doesn't create three new problems, then you've got my attention.",
     "qwen_voice_instruction": "Jim Dandy: grounded, practical older-brother host; dry, measured, skeptical, clear.",
     "defaults": {
       "speed": 1.0,
       "pitch": 0.0,
       "volume": 0.95
+    }
+  },
+  "bryan": {
+    "character_file": "",
+    "display_name": "Bryan — Producer",
+    "primary_engine": "qwen",
+    "primary_voice": "bryan",
+    "qwen_voice_prompt": "./asset_library/voice/bryan_voice.pt",
+    "qwen_voice_instruction": "Bryan, the off-mic producer in the background: natural, conversational, occasionally amused or exasperated by the show noise.",
+    "producer_mode_default": "producer_background",
+    "modes": {
+      "producer_background": {
+        "gain_db": -8,
+        "instruction": "Bryan is the off-mic producer physically in the room. Speak softly, briefly, and from a slight distance. React only to studio activity or when Phil or Jim addresses you. Do not explain the episode topic."
+      },
+      "producer_on_mic": {
+        "gain_db": 0,
+        "instruction": "Bryan is intentionally on mic for a special announcement or producer segment. Speak clearly and naturally as the producer, without becoming a regular host."
+      }
+    },
+    "defaults": {
+      "speed": 1.0,
+      "pitch": 0.0,
+      "volume": 0.9
     }
   },
   "host": {

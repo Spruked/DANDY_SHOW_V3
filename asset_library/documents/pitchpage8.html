@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=1280, height=720, initial-scale=1.0" name="viewport" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f4ff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #ede9fe;
+      --text: #1a1240;
+      --text-muted: #5b4fa8;
+      --accent: #7c3aed;
+      --accent-light: #ede9fe;
+      --accent-mid: #a78bfa;
+      --border: #ddd6fe;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      width: 1280px; height: 720px;
+      overflow: hidden;
+      font-family: 'Calibri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text) !important;
+      font-family: 'Calibri Light', sans-serif;
+    }
+
+    /* Subtle grid background */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,58,237,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,58,237,0.06) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Accent blob top-right */
+    .blob {
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, rgba(167,139,250,0.05) 60%, transparent 80%);
+      pointer-events: none;
+    }
+
+    /* Header */
+    .header-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 60%, #c4b5fd 100%);
+    }
+
+    /* Left panel */
+    .left-panel {
+      width: 400px;
+      flex-shrink: 0;
+      padding: 0 0 0 52px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .eyebrow {
+      font-family: 'Calibri', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .main-title {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--text) !important;
+      margin-bottom: 12px;
+    }
+    .main-title span {
+      color: var(--accent);
+    }
+    .subtitle {
+      font-family: 'Calibri', sans-serif;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      padding-right: 16px;
+    }
+
+    /* Callout box */
+    .callout-box {
+      background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+      border-radius: 10px;
+      padding: 13px 16px;
+      margin-right: 20px;
+    }
+    .callout-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 7px;
+    }
+    .callout-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .callout-tag {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    /* Bullet list */
+    .bullets-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 28px 40px 18px 20px;
+      justify-content: center;
+    }
+    .bullet-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      transition: background 0.2s;
+      border-left: 2px solid transparent;
+      margin-bottom: 2px;
+    }
+    .bullet-row:hover {
+      background: rgba(124,58,237,0.05);
+      border-left-color: var(--accent-mid);
+    }
+    .icon-wrap {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent);
+      margin-top: 1px;
+    }
+    .bullet-text-wrap {
+      flex: 1;
+    }
+    .bullet-title {
+      font-family: 'Calibri', sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+    .bullet-desc {
+      font-family: 'Calibri', sans-serif;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Divider */
+    .v-divider {
+      width: 1px;
+      background: linear-gradient(to bottom, transparent 4%, var(--border) 20%, var(--border) 80%, transparent 96%);
+      flex-shrink: 0;
+      align-self: stretch;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body data-id="0">
+  <div data-id="1" class="bg-grid"></div>
+  <div data-id="2" class="blob"></div>
+  <div data-id="3" class="header-bar"></div>
+
+  <div data-id="4" style="position:relative; z-index:10; width:1280px; height:720px; display:flex; flex-direction:row; align-items:stretch;">
+
+    <!-- LEFT PANEL -->
+    <div data-id="5" class="left-panel" id="left-panel-xq8w">
+      <div data-id="6" class="eyebrow" id="eyebrow-kp3m">ORB Weaver Output</div>
+      <h2 data-id="7" class="main-title" id="title-bv7r">The Site World:<br data-id="8"/><span data-id="9">A Complete Machine-<br data-id="10"/>Readable Brain</span><br data-id="11"/>for Any Website.</h2>
+      <p data-id="12" class="subtitle" id="subtitle-nt2j">Every ORB Weaver scan compiles into a structured, versioned Site World package — ready for immediate AI deployment.</p>
+
+      <!-- Callout Box -->
+      <div data-id="13" class="callout-box" id="callout-zm4p">
+        <div data-id="14" class="callout-label" id="callout-label-rq1x">Final Output Artifacts</div>
+        <div data-id="15" class="callout-tags" id="callout-tags-wf6d">
+          <span data-id="16" class="callout-tag">Compiled Site Package</span>
+          <span data-id="17" class="callout-tag">Endpoint Map</span>
+          <span data-id="18" class="callout-tag">Pointer Audit</span>
+          <span data-id="19" class="callout-tag">Route Audit</span>
+          <span data-id="20" class="callout-tag">Workflow Audit</span>
+          <span data-id="21" class="callout-tag">Website Intelligence</span>
+          <span data-id="22" class="callout-tag">ORB Deployment Data</span>
+          <span data-id="23" class="callout-tag">ORB Update Data</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERTICAL DIVIDER -->
+    <div data-id="24" class="v-divider" id="divider-lp9c"></div>
+
+    <!-- RIGHT PANEL — BULLETS -->
+    <div data-id="25" class="bullets-panel" id="bullets-panel-hy5n">
+
+      <!-- Bullet 1: Knowledge Graph -->
+      <div data-id="26" class="bullet-row" id="bullet-row-1-ax3q">
+        <div data-id="27" class="icon-wrap" id="icon-1-bk7m">
+          <svg data-id="28" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle data-id="29" cx="18" cy="5" r="3"/><circle data-id="30" cx="6" cy="12" r="3"/><circle data-id="31" cx="18" cy="19" r="3"/>
+            <line data-id="32" x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line data-id="33" x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </div>
+        <div data-id="34" class="bullet-text-wrap" id="bullet-text-1-cj4n">
+          <div data-id="35" class="bullet-title" id="bullet-title-1-vr2p">Site Knowledge Graph</div>
+          <div data-id="36" class="bullet-desc" id="bullet-desc-1-ms8w">Full page-to-page, product-to-page, service-to-page, FAQ-to-page &amp; control-to-workflow relationship mapping. Site terminology, synonyms, aliases, and visitor-language alias mapping included.</div>
+        </div>
+      </div>
+
+      <!-- Bullet 2: Capsule Set -->
+      <div data-id="37" class="bullet-row" id="bullet-row-2-fz6t">
+        <div data-id="38" class="icon-wrap" id="icon-2-qd3n">
+          <svg data-id="39" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect data-id="40" x="3" y="3" width="18" height="18" rx="3"/><line data-id="41" x1="3" y1="9" x2="21" y2="9"/><line data-id="42" x1="3" y1="15" x2="21" y2="15"/>
+            <line data-id="43" x1="9" y1="9" x2="9" y2="21"/><line data-id="44" x1="15" y1="9" x2="15" y2="21"/>
+          </svg>
+        </div>
+        <div data-id="45" class="bullet-text-wrap" id="bullet-text-2-gy9k">
+          <div data-id="46" class="bullet-title" id="bullet-title-2-hn5r">Complete Capsule Set</div>
+          <div data-id="47" class="bullet-desc" id="bullet-desc-2-ep1j">Route, page, section, control, product, service &amp; workflow capsules — one structured data unit per site element, forming a complete machine-readable anatomy.</div>
+        </div>
+      </div>
+
+      <!-- Bullet 3: Intent Mapping -->
+      <div data-id="48" class="bullet-row" id="bullet-row-3-wm7p">
+        <div data-id="49" class="icon-wrap" id="icon-3-yb2c">
+          <svg data-id="50" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle data-id="51" cx="12" cy="12" r="10"/><circle data-id="52" cx="12" cy="12" r="6"/><circle data-id="53" cx="12" cy="12" r="2"/>
+          </svg>
+        </div>
+        <div data-id="54" class="bullet-text-wrap" id="bullet-text-3-dl8v">
+          <div data-id="55" class="bullet-title" id="bullet-title-3-kf4x">Intent and Capability Mapping</div>
+          <div data-id="56" class="bullet-desc" id="bullet-desc-3-ot6z">Intent-to-page, intent-to-section, intent-to-control &amp; intent-to-workflow maps. Tool-to-capability, capability-to-route &amp; capability-to-control binding. Stage mapping &amp; Stage Governor input generation.</div>
+        </div>
+      </div>
+
+      <!-- Bullet 4: ORB Config -->
+      <div data-id="57" class="bullet-row" id="bullet-row-4-rb5s">
+        <div data-id="58" class="icon-wrap" id="icon-4-un1w">
+          <svg data-id="59" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle data-id="60" cx="12" cy="12" r="3"/>
+            <path data-id="61" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <div data-id="62" class="bullet-text-wrap" id="bullet-text-4-ce7q">
+          <div data-id="63" class="bullet-title" id="bullet-title-4-jw9m">ORB Configuration Artifacts</div>
+          <div data-id="64" class="bullet-desc" id="bullet-desc-4-xp3r">Auto-generated site-specific ORB knowledge, tool configuration, pointer configuration, navigation configuration, workflow configuration, articulation context &amp; ORB capability snapshot.</div>
+        </div>
+      </div>
+
+      <!-- Bullet 5: Provenance -->
+      <div data-id="65" class="bullet-row" id="bullet-row-5-gt4f">
+        <div data-id="66" class="icon-wrap" id="icon-5-sw8b">
+          <svg data-id="67" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path data-id="68" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline data-id="69" points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+        <div data-id="70" class="bullet-text-wrap" id="bullet-text-5-hz6n">
+          <div data-id="71" class="bullet-title" id="bullet-title-5-ql2k">Provenance and Scan Management</div>
+          <div data-id="72" class="bullet-desc" id="bullet-desc-5-mr7p">Scan timestamping, version tracking, provenance tracking, confidence scoring, result validation, deduplication, normalization, indexing, persistence &amp; full audit logging.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

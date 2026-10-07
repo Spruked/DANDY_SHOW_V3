@@ -2,6 +2,7 @@ from datetime import datetime
 import base64
 import json
 import math
+import mimetypes
 import os
 import shutil
 import subprocess
@@ -16,6 +17,7 @@ from ..core.paths import PROJECT_ROOT
 from ..core.settings import load_project_config
 from ..services.social.package_builder import export_social_package
 from ..services.storage.episode_store import load_episode_detail, load_media_cues, load_asset
+from ..services.storage.asset_library import load_library_asset, load_episode_ad_asset
 from ..schemas.social_visual import SocialExportRequest
 from ..services.social.thumbnail_generator import generate_thumbnail
 from ..services.social.audiogram_generator import generate_audiogram
@@ -57,6 +59,15 @@ def _social_root(config: Dict[str, Any]) -> Path:
         social_root = (PROJECT_ROOT / social_root).resolve()
     social_root.mkdir(parents=True, exist_ok=True)
     return social_root
+
+
+def _resolve_visual_asset(episode_id: str, asset_id: str) -> Dict[str, Any] | None:
+    value = str(asset_id or "")
+    if value.startswith("lib_"):
+        return load_library_asset(value)
+    if value.startswith("adlib_"):
+        return load_episode_ad_asset(episode_id, value)
+    return load_asset(episode_id, value)
 
 
 def _encode_export_id(path: Path, root: Path) -> str:
@@ -108,6 +119,8 @@ def _shape_social_exports(episode_id: str, root: Path) -> list[Dict[str, Any]]:
         export_id = _encode_export_id(file_path, root)
         suffix = file_path.suffix.lower()
         is_image = suffix in {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+        media_type = mimetypes.guess_type(str(file_path))[0] or "application/octet-stream"
+        is_previewable = is_image or media_type.startswith(("video/", "audio/"))
         created_at = datetime.fromtimestamp(file_path.stat().st_mtime).isoformat()
         exports.append(
             {
@@ -118,9 +131,10 @@ def _shape_social_exports(episode_id: str, root: Path) -> list[Dict[str, Any]]:
                 "status": "done",
                 "aspect_ratio": "",
                 "asset_slot": "thumbnail_base",
+                "media_type": media_type,
                 "created_at": created_at,
                 "file_path": str(file_path),
-                "preview_url": f"/api/social/{export_id}/download" if is_image else None,
+                "preview_url": f"/api/social/{export_id}/preview" if is_previewable else None,
                 "download_url": f"/api/social/{export_id}/download",
                 "sort_order": idx,
             }
@@ -130,7 +144,11 @@ def _shape_social_exports(episode_id: str, root: Path) -> list[Dict[str, Any]]:
             item = json.loads(manifest.read_text(encoding="utf-8"))
             path = Path(item["file_path"]).resolve()
             if path.is_file() and path.is_relative_to(root.resolve()):
-                exports.append(item)
+                media_type = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
+                export_id = item.get("export_id") or _encode_export_id(path, root)
+                previewable = media_type.startswith(("image/", "video/", "audio/"))
+                exports.append({**item, "export_id": export_id, "media_type": media_type,
+                                "preview_url": f"/api/social/{export_id}/preview" if previewable else None})
         except (OSError, ValueError, KeyError):
             continue
     return sorted(exports, key=lambda item: item.get("created_at", ""), reverse=True)
@@ -231,6 +249,31 @@ def generate_social_compat(payload: SocialExportRequest) -> Dict:
         actual_duration = float(probe.stdout.strip())
         if not math.isfinite(actual_duration) or payload.clip_start + payload.clip_duration > actual_duration + 0.05:
             raise HTTPException(422, f"Requested clip exceeds the audio duration ({actual_duration:.2f}s); choose an in-range start and duration")
+        selected_visual_ids = payload.visual_asset_ids if payload.visual_mode == "slideshow" else ([payload.visual_asset_id] if payload.visual_asset_id else [])
+        visual_paths: list[Path] = []
+        for asset_id in selected_visual_ids:
+            asset = _resolve_visual_asset(episode_id, asset_id)
+            if not asset:
+                raise HTTPException(422, f"Selected visual asset is no longer available: {asset_id}")
+            asset_type = str(asset.get("asset_type") or "").lower()
+            visual_path = Path(str(asset.get("stored_path") or ""))
+            if asset_type not in {"image", "video"} or not visual_path.is_file():
+                raise HTTPException(422, f"Selected asset is not a readable image or video: {asset.get('label') or asset_id}")
+            visual_paths.append(visual_path.resolve())
+        video_extensions = {".mp4", ".mov", ".webm", ".mkv", ".avi"}
+        image_extensions = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}
+        if payload.visual_mode == "video" and (not visual_paths or visual_paths[0].suffix.lower() not in video_extensions):
+            raise HTTPException(422, "Video visual mode requires one selected video asset")
+        if payload.visual_mode in {"image", "slideshow"} and not visual_paths:
+            raise HTTPException(422, f"{payload.visual_mode.title()} visual mode requires at least one selected image")
+        if payload.visual_mode == "image" and visual_paths and visual_paths[0].suffix.lower() in video_extensions:
+            raise HTTPException(422, "Single image mode requires an image asset")
+        if payload.visual_mode == "image" and visual_paths and visual_paths[0].suffix.lower() not in image_extensions:
+            raise HTTPException(422, "Single image mode requires a supported raster image (PNG, JPEG, WebP, GIF, or BMP)")
+        if payload.visual_mode == "slideshow" and any(path.suffix.lower() in video_extensions for path in visual_paths):
+            raise HTTPException(422, "Slideshow mode accepts images only")
+        if payload.visual_mode == "slideshow" and any(path.suffix.lower() not in image_extensions for path in visual_paths):
+            raise HTTPException(422, "Slideshow mode requires raster images (PNG, JPEG, WebP, GIF, or BMP)")
         clip = destination / "clip.mp3"
         subprocess.run([ffmpeg, "-y", "-ss", str(payload.clip_start), "-i", str(audio), "-t", str(payload.clip_duration), "-vn", "-c:a", "libmp3lame", str(clip)],
                        capture_output=True, text=True, timeout=60, check=True)
@@ -238,7 +281,12 @@ def generate_social_compat(payload: SocialExportRequest) -> Dict:
         output = generate_audiogram(clip, path, title=title, background_image_path=str(background) if background else None,
                                     hook_text=payload.quote_text,
                                     config_overrides={"width": width, "height": height, "show_waveform": payload.show_waveform,
-                                                      "background_image_path": None, "logo_path": None})
+                                                      "background_image_path": None, "logo_path": None,
+                                                      "output_duration": payload.clip_duration},
+                                    visual_mode=payload.visual_mode,
+                                    visual_asset_path=str(visual_paths[0]) if visual_paths and payload.visual_mode != "slideshow" else None,
+                                    visual_asset_paths=[str(p) for p in visual_paths],
+                                    visual_clip_start=payload.visual_clip_start)
         if not output:
             raise HTTPException(500, "Video renderer failed; no completed export was recorded")
     if not path.is_file() or not path.stat().st_size:
@@ -302,3 +350,16 @@ async def download_social_export(export_id: str):
     if not target.exists() or not target.is_file():
         raise HTTPException(status_code=404, detail="Export file not found")
     return FileResponse(target, filename=target.name)
+
+
+@router.get("/social/{export_id}/preview")
+async def preview_social_export(export_id: str):
+    config = load_project_config()
+    root = _social_root(config)
+    target = _decode_export_id(export_id, root)
+    if not target.is_file():
+        raise HTTPException(status_code=404, detail="Export preview not found")
+    media_type = mimetypes.guess_type(str(target))[0]
+    if not media_type or not media_type.startswith(("image/", "video/", "audio/")):
+        raise HTTPException(status_code=415, detail="This export type cannot be previewed inline")
+    return FileResponse(target, media_type=media_type, content_disposition_type="inline")

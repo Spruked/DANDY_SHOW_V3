@@ -42,7 +42,7 @@ export default function SocialTab({ episodeId, onEpisodeChange }) {
   const episode = activeEp ? { ...activeEp, id: epId } : null
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+    <div className="social-tab-shell">
 
       {/* Sub-tab mode bar */}
       <div style={{
@@ -54,7 +54,7 @@ export default function SocialTab({ episodeId, onEpisodeChange }) {
             key={m.id}
             onClick={() => setMode(m.id)}
             style={{
-              padding: '3px 14px', fontSize: '.65rem', fontFamily: 'var(--font-display)',
+              padding: '3px 14px', fontSize: '0.85rem', fontFamily: 'var(--font-display)',
               letterSpacing: '.08em', cursor: 'pointer', border: '1px solid',
               borderRadius: 'var(--radius)',
               borderColor: mode === m.id ? 'var(--gold)' : 'var(--rim)',
@@ -73,7 +73,7 @@ export default function SocialTab({ episodeId, onEpisodeChange }) {
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '5px 14px', borderBottom: '1px solid var(--rim)', flexShrink: 0,
         }}>
-          <span style={{ fontSize: '.62rem', color: 'var(--steel)', whiteSpace: 'nowrap' }}>EPISODE</span>
+          <span style={{ fontSize: '0.81rem', color: 'var(--steel)', whiteSpace: 'nowrap' }}>EPISODE</span>
           <select
             className="ds-select"
             style={{ flex: 1, maxWidth: 340 }}
@@ -90,7 +90,7 @@ export default function SocialTab({ episodeId, onEpisodeChange }) {
       )}
 
       {/* Mode body */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div className="social-mode-body">
         {mode === 'exports'   && <ExportsMode episodeId={episodeId || epId} onEpisodeChange={id => { onEpisodeChange?.(id); setActiveEp(episodes.find(ep => (ep.episode_id || ep.id) === id) || null) }} />}
         {mode === 'slideshow' && <SlideshowBuilder key={epId || "none"} episode={episode} assetSlots={assetSlots} />}
         {mode === 'adcards'   && <AdCardsBuilder key={epId || "global"} episode={episode} assetSlots={assetSlots} />}

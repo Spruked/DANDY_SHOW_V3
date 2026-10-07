@@ -1,0 +1,26 @@
+{
+  "job_id": "job_ep_1791247143016_42d4bd9d",
+  "episode_id": "ep_1791247143016",
+  "status": "generating",
+  "updated_at": "2026-10-05T22:04:10.130506",
+  "section": 1,
+  "section_count": 2,
+  "stage": "opening",
+  "batch": 1,
+  "accepted_words": 78,
+  "stage_telemetry": [
+    {
+      "section": 1,
+      "stage": "opening",
+      "requested_exchanges": 2,
+      "returned_lines": 4,
+      "returned_exchanges": 2,
+      "stage_words": 112,
+      "cumulative_section_words": 78,
+      "elapsed_seconds": 28.196,
+      "status": "success",
+      "error": null,
+      "accepted_lines": 3
+    }
+  ]
+}
