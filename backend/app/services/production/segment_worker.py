@@ -198,14 +198,18 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             prior_section_excerpt = "\n".join(history[-12:]) if history else "(none — this is the opening section)"
             section_config = {**config, "target_duration_minutes": seconds / 60,
                               "target_duration": round(seconds), "target_word_count": round(seconds / 60 * self._spoken_wpm()),
-                              "_prior_texts": [line["text"] for line in result], "_prior_history": history,
+                              "_prior_texts": [line["text"] for line in result], "_prior_lines": result, "_prior_history": history,
                               "_previous_section_summary": prior_section_excerpt,
                               "_section_angle": section_angle, "_section_new_ground": new_ground,
                               "_section_transition": "Open the show naturally." if index == 0 else "Pick up naturally from the previous section without summarizing it.",
                               "_section_index": index, "_section_count": count,
                               "generation_nonce": f"{config.get('generation_nonce', 'episode')}-section-{index + 1}"}
             if callable(progress):
-                progress({"section": index + 1, "section_count": count, "accepted_words": sum(len(line["text"].split()) for line in result)})
+                progress({"section": index + 1, "section_count": count,
+                          "accepted_words": sum(len(line["text"].split()) for line in result),
+                          "accepted_lines": len(result),
+                          "speaker_counts": self._speaker_counts(result),
+                          "accepted_pause_seconds": sum(float(line.get("pause_after") or 0) for line in result)})
             topic = str(config.get("topic") or config.get("title") or "general")
             points = config.get("key_points") or [topic]
             context = build_rich_context(topic=topic, key_points=points, title=config.get("title") or topic,
@@ -229,6 +233,14 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 if line_callback:
                     line_callback(line)
         return result
+
+    @staticmethod
+    def _speaker_counts(lines):
+        counts = {}
+        for line in lines:
+            speaker = str(line.get("speaker") or "PHIL").upper()
+            counts[speaker] = counts.get(speaker, 0) + 1
+        return counts
 
     def _try_skg_generation(
         self,
@@ -310,6 +322,7 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             )
             exchanges: List[Dict[str, Any]] = []
             prior_episode_texts = list(episode_config.get("_prior_texts") or [])
+            prior_episode_lines = list(episode_config.get("_prior_lines") or [])
             seen_text: set[str] = {self.communication_layer._repeat_key(text) for text in prior_episode_texts}
             history_lines: List[str] = list(episode_config.get("_prior_history") or [])
             stage_counter = 0
@@ -456,9 +469,13 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 if not lines:
                     progress = episode_config.get("_progress_callback")
                     if callable(progress):
+                        progress_lines = prior_episode_lines + exchanges
                         progress({"section": episode_config.get("_section_index", 0) + 1, "section_count": episode_config.get("_section_count", 1),
                                   "stage": stage, "batch": stage_counter,
-                                  "accepted_words": sum(len(text.split()) for text in prior_episode_texts) + sum(len(line["text"].split()) for line in exchanges),
+                                  "accepted_words": sum(len(line.get("text", "").split()) for line in progress_lines),
+                                  "accepted_lines": len(progress_lines),
+                                  "speaker_counts": self._speaker_counts(progress_lines),
+                                  "accepted_pause_seconds": sum(float(line.get("pause_after") or 0) for line in progress_lines),
                                   "stage_telemetry": stage_telemetry})
                     return 0
                 count = append_fresh(lines, rejection_stats, directives)
@@ -470,9 +487,13 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
                 stage_record["completed_beats"] = list(completed_beats)
                 progress = episode_config.get("_progress_callback")
                 if callable(progress):
+                    progress_lines = prior_episode_lines + exchanges
                     progress({"section": episode_config.get("_section_index", 0) + 1, "section_count": episode_config.get("_section_count", 1),
                               "stage": stage, "batch": stage_counter,
-                              "accepted_words": sum(len(text.split()) for text in prior_episode_texts) + sum(len(line["text"].split()) for line in exchanges),
+                              "accepted_words": sum(len(line.get("text", "").split()) for line in progress_lines),
+                              "accepted_lines": len(progress_lines),
+                              "speaker_counts": self._speaker_counts(progress_lines),
+                              "accepted_pause_seconds": sum(float(line.get("pause_after") or 0) for line in progress_lines),
                               "stage_telemetry": stage_telemetry})
                 return count
 

@@ -184,12 +184,26 @@ export default function EpisodeTab({ episodeId, onEpisodeChange, onNavigate }) {
   const editorLines = productionDraft?.script || []
   const displayLines = stage === 'editor' ? editorLines
     : stage === 'produce' && editorReport?.approved?.script ? editorReport.approved.script : lines
-  const philLines = displayLines.filter(l => (l.speaker || '').toUpperCase() === 'PHIL').length
-  const jimLines  = displayLines.filter(l => (l.speaker || '').toUpperCase() === 'JIM').length
-  const hostLines = displayLines.filter(l => (l.speaker || '').toUpperCase() === 'HOST').length
-  const adLines   = displayLines.filter(l => ['INTRO_MALE','INTRO_FEMALE'].includes((l.speaker||'').toUpperCase())).length
+  const visibleSpeakerCounts = displayLines.reduce((counts, line) => {
+    const speaker = (line.speaker || 'PHIL').toUpperCase()
+    counts[speaker] = (counts[speaker] || 0) + 1
+    return counts
+  }, {})
+  const liveSpeakerCounts = generating ? generationProgress?.speaker_counts : null
+  const activeSpeakerCounts = liveSpeakerCounts || visibleSpeakerCounts
+  const philLines = activeSpeakerCounts.PHIL || 0
+  const jimLines  = activeSpeakerCounts.JIM || 0
+  const hostLines = (activeSpeakerCounts.HOST || 0) + (activeSpeakerCounts.BRYAN || 0) + (activeSpeakerCounts.GUEST || 0)
+  const adLines   = Object.entries(activeSpeakerCounts).reduce((sum, [speaker, count]) =>
+    sum + (['INTRO_MALE', 'INTRO_FEMALE', 'AD', 'ADS'].includes(speaker) ? count : 0), 0)
   const allText   = displayLines.map(l => l.spoken_text || l.text || l.line || '').join(' ')
-  const runtimeSec  = Math.round(wordsToSeconds(allText) + displayLines.reduce((sum, line) => sum + Number(line.pause_after || 0), 0))
+  const storedRuntimeSec = Math.round(wordsToSeconds(allText) + displayLines.reduce((sum, line) => sum + Number(line.pause_after || 0), 0))
+  const liveWords = generating ? Number(generationProgress?.accepted_words) : NaN
+  const runtimeSec = Number.isFinite(liveWords)
+    ? Math.round((liveWords / 160) * 60 + Number(generationProgress?.accepted_pause_seconds || 0))
+    : storedRuntimeSec
+  const visibleLineCount = generating && Number.isFinite(Number(generationProgress?.accepted_lines))
+    ? Number(generationProgress.accepted_lines) : displayLines.length
   const runtimeMin  = runtimeSec / 60
   const configuredTargetSeconds = Number(activeEp?.config?.target_duration || activeEp?.target_duration || 1800)
   const targetMinutes = Math.max(5, Math.min(45, Math.round(configuredTargetSeconds / 60)))
@@ -565,7 +579,7 @@ export default function EpisodeTab({ episodeId, onEpisodeChange, onNavigate }) {
             <div className="font-display" style={{ fontSize: '1.62rem', letterSpacing: '.08em', color: 'var(--bone)', lineHeight: 1 }}>{activeEp?.title || 'Select an episode'}</div>
             {activeEp && <div className="gap-row" style={{ marginTop: 4 }}>
               <Badge type={targetOk ? 'green' : 'gold'}>{secondsToDisplay(runtimeSec)} / {targetMinutes}m target</Badge>
-              <span className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)' }}>{lines.length} lines</span>
+              <span className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)' }}>{visibleLineCount} lines</span>
             </div>}
           </div>
           <div className="gap-row" style={{ flexWrap: 'wrap' }}>
@@ -641,7 +655,7 @@ export default function EpisodeTab({ episodeId, onEpisodeChange, onNavigate }) {
         })()}
 
         {activeEp && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 6, padding: '8px 14px', borderBottom: '1px solid var(--rim)', flexShrink: 0 }}>
-          <StatBox val={lines.length} label="Lines" />
+          <StatBox val={visibleLineCount} label="Lines" />
           <StatBox val={philLines} label="Phil" />
           <StatBox val={jimLines} label="Jim" />
           <StatBox val={hostLines} label="Host" />
