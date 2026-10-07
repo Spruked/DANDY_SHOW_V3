@@ -83,7 +83,8 @@ class SocialExportRequest(BaseModel):
     export_type: Literal["audiogram", "thumbnail", "quote_card", "promo_clip", "show_notes"] = "audiogram"
     platform: str = Field("instagram", min_length=1, max_length=64)
     aspect_ratio: Literal["1:1", "16:9", "9:16", "4:5"] = "1:1"
-    asset_slot: Literal["none", "thumbnail_base", "waveform_base", "alternate_cover", "character_logo", "segment_tech_talk", "logo", "pops_thumbnail_base", "pops_character_art", "pops_wordmark", "pops_logo_mark"] = "none"
+    asset_slot: Literal["none", "thumbnail_base", "waveform_base", "alternate_cover", "character_logo", "segment_tech_talk", "logo"] = "none"
+    background_asset_id: str = ""
     clip_start: float = Field(0, ge=0)
     clip_duration: float = Field(60, ge=5, le=300)
     quote_text: str = Field("", max_length=600)

@@ -11,24 +11,18 @@ const ASPECT_OPTS  = ['1:1', '16:9', '9:16', '4:5']
 
 // Asset slot names from ASSET_SLOTS.md
 const ASSET_SLOTS = [
-  { key: 'thumbnail_base',  label: 'Thumbnail Base',    desc: 'Main official social thumbnail', accent: '#e8b84b' },
-  { key: 'waveform_base',   label: 'Waveform Base',     desc: 'Main audiogram background', accent: '#58a6ff' },
-  { key: 'alternate_cover', label: 'Alternate Cover',   desc: 'Blue countryside alternate', accent: '#a78bfa' },
-  { key: 'character_logo',  label: 'Character Logo',    desc: 'Vintage cream Phil/Jim logo', accent: '#f0c987' },
-  { key: 'segment_tech_talk',label:'Tech Talk Card',    desc: 'Tech Talk segment card', accent: '#38bdf8' },
-  { key: 'logo',            label: 'Logo Mark',         desc: 'Main simplified mark', accent: '#4ade80' },
-  { key: 'pops_thumbnail_base', label: 'POPS Thumbnail Base', desc: 'Proof of Presence banner artwork', accent: '#3b82f6' },
-  { key: 'pops_character_art', label: 'POPS Character Art', desc: 'Average Dad Mode character image', accent: '#06b6d4' },
-  { key: 'pops_wordmark', label: 'POPS Wordmark', desc: 'Proof of Presence nameplate', accent: '#60a5fa' },
-  { key: 'pops_logo_mark', label: 'POPS Logo Mark', desc: 'Compact POPS shield icon', accent: '#2563eb' },
+  { key: 'thumbnail_base',  label: 'Thumbnail Background', desc: 'Background role for a promoted product or campaign', accent: '#e8b84b' },
+  { key: 'waveform_base',   label: 'Audiogram Background', desc: 'Background role for any promoted audio or product', accent: '#58a6ff' },
+  { key: 'alternate_cover', label: 'Alternate Cover Art', desc: 'Alternate artwork for a product or promotion', accent: '#a78bfa' },
+  { key: 'character_logo',  label: 'Product / Character Art', desc: 'Promoted product, character, or brand artwork', accent: '#f0c987' },
+  { key: 'segment_tech_talk',label:'Feature / Segment Card', desc: 'Feature, segment, or campaign card artwork', accent: '#38bdf8' },
+  { key: 'logo',            label: 'Product Logo / Mark', desc: 'Logo or mark for the item being promoted', accent: '#4ade80' },
 ]
 
 const PRESET_ACCENTS = {
   youtube_thumbnail: '#f87171', youtube_shorts: '#fb7185', tiktok: '#22d3ee',
   instagram_reels: '#e879f9', facebook_feed: '#60a5fa', linkedin_post: '#38bdf8', x_post: '#a1a1aa',
 }
-const BACKGROUND_ASSET_SLOTS = ASSET_SLOTS.filter(slot => !['logo', 'pops_logo_mark', 'pops_wordmark'].includes(slot.key))
-
 export default function ExportsMode({ episodeId, onEpisodeChange }) {
   const { toast, showToast } = useToast()
   const [episodes,  setEpisodes]  = useState([])
@@ -38,13 +32,11 @@ export default function ExportsMode({ episodeId, onEpisodeChange }) {
   const [generating, setGenerating] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedPreset, setSelectedPreset] = useState(null)
-  const [assetStatus, setAssetStatus] = useState([])
   const selectionRequest = useRef(0)
 
   useEffect(() => {
     loadEpisodes()
     loadPresets()
-    fetch('/api/social/assets').then(r => { if (!r.ok) throw new Error('Asset check failed'); return r.json() }).then(data => setAssetStatus(data.assets || [])).catch(() => showToast('Asset availability could not be checked'))
   }, [])
 
   const loadEpisodes = async () => {
@@ -173,14 +165,12 @@ export default function ExportsMode({ episodeId, onEpisodeChange }) {
               <div key={slot.key} style={{ marginBottom: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 5, alignItems: 'baseline' }}>
                   <div style={{ fontSize: '0.91rem', fontWeight: 600, color: 'var(--bone)', marginBottom: 2 }}>{slot.label}</div>
-                  <span className="font-mono" style={{ fontSize: '0.68rem', color: assetStatus.find(asset => asset.id === slot.key)?.available ? 'var(--green)' : 'var(--gold)', whiteSpace: 'nowrap' }}>
-                    {assetStatus.find(asset => asset.id === slot.key)?.available ? 'READY' : 'MISSING'}
-                  </span>
+                  <span className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)', whiteSpace: 'nowrap' }}>ROLE</span>
                 </div>
-                <div className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)' }}>{slot.desc} · {assetStatus.find(asset => asset.id === slot.key)?.filename || `${slot.key}.png`}</div>
+                <div className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)' }}>{slot.desc}</div>
               </div>
             ))}
-            <div className="social-asset-help">Add these PNGs under <code>social/templates</code> or <code>social/assets</code>, then reload Social. There is no upload control. Presets use Thumbnail Base or Waveform Base when that file is available; Logo Mark is for the Slideshow and Ad Cards builders.</div>
+            <div className="social-asset-help">These are reusable artwork roles, not product-specific slots. Choose the promoted product’s image from the shared asset library when generating an export. Product originals remain filed under their own asset-library folders.</div>
           </div>
 
           <SectionHead label="Presets" />
@@ -212,7 +202,6 @@ export default function ExportsMode({ episodeId, onEpisodeChange }) {
           episodeId={epId}
           presets={presets}
           preset={presets[selectedPreset]}
-          assetStatus={assetStatus}
           onClose={() => setShowCreate(false)}
           onGenerate={handleGenerate}
           generating={generating}
@@ -224,14 +213,14 @@ export default function ExportsMode({ episodeId, onEpisodeChange }) {
   )
 }
 
-function GenerateSocialModal({ episodeId, presets, preset, assetStatus, onClose, onGenerate, generating }) {
+function GenerateSocialModal({ episodeId, presets, preset, onClose, onGenerate, generating }) {
   const defaultBackground = preset?.export_type === 'audiogram' ? 'waveform_base' : 'thumbnail_base'
-  const defaultBackgroundAvailable = assetStatus.find(asset => asset.id === defaultBackground)?.available
   const [form, setForm] = useState({
     export_type: preset?.export_type || 'audiogram',
     platform: preset?.platform || 'instagram',
     aspect_ratio: preset?.aspect_ratio || '1:1',
-    asset_slot: defaultBackgroundAvailable ? defaultBackground : 'none',
+    asset_slot: defaultBackground,
+    background_asset_id: '',
     clip_start: 0,
     clip_duration: 60,
     quote_text: '',
@@ -310,10 +299,10 @@ function GenerateSocialModal({ episodeId, presets, preset, assetStatus, onClose,
               {ASPECT_OPTS.map(a => <option key={a}>{a}</option>)}
             </select>
           </Field>
-          <Field label="Background Image">
-            <select className="ds-select" value={form.asset_slot} onChange={e => set('asset_slot', e.target.value)}>
-              <option value="none">Plain background (no brand image)</option>
-              {BACKGROUND_ASSET_SLOTS.map(s => <option key={s.key} value={s.key}>{s.label}{assetStatus.find(asset => asset.id === s.key)?.available ? '' : ' — missing'}</option>)}
+          <Field label="Promoted Product Artwork / Background">
+            <select className="ds-select" value={form.background_asset_id} onChange={e => set('background_asset_id', e.target.value)}>
+              <option value="">No image (use selected visual style)</option>
+              {visualAssets.filter(asset => asset.asset_type === 'image').map(asset => <option key={asset.asset_id} value={asset.asset_id}>{asset.label || asset.original_name || asset.filename}{asset.relative_path ? ` · ${asset.relative_path}` : ''}</option>)}
             </select>
           </Field>
         </div>
@@ -357,7 +346,7 @@ function GenerateSocialModal({ episodeId, presets, preset, assetStatus, onClose,
           <textarea className="ds-textarea" style={{ minHeight: 64 }} value={form.quote_text} onChange={e => set('quote_text', e.target.value)} placeholder="Pull quote from episode…" />
         </Field>
         <Field label="Post copy (optional; blank uses episode title and topic)"><textarea className="ds-textarea" value={form.post_text} onChange={e => set('post_text', e.target.value)} /></Field>
-        <div style={{ fontSize: '0.94rem', color: 'var(--steel)' }}>Video exports use the selected visual style. Images and videos may be reused from the asset list or added from your computer. Quote text appears as a video hook.</div>
+        <div style={{ fontSize: '0.94rem', color: 'var(--steel)' }}>Choose artwork for whatever is being promoted. Images and videos from the shared asset library and episode/ad folders are available here; quote text appears as a video hook.</div>
         {['image', 'slideshow', 'video'].includes(form.visual_mode) && <Field label="Options">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '1.01rem', color: 'var(--bone)' }}>
             <input type="checkbox" checked={form.show_waveform} onChange={e => set('show_waveform', e.target.checked)} />

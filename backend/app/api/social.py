@@ -26,7 +26,6 @@ from ..services.social.audiogram_generator import generate_audiogram
 router = APIRouter(tags=["social"])
 BRAND_SLOTS = (
     "thumbnail_base", "waveform_base", "alternate_cover", "character_logo", "segment_tech_talk", "logo",
-    "pops_thumbnail_base", "pops_character_art", "pops_wordmark", "pops_logo_mark",
 )
 ASPECT_SIZES = {"16:9": (1280, 720), "1:1": (1080, 1080), "9:16": (1080, 1920), "4:5": (1080, 1350)}
 
@@ -71,6 +70,19 @@ def _resolve_visual_asset(episode_id: str, asset_id: str) -> Dict[str, Any] | No
     if value.startswith("adlib_"):
         return load_episode_ad_asset(episode_id, value)
     return load_asset(episode_id, value)
+
+
+def _resolve_background_asset(episode_id: str, asset_id: str) -> Path | None:
+    if not asset_id:
+        return None
+    asset = _resolve_visual_asset(episode_id, asset_id)
+    if not asset:
+        raise HTTPException(422, f"Selected background asset is no longer available: {asset_id}")
+    path = Path(str(asset.get("stored_path") or ""))
+    image_extensions = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}
+    if str(asset.get("asset_type") or "").lower() != "image" or path.suffix.lower() not in image_extensions or not path.is_file():
+        raise HTTPException(422, "Selected product artwork must be a readable raster image")
+    return path.resolve()
 
 
 def _encode_export_id(path: Path, root: Path) -> str:
@@ -212,11 +224,9 @@ def generate_social_compat(payload: SocialExportRequest) -> Dict:
     script_text = "\n".join(f"{line.get('speaker', 'speaker')}: {line.get('text', '')}" for line in detail.get("script", []))
     if payload.export_type == "quote_card" and not payload.quote_text.strip():
         raise HTTPException(422, "Quote cards require quote text")
-    background = None
-    if payload.asset_slot != "none":
+    background = _resolve_background_asset(episode_id, payload.background_asset_id)
+    if background is None and payload.asset_slot != "none":
         background = _brand_path(f"{payload.asset_slot}.png")
-        if not background:
-            raise HTTPException(422, f"Selected asset {payload.asset_slot} is missing. Add its image or explicitly select Plain background.")
     root = _social_root(load_project_config())
     destination = root / episode_id / uuid4().hex[:12]
     destination.mkdir(parents=True, exist_ok=True)
