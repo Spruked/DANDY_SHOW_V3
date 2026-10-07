@@ -24,7 +24,10 @@ from ..services.social.audiogram_generator import generate_audiogram
 
 
 router = APIRouter(tags=["social"])
-BRAND_SLOTS = ("thumbnail_base", "waveform_base", "alternate_cover", "character_logo", "segment_tech_talk", "logo")
+BRAND_SLOTS = (
+    "thumbnail_base", "waveform_base", "alternate_cover", "character_logo", "segment_tech_talk", "logo",
+    "pops_thumbnail_base", "pops_character_art", "pops_wordmark", "pops_logo_mark",
+)
 ASPECT_SIZES = {"16:9": (1280, 720), "1:1": (1080, 1080), "9:16": (1080, 1920), "4:5": (1080, 1350)}
 
 

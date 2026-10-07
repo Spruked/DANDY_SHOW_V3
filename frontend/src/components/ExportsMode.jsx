@@ -17,13 +17,17 @@ const ASSET_SLOTS = [
   { key: 'character_logo',  label: 'Character Logo',    desc: 'Vintage cream Phil/Jim logo', accent: '#f0c987' },
   { key: 'segment_tech_talk',label:'Tech Talk Card',    desc: 'Tech Talk segment card', accent: '#38bdf8' },
   { key: 'logo',            label: 'Logo Mark',         desc: 'Main simplified mark', accent: '#4ade80' },
+  { key: 'pops_thumbnail_base', label: 'POPS Thumbnail Base', desc: 'Proof of Presence banner artwork', accent: '#3b82f6' },
+  { key: 'pops_character_art', label: 'POPS Character Art', desc: 'Average Dad Mode character image', accent: '#06b6d4' },
+  { key: 'pops_wordmark', label: 'POPS Wordmark', desc: 'Proof of Presence nameplate', accent: '#60a5fa' },
+  { key: 'pops_logo_mark', label: 'POPS Logo Mark', desc: 'Compact POPS shield icon', accent: '#2563eb' },
 ]
 
 const PRESET_ACCENTS = {
   youtube_thumbnail: '#f87171', youtube_shorts: '#fb7185', tiktok: '#22d3ee',
   instagram_reels: '#e879f9', facebook_feed: '#60a5fa', linkedin_post: '#38bdf8', x_post: '#a1a1aa',
 }
-const BACKGROUND_ASSET_SLOTS = ASSET_SLOTS.filter(slot => slot.key !== 'logo')
+const BACKGROUND_ASSET_SLOTS = ASSET_SLOTS.filter(slot => !['logo', 'pops_logo_mark', 'pops_wordmark'].includes(slot.key))
 
 export default function ExportsMode({ episodeId, onEpisodeChange }) {
   const { toast, showToast } = useToast()
