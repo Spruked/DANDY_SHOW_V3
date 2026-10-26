@@ -272,6 +272,38 @@ def generate_segment(
     return parsed
 
 
+def regenerate_section(script: List[Dict], start: int, end: int, topic: str,
+                       instructions: str = "", source_context: str = "") -> List[Dict]:
+    """Rewrite an exclusive slice through the existing writer, with no template fallback."""
+    selected = script[start:end]
+    prompt = f"""{_CHARACTERS}
+Rewrite only the selected dialogue, preserving its factual meaning and speaker order.
+Return exactly {len(selected)} lines in PHIL [emotion]: dialogue / JIM [emotion]: dialogue format.
+Keep approximately the original word count. No headings, placeholders, or copied context lines.
+Topic: {topic}
+Source material: {source_context[:4000]}
+Previous context (do not rewrite): {json.dumps(script[max(0, start-3):start])}
+Selected lines to rewrite: {json.dumps(selected)}
+Following context (do not rewrite): {json.dumps(script[end:end+3])}
+Editorial instructions: {instructions}
+Request: {uuid4().hex}
+"""
+    raw, backend = _call_bridge(prompt)
+    if not raw:
+        raise RuntimeError("LLM writer unavailable or returned no dialogue")
+    replacement = _parse_response(raw, backend)
+    if len(replacement) != len(selected):
+        raise ValueError("Writer must return exactly the selected number of lines")
+    for offset, (old, new) in enumerate(zip(selected, replacement)):
+        if old.get("speaker", "").lower() != new["speaker"].lower():
+            raise ValueError("Writer changed the selected speaker order")
+        new["speaker"] = old["speaker"]
+        new["emotion"] = new["emotional_state"]["primary"]
+        new["pause_after"] = old.get("pause_after", new["pause_after"])
+        new["line_number"] = old.get("line_number", start + offset + 1)
+    return replacement
+
+
 def writer_status() -> Dict[str, object]:
     governance_ok = False
     llamacpp_ok = False

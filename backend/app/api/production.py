@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime
 from functools import partial
+import json
 from pathlib import Path
 import re
 from typing import Dict, List, Optional
@@ -65,6 +66,9 @@ class EditScriptRequest(BaseModel):
     new_order: Optional[List[int]] = None
     tone_adjustment: Optional[str] = None
     expansion_words: Optional[int] = None
+    section_start: Optional[int] = None
+    section_end: Optional[int] = None
+    instructions: str = ""
 
 
 def _reindex(script: List[Dict]) -> List[Dict]:
@@ -513,6 +517,42 @@ async def produce_episode(
 async def edit_script(payload: EditScriptRequest):
     script_data = load_script(payload.episode_id)
     script = script_data.get("script", [])
+
+    if payload.edit_type == "regenerate_section":
+        from ..services.production import llm_writer
+        start, end = payload.section_start, payload.section_end
+        if start is None or end is None or not 0 <= start < end <= len(script) or end - start > 30:
+            raise HTTPException(400, "Select between 1 and 30 lines using a zero-based, exclusive range")
+        if any(str(line.get("speaker", "")).lower() not in {"phil", "jim"} for line in script[start:end]):
+            raise HTTPException(400, "Regeneration supports Phil and Jim dialogue only; exclude ads and host lines")
+        detail = load_episode_detail(payload.episode_id)
+        if detail.get("status") == "producing":
+            raise HTTPException(409, "Wait for production to finish before regenerating")
+        config = detail.get("config", {})
+        try:
+            replacement = await asyncio.to_thread(
+                llm_writer.regenerate_section, script, start, end,
+                config.get("topic", ""), payload.instructions,
+                json.dumps(build_source_context(payload.episode_id)),
+            )
+            replacement = _sanitize_script(replacement)
+            if any("[unknown]" in line["text"].lower() or not line["text"].strip() for line in replacement):
+                raise ValueError("Writer returned empty dialogue or unresolved placeholders")
+            candidate = script[:start] + replacement + script[end:]
+            _assert_llm_script_publishable(candidate, require_llm=config.get("generation_mode") != "script_feed")
+            target_minutes = max(1, (config.get("target_duration") or 2400) / 60)
+            report = _QUALITY_GUARD.evaluate(candidate, target_minutes, config.get("topic", ""))
+            if report.decision != QualityDecision.ACCEPT:
+                raise ValueError(f"Regenerated script failed quality checks: {report.issues or report.warnings}")
+        except (RuntimeError, ValueError) as exc:
+            raise HTTPException(502, str(exc)) from exc
+        if load_script(payload.episode_id) != script_data:
+            raise HTTPException(409, "Script changed during generation; reload and select again")
+        if load_episode_detail(payload.episode_id).get("status") == "producing":
+            raise HTTPException(409, "Production started during generation; script was not changed")
+        save_script(payload.episode_id, candidate)
+        return {"status": "script_ready", "episode_id": payload.episode_id,
+                "updated_script": candidate, "line_count": len(candidate)}
 
     if payload.edit_type == "modify_line":
         if payload.line_index is None or payload.line_index >= len(script):
