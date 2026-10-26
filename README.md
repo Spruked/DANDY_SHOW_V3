@@ -2,6 +2,10 @@
 
 Private local-first studio for episode scripting, ad insertion, production, and social package export.
 
+This is the active Dandy development workspace. The older `Desktop/Projects/Dandy`
+copy is retained as reference only. See [the consolidation report](docs/CONSOLIDATION_REPORT.md)
+for transferred features, exclusions, checkpoints, and remaining production verification.
+
 ## Stack
 - **Frontend**: React 18 + Vite 8.0 + Tailwind CSS (`frontend/`) — Node v24.14.0
 - **Backend**: FastAPI + Uvicorn, Python 3.12 (`backend/app/`)
