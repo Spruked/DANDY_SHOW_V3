@@ -303,7 +303,10 @@ async def generate_script(
     if not draft:
         raise HTTPException(status_code=404, detail="Episode draft not found")
 
-    generation_config = dict(draft["config"])
+    detail = load_episode_detail(job["episode_id"])
+    if detail.get("status") == "producing":
+        raise HTTPException(409, "Wait for production to finish before generating")
+    generation_config = {**draft["config"], **detail.get("config", {})}
     if payload and payload.get("personality_settings"):
         generation_config["personality_settings"] = payload["personality_settings"]
     generation_config["source_context"] = build_source_context(job["episode_id"])
@@ -330,7 +333,7 @@ async def generate_script(
         generation_config["target_word_count"] = int((target_duration / 60) * 150)
 
     try:
-        script = _get_worker().generate_script(generation_config)
+        script = await asyncio.to_thread(_get_worker().generate_script, generation_config)
         # Guard against silent template failures: if >30% of lines contain
         # unresolved [unknown] placeholders the generator returned bad output.
         unknown_lines = sum(1 for line in script if "[unknown]" in line.get("text", ""))

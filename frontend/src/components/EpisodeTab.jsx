@@ -400,7 +400,7 @@ export default function EpisodeTab() {
             )}
           </div>
           <div className="gap-row" style={{ flexWrap: 'wrap' }}>
-            <button className="btn btn-gold" onClick={handleGenerate} disabled={!activeEp || generating}>
+            <button className="btn btn-gold" onClick={handleGenerate} disabled={!activeEp || generating || producing || production?.status === 'producing'}>
               <Zap size={11} /> {generating ? 'GEN…' : 'GENERATE'}
             </button>
             <button className="btn btn-steel" onClick={() => setShowEditConfig(true)} disabled={!activeEp}>
@@ -412,7 +412,7 @@ export default function EpisodeTab() {
             </button>
             <button className="btn btn-steel" disabled={!lines.length || generating || production?.status === 'producing'}
               onClick={() => { setRewrite({ start: 1, end: lines.length, instructions: '' }); setShowTone(true) }}>TONE / PACING</button>
-            <button className="btn btn-solid" onClick={handleProduce} disabled={!activeEp || producing || production?.status === 'producing'}>
+            <button className="btn btn-solid" onClick={handleProduce} disabled={!activeEp || generating || producing || production?.status === 'producing'}>
               <Play size={11} /> {producing ? 'QUEUING…' : production?.status === 'producing' ? 'PRODUCING…' : 'PRODUCE'}
             </button>
             <button className="btn btn-steel" onClick={() => setShowExport(true)} disabled={!activeEp}>

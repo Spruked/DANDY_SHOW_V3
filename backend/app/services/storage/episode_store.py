@@ -480,6 +480,9 @@ def load_episode_detail(episode_id: str) -> Dict[str, Any]:
     metadata = load_json(episode_metadata_path(episode_id)) or script.get("metadata") or {}
     feedback = load_feedback(episode_id)
     production = load_json(ep_dir / "production_result.json") or {}
+    job_id = status.get("job_id") or (load_draft(episode_id) or {}).get("job_id")
+    if job_id and not load_job(job_id):
+        job_id = None
     audio_path = production.get("audio_file") or status.get("audio_file")
     assets = list_assets(episode_id)
     media_cues = load_media_cues(episode_id)
@@ -488,6 +491,7 @@ def load_episode_detail(episode_id: str) -> Dict[str, Any]:
     return {
         "episode_id": episode_id,
         "config": config,
+        "job_id": job_id,
         "status": status.get("status", "new"),
         "updated_at": status.get("updated_at"),
         "script": script.get("script", []),

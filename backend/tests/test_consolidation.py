@@ -1,6 +1,7 @@
 """Contract tests use temporary storage and fake TTS/LLM; never touch episodes."""
 import asyncio
 from copy import deepcopy
+from contextlib import ExitStack
 import tempfile
 import unittest
 from pathlib import Path
@@ -239,6 +240,86 @@ class EngineStatisticsTests(unittest.TestCase):
             {"engine": "kokoro", "line_index": 1}, {"engine": "kokoro", "line_index": 1}])
         self.assertEqual(stats["engine_stats"], {"kokoro": 2})
         self.assertEqual(stats["engine_line_stats"], {"kokoro": 1})
+
+
+class EpisodeContractTests(unittest.TestCase):
+    def setUp(self):
+        from fastapi.testclient import TestClient
+        from app.main import app
+        from app.services.storage import episode_store as store
+        self.store = store
+        self.stack = ExitStack()
+        self.addCleanup(self.stack.close)
+        root = Path(self.stack.enter_context(tempfile.TemporaryDirectory()))
+        episodes = root / "episodes"
+        for name, value in [("EPISODES_ROOT", episodes), ("DRAFTS_ROOT", episodes / ".drafts"),
+                            ("JOBS_ROOT", episodes / ".drafts/jobs")]:
+            self.stack.enter_context(patch.object(store, name, value))
+        self.stack.enter_context(patch.object(production, "PROJECT_ROOT", root))
+        self.client = self.stack.enter_context(TestClient(app))
+
+    def create(self, **extra):
+        response = self.client.post("/api/episodes/create", json={"episode_id": "contract", "title": "Title", "topic": "Topic", **extra})
+        self.assertEqual(response.status_code, 200, response.text)
+        return response.json()["job_id"]
+
+    def test_config_edits_and_script_feed_reuse_the_original_job(self):
+        job = self.create(generation_mode="script_feed", provided_script=[{"speaker": "phil", "text": "Old text"}])
+        response = self.client.patch("/api/episodes/contract/config", json={"provided_script": [{"speaker": "phil", "text": "New supplied text"}]})
+        self.assertEqual(response.status_code, 200)
+        detail = self.client.get("/api/episodes/contract").json()
+        self.assertEqual(detail["job_id"], job)
+        response = self.client.post(f"/api/episodes/generate-script?job_id={job}")
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["script"][0]["text"], "New supplied text")
+
+    def test_production_keeps_word_gate_and_persists_job_statistics(self):
+        job = self.create()
+        self.store.save_script("contract", [{"speaker": "phil", "text": "Too short", "generated_by": "llamacpp"}])
+        response = self.client.post(f"/api/episodes/produce?job_id={job}")
+        self.assertEqual(response.status_code, 400)
+        script = [{"speaker": "phil" if i % 2 == 0 else "jim", "text": f"Point {i} " + " ".join(f"evidence{j}" for j in range(50)), "generated_by": "llamacpp"} for i in range(100)]
+        self.store.save_script("contract", script)
+        store = self.store
+        class Worker:
+            def produce_episode(self, **kwargs):
+                kwargs["progress_callback"]({"stage": "synthesizing", "progress": 0.5, "engine_stats": {"kokoro": 1}})
+                audio = store.episode_dir("contract") / "audio.mp3"
+                audio.write_bytes(b"mock TTS audio")
+                return {"audio_file": str(audio), "metadata": {"engine_stats": {"kokoro": 2, "edge": 1}, "engine_line_stats": {"kokoro": 2, "edge": 1}}}
+        with patch.object(production, "MergedDandyPodcastWorker", Worker), \
+             patch.object(production, "export_social_package"):
+            response = self.client.post(f"/api/episodes/produce?job_id={job}")
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["status"], "queued")
+        status = self.client.get("/api/episodes/contract/production-status").json()
+        self.assertEqual(status["status"], "produced")
+        self.assertEqual(status["job_id"], job)
+        self.assertEqual(self.store.load_job(job)["status"], "produced")
+        self.assertEqual(self.client.get("/api/episodes/contract").json()["engine_stats"], {"kokoro": 2, "edge": 1})
+
+    def test_duplicate_production_does_not_replace_active_job(self):
+        job = self.create()
+        self.store.save_json(self.store.episode_dir("contract") / "status.json", {"status": "producing", "job_id": job})
+        response = self.client.post(f"/api/episodes/produce?job_id={job}")
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(self.client.get("/api/episodes/contract").json()["job_id"], job)
+
+    def test_existing_editor_and_export_routes(self):
+        self.create(generation_mode="script_feed")
+        self.store.save_script("contract", [{"speaker": "phil", "text": "First line"}, {"speaker": "jim", "text": "Second line"}])
+        actions = [
+            {"edit_type": "modify_line", "line_index": 0, "new_content": {"speaker": "phil", "text": "Changed first line"}},
+            {"edit_type": "add_line", "line_index": 1, "new_content": {"speaker": "jim", "text": "Inserted line"}},
+            {"edit_type": "reorder_lines", "new_order": [2, 1, 0]},
+            {"edit_type": "remove_line", "line_index": 1},
+        ]
+        for action in actions:
+            response = self.client.post("/api/episodes/edit-script", json={"episode_id": "contract", **action})
+            self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual([line["text"] for line in self.store.load_script("contract")["script"]], ["Second line", "Changed first line"])
+        for format in ("json", "txt", "srt"):
+            self.assertEqual(self.client.get(f"/api/episodes/contract/export?format={format}").status_code, 200)
 
 
 if __name__ == "__main__":

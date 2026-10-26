@@ -50,9 +50,14 @@ async function ensureJob(episodeId) {
   }
 
   const config = detail.config || {}
+  if (detail.job_id) {
+    jobCache.set(episodeId, detail.job_id)
+    return detail.job_id
+  }
   const title = config.title || detail.title || episodeId
   const topic = (config.topic || detail.topic || title || episodeId).trim()
   const payload = {
+    ...config,
     episode_id: episodeId,
     title,
     topic: topic || title || episodeId,
