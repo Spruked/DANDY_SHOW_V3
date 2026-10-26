@@ -150,5 +150,53 @@ class RegenerationTests(unittest.TestCase):
         self.assertIsNone(saved)
 
 
+class ToneTests(unittest.TestCase):
+    def test_dialogue_changes_are_scoped_and_keep_authorship(self):
+        from app.services.production.script_edits import adjust_tone
+        original = [{"speaker": "phil", "text": "An idea", "generated_by": "llamacpp"},
+                    {"speaker": "jim", "text": "Show me evidence", "generated_by": "llamacpp"},
+                    {"speaker": "announcer_male", "text": "Sponsor message"}]
+        changed = adjust_tone(original, "more_humorous")
+        self.assertEqual(changed[0]["text"], "An idea!")
+        self.assertEqual(changed[1]["text"], "Show me evidence You know?")
+        self.assertEqual(changed[0]["generated_by"], "llamacpp")
+        self.assertEqual(changed[2], original[2])
+        self.assertEqual(adjust_tone(changed, "more_humorous"), changed)
+        self.assertEqual(original[0]["text"], "An idea")
+        self.assertEqual(adjust_tone(original, "faster_paced", 1, 2)[0], original[0])
+
+    def test_pacing_is_used_by_audio_segments(self):
+        from app.services.production.script_edits import adjust_tone
+        worker = HardenedPodcastWorker.__new__(HardenedPodcastWorker)
+        worker.voices_config = {"phil": {"primary_voice": "test"}}
+        def synthesize(**kwargs):
+            kwargs["output_path"].write_bytes(b"fake TTS")
+            return "kokoro"
+        for adjustment, expected in [("faster_paced", 0.2), ("slower_paced", 1.0)]:
+            script = adjust_tone([{"speaker": "phil", "text": "Test dialogue"}], adjustment)
+            with tempfile.TemporaryDirectory() as directory, \
+                 patch.object(worker, "_synthesize_line", side_effect=synthesize), \
+                 patch.object(worker, "_probe_duration_seconds", return_value=1):
+                segments = worker._synthesize_segments(script, Path(directory), "test")
+            self.assertEqual(segments[0]["pause_after"], expected)
+
+    def test_version_history_and_rollback_preserve_original_script(self):
+        from fastapi.testclient import TestClient
+        from app.main import app
+        from app.services.storage import episode_store as store
+        original = [{"speaker": "phil", "text": "Original dialogue!", "generated_by": "llamacpp"},
+                    {"speaker": "jim", "text": "Keep the evidence", "generated_by": "llamacpp"}]
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.object(store, "EPISODES_ROOT", Path(directory)), TestClient(app) as client:
+            store.save_script("test", original)
+            response = client.post("/api/episodes/edit-script", json={"episode_id": "test", "edit_type": "adjust_tone", "tone_adjustment": "more_serious"})
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertEqual(store.load_script("test")["script"][0]["text"], "Original dialogue.")
+            self.assertEqual(len(store.list_script_versions("test")), 2)
+            response = client.post("/api/episodes/test/rollback?version=1")
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertEqual(store.load_script("test")["script"], original)
+
+
 if __name__ == "__main__":
     unittest.main()

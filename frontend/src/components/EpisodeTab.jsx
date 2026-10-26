@@ -27,6 +27,8 @@ export default function EpisodeTab() {
   const [production, setProduction] = useState(null)
   const [showRegenerate, setShowRegenerate] = useState(false)
   const [rewrite, setRewrite] = useState({ start: 1, end: 1, instructions: '' })
+  const [showTone, setShowTone] = useState(false)
+  const [tone, setTone] = useState('more_humorous')
 
   const [showCreate,   setShowCreate]   = useState(false)
   const [showVersions, setShowVersions] = useState(false)
@@ -105,6 +107,18 @@ export default function EpisodeTab() {
       await selectEpisode(activeEp)
       showToast('Selected section regenerated; saved in version history')
     } catch (error) { showToast('Regenerate failed: ' + error.message.slice(0, 160)) }
+    finally { setGenerating(false) }
+  }
+
+  const adjustTone = async () => {
+    setGenerating(true)
+    try {
+      await api.editScript({ episode_id: epId, edit_type: 'adjust_tone', tone_adjustment: tone,
+        section_start: Number(rewrite.start) - 1, section_end: Number(rewrite.end) })
+      setShowTone(false)
+      await selectEpisode(activeEp)
+      showToast('Tone/pacing saved in version history')
+    } catch (error) { showToast('Adjustment failed: ' + error.message.slice(0, 140)) }
     finally { setGenerating(false) }
   }
 
@@ -396,6 +410,8 @@ export default function EpisodeTab() {
               onClick={() => { setRewrite({ start: (selectedLine ?? 0) + 1, end: (selectedLine ?? 0) + 1, instructions: '' }); setShowRegenerate(true) }}>
               REGENERATE SECTION
             </button>
+            <button className="btn btn-steel" disabled={!lines.length || generating || production?.status === 'producing'}
+              onClick={() => { setRewrite({ start: 1, end: lines.length, instructions: '' }); setShowTone(true) }}>TONE / PACING</button>
             <button className="btn btn-solid" onClick={handleProduce} disabled={!activeEp || producing || production?.status === 'producing'}>
               <Play size={11} /> {producing ? 'QUEUING…' : production?.status === 'producing' ? 'PRODUCING…' : 'PRODUCE'}
             </button>
@@ -621,6 +637,18 @@ export default function EpisodeTab() {
       </div>
 
       {/* ── Modals ── */}
+      {showTone && (
+        <Modal title="Tone and pacing" onClose={() => !generating && setShowTone(false)}
+          footer={<button className="btn btn-gold" disabled={generating} onClick={adjustTone}>{generating ? 'SAVING…' : 'APPLY'}</button>}>
+          <p>Adjust Phil/Jim dialogue within the range. Host and ad lines stay unchanged.</p>
+          <Field label="Adjustment"><select aria-label="Tone adjustment" className="ds-select" value={tone} onChange={e => setTone(e.target.value)}>
+            <option value="more_humorous">More humorous</option><option value="more_serious">More serious</option>
+            <option value="faster_paced">Faster pacing (0.2 second pauses)</option><option value="slower_paced">Slower pacing (1 second pauses)</option>
+          </select></Field>
+          <Field label="First line (inclusive)"><input aria-label="First line" className="ds-input" type="number" min="1" max={lines.length} value={rewrite.start} onChange={e => setRewrite(v => ({ ...v, start: e.target.value }))} /></Field>
+          <Field label="Last line (inclusive)"><input aria-label="Last line" className="ds-input" type="number" min={rewrite.start} max={lines.length} value={rewrite.end} onChange={e => setRewrite(v => ({ ...v, end: e.target.value }))} /></Field>
+        </Modal>
+      )}
       {showRegenerate && (
         <Modal title="Regenerate selected section" onClose={() => !generating && setShowRegenerate(false)}
           footer={<button className="btn btn-gold" disabled={generating} onClick={regenerateSection}>{generating ? 'REGENERATING…' : 'REGENERATE'}</button>}>

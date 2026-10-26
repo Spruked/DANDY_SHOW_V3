@@ -668,7 +668,7 @@ class HardenedPodcastWorker:
                 if not output_path.exists() or output_path.stat().st_size == 0:
                     raise RuntimeError(f"TTS produced no audio for line {idx}, chunk {chunk_idx}")
                 duration_seconds = self._probe_duration_seconds(output_path) if output_path.exists() else 0.0
-                pause_after = float(line.get("pause_after", 0.4) or 0.4)
+                pause_after = float(line.get("pause_after") if line.get("pause_after") is not None else 0.4)
                 if len(chunks) > 1 and chunk_idx < len(chunks):
                     pause_after = max(pause_after, 0.55)
                 segments.append({

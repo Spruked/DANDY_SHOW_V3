@@ -590,9 +590,19 @@ async def edit_script(payload: EditScriptRequest):
         script.append(addition)
         script = _reindex(script)
     elif payload.edit_type == "adjust_tone":
-        tone = payload.tone_adjustment or "adjusted"
-        for line in script:
-            line["emotion"] = tone
+        from ..services.production.script_edits import adjust_tone
+        if load_episode_detail(payload.episode_id).get("status") == "producing":
+            raise HTTPException(409, "Wait for production to finish before adjusting dialogue")
+        start = payload.section_start if payload.section_start is not None else 0
+        end = payload.section_end if payload.section_end is not None else len(script)
+        if not 0 <= start < end <= len(script):
+            raise HTTPException(400, "Invalid tone adjustment range")
+        if not payload.tone_adjustment or not payload.tone_adjustment.strip():
+            raise HTTPException(400, "tone_adjustment is required")
+        script = adjust_tone(script, payload.tone_adjustment, start, end)
+        save_script(payload.episode_id, script)
+        return {"status": "script_ready", "episode_id": payload.episode_id,
+                "updated_script": script, "line_count": len(script)}
     else:
         raise HTTPException(status_code=400, detail="Unsupported edit_type in shell stage")
 
