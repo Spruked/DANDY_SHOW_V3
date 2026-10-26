@@ -15,10 +15,7 @@ from .api.obs import router as obs_router
 from .api.mixer import router as mixer_router
 from .core.settings import load_project_config
 from .core.paths import PROJECT_ROOT
-from .websockets.manager import ConnectionManager
-
-
-manager = ConnectionManager()
+from .websockets.manager import manager
 
 
 def create_app() -> FastAPI:

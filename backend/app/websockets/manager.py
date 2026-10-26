@@ -25,3 +25,6 @@ class ConnectionManager:
             except Exception:
                 self.disconnect(websocket, channel)
 
+
+manager = ConnectionManager()
+

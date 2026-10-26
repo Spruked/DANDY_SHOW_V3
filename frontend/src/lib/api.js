@@ -202,7 +202,7 @@ export const api = {
       body: JSON.stringify(body),
     })
   },
-  produceStatus: () => Promise.resolve({ status: 'not_supported' }),
+  produceStatus: (id) => req(`/episodes/${encodeURIComponent(id)}/production-status`),
 
   // ── Assets ───────────────────────────────────────────────────────────
   listAssets: (id) => req(`/episodes/${encodeURIComponent(id)}/assets`),

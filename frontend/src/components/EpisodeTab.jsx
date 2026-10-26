@@ -24,6 +24,7 @@ export default function EpisodeTab() {
   const [loading, setLoading]       = useState(false)
   const [generating, setGenerating] = useState(false)
   const [producing, setProducing]   = useState(false)
+  const [production, setProduction] = useState(null)
 
   const [showCreate,   setShowCreate]   = useState(false)
   const [showVersions, setShowVersions] = useState(false)
@@ -118,16 +119,11 @@ export default function EpisodeTab() {
 
   const handleProduce = async () => {
     if (!activeEp) return
-    if (writerStatus && !writerStatus.bridge_reachable) {
-      const ok = window.confirm(
-        'LLM Bridge is OFFLINE.\n\nProduction will use SKG fallback — the older template-based writer.\nThis may produce lower-quality or repetitive output.\n\nContinue anyway?'
-      )
-      if (!ok) return
-    }
     setProducing(true)
     try {
       await api.produce(epId)
-      showToast('Production queued ✓  — watch logs/produce_demo.log')
+      setProduction({ status: 'producing', stage: 'queued', progress: 0 })
+      showToast('Production queued')
     } catch (e) {
       showToast('Produce failed: ' + e.message.slice(0, 80))
     } finally { setProducing(false) }
@@ -260,12 +256,44 @@ export default function EpisodeTab() {
   const connectWs = () => {
     if (!epId) return
     if (wsRef.current) wsRef.current.close()
-    const ws = new WebSocket(`ws://${location.host}/ws/${epId}`)
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/${encodeURIComponent(epId)}`)
     ws.onopen    = () => { setWsConnected(true);  setWsLog(l => [...l, '✓ connected']) }
-    ws.onmessage = e => setWsLog(l => [...l, e.data].slice(-80))
+    ws.onmessage = e => {
+      setWsLog(l => [...l, e.data].slice(-80))
+      try {
+        const event = JSON.parse(e.data)
+        if (event.type?.startsWith('production_')) setProduction(event)
+      } catch { /* Keep non-JSON diagnostic messages in the log. */ }
+    }
     ws.onclose   = () => { setWsConnected(false); setWsLog(l => [...l, '✗ disconnected']) }
     wsRef.current = ws
   }
+
+  useEffect(() => {
+    setProduction(null)
+    if (!epId) return
+    let cancelled = false
+    connectWs()
+    // Persisted status also recovers progress after reconnects or page reloads.
+    const poll = async () => {
+      try {
+        const status = await api.produceStatus(epId)
+        if (!cancelled) setProduction(status)
+      } catch { /* WebSocket updates remain available while polling retries. */ }
+    }
+    poll()
+    const timer = setInterval(poll, 2500)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+      if (wsRef.current) {
+        wsRef.current.onmessage = null
+        wsRef.current.onclose = null
+        wsRef.current.close()
+      }
+      setWsConnected(false)
+    }
+  }, [epId])
 
   // ── Media cue ──────────────────────────────────────────────────────
   const [cueForm, setCueForm] = useState({ line_index: 0, cue_type: 'sfx', asset_id: '', note: '' })
@@ -349,8 +377,8 @@ export default function EpisodeTab() {
             <button className="btn btn-steel" onClick={() => setShowEditConfig(true)} disabled={!activeEp}>
               <Settings size={11} /> CONFIG
             </button>
-            <button className="btn btn-solid" onClick={handleProduce} disabled={!activeEp || producing}>
-              <Play size={11} /> {producing ? 'QUEUING…' : 'PRODUCE'}
+            <button className="btn btn-solid" onClick={handleProduce} disabled={!activeEp || producing || production?.status === 'producing'}>
+              <Play size={11} /> {producing ? 'QUEUING…' : production?.status === 'producing' ? 'PRODUCING…' : 'PRODUCE'}
             </button>
             <button className="btn btn-steel" onClick={() => setShowExport(true)} disabled={!activeEp}>
               <Download size={11} /> EXPORT
@@ -375,6 +403,14 @@ export default function EpisodeTab() {
           </div>
         </div>
 
+        {production && ['producing', 'produced', 'failed'].includes(production.status) && (
+          <div style={{ padding: '8px 14px' }} role="status" aria-live="polite">
+            <span>{production.stage || production.status} · {Math.round((production.progress || 0) * 100)}%</span>
+            {production.line_number && <span> · line {production.line_number}/{production.total_lines}</span>}
+            {production.error && <span> · {production.error}</span>}
+            <progress style={{ width: '100%' }} max="1" value={production.progress || 0} />
+          </div>
+        )}
         {/* Script Engine indicator */}
         {(() => {
           const st = writerStatus

@@ -453,6 +453,7 @@ class HardenedPodcastWorker:
         title: str,
         topic: str,
         script_lines: List[Dict[str, Any]],
+        progress_callback: Optional[Callable] = None,
     ) -> Dict[str, Any]:
         """Produce audio from script — unchanged logic, just called with validated script."""
         if not script_lines:
@@ -470,7 +471,9 @@ class HardenedPodcastWorker:
             raw_segments_dir = staging_dir / "segments"
             raw_segments_dir.mkdir(parents=True, exist_ok=True)
 
-            segment_payloads = self._synthesize_segments(script_lines, raw_segments_dir, episode_id)
+            segment_payloads = self._synthesize_segments(script_lines, raw_segments_dir, episode_id, progress_callback)
+            if progress_callback:
+                progress_callback({"stage": "mixing", "progress": 0.9})
             raw_mix_path = staging_dir / f"{episode_id}_raw_mix.mp3"
             self._concatenate_segments(segment_payloads, raw_mix_path)
 
@@ -640,7 +643,7 @@ class HardenedPodcastWorker:
             chunks.append(current.rstrip(",;:"))
         return chunks
 
-    def _synthesize_segments(self, script_lines: List[Dict[str, Any]], output_dir: Path, episode_id: str) -> List[Dict[str, Any]]:
+    def _synthesize_segments(self, script_lines: List[Dict[str, Any]], output_dir: Path, episode_id: str, progress_callback: Optional[Callable] = None) -> List[Dict[str, Any]]:
         segments: List[Dict[str, Any]] = []
         segment_index = 0
         for idx, line in enumerate(script_lines, start=1):
@@ -662,6 +665,8 @@ class HardenedPodcastWorker:
                     emotion=str(line.get("emotion", "neutral")),
                     output_path=output_path,
                 )
+                if not output_path.exists() or output_path.stat().st_size == 0:
+                    raise RuntimeError(f"TTS produced no audio for line {idx}, chunk {chunk_idx}")
                 duration_seconds = self._probe_duration_seconds(output_path) if output_path.exists() else 0.0
                 pause_after = float(line.get("pause_after", 0.4) or 0.4)
                 if len(chunks) > 1 and chunk_idx < len(chunks):
@@ -682,6 +687,13 @@ class HardenedPodcastWorker:
                     "pause_after": pause_after,
                     "generated_by": line.get("generated_by", "unknown"),
                 })
+                if progress_callback:
+                    progress_callback({
+                        "stage": "synthesizing", "line_number": idx,
+                        "total_lines": len(script_lines), "chunk_number": chunk_idx,
+                        "chunk_count": len(chunks), "engine": engine_used,
+                        "progress": 0.85 * ((idx - 1 + chunk_idx / len(chunks)) / len(script_lines)),
+                    })
         if not segments:
             raise RuntimeError("No audio segments were generated")
         return segments

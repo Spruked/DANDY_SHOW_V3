@@ -8,7 +8,6 @@ from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Body
 from pydantic import BaseModel
-from pydub import AudioSegment
 
 from ..core.paths import PROJECT_ROOT
 from ..schemas.episode import EpisodeCreateRequest
@@ -131,15 +130,6 @@ def _script_as_srt(script: List[Dict]) -> str:
         text = line.get("text", "")
         rows.append(f"{idx}\n{start} --> {end}\n{speaker}: {text}\n")
     return "\n".join(rows)
-
-
-def _create_placeholder_audio(episode_id: str, script: List[Dict]) -> Path:
-    target_dir = episode_dir(episode_id)
-    output_path = target_dir / "audio.mp3"
-    word_count = max(1, sum(len(line.get("text", "").split()) for line in script))
-    duration_ms = max(5000, min(60000, word_count * 350))
-    AudioSegment.silent(duration=duration_ms).export(output_path, format="mp3")
-    return output_path
 
 
 def _estimate_minutes(script: List[Dict], wpm: int = 160) -> float:
@@ -367,103 +357,68 @@ async def generate_script(
 
 
 def _run_produce_background(
-    episode_id: str,
-    job_id: str,
-    script: list,
-    title: str,
-    topic: str,
-    script_text: str,
-    personality_settings,
-    voice_settings: dict,
-    writer_engine: str = "skg_fallback",
-    bridge_reachable_at_start: bool = False,
+    episode_id: str, job_id: str, script: list, title: str, topic: str,
+    script_text: str, personality_settings, voice_settings: dict,
+    writer_engine: str = "unknown", bridge_reachable_at_start: bool = False,
+    event_loop=None,
 ) -> None:
-    """Heavy TTS work — runs in a thread so the event loop stays alive."""
-    worker = _get_worker()
-    if personality_settings:
-        try:
-            worker._apply_personality_settings(personality_settings)  # type: ignore[attr-defined]
-        except Exception:
-            pass
+    """Persist job progress in the worker thread; deliver events on the ASGI loop."""
+    from ..websockets.manager import manager
+
+    state = {"episode_id": episode_id, "job_id": job_id, "status": "producing",
+             "stage": "starting", "progress": 0.0, "writer_engine": writer_engine}
+
+    def publish(update):
+        state.update(update)
+        state["updated_at"] = datetime.now().isoformat()
+        save_json(episode_dir(episode_id) / "status.json", state)
+        save_json(episode_dir(episode_id).parent / ".drafts" / "jobs" / f"{job_id}.json", state)
+        if event_loop is not None and not event_loop.is_closed():
+            event_type = {"produced": "production_complete", "failed": "production_error"}.get(
+                state["status"], "production_progress")
+            asyncio.run_coroutine_threadsafe(
+                manager.broadcast(episode_id, {**state, "type": event_type}), event_loop
+            )
+
     try:
-        production_result = worker.produce_episode(
-            episode_id=episode_id,
-            title=title,
-            topic=topic,
-            script_lines=script,
+        publish({})
+        # Each job owns its worker so personality settings cannot leak across episodes.
+        worker = MergedDandyPodcastWorker()
+        if personality_settings:
+            worker._apply_personality_settings(personality_settings)
+        result = worker.produce_episode(
+            episode_id=episode_id, title=title, topic=topic, script_lines=script,
+            progress_callback=publish,
         )
-        audio_path = Path(production_result["audio_file"])
-        production_mode = "worker"
+        audio_path = Path(result["audio_file"])
+        if not audio_path.is_file() or not audio_path.stat().st_size:
+            raise RuntimeError("Production returned no audio file")
+        metadata = {**calculate_script_provenance(script), **calculate_repetition_report(script),
+                    "bridge_reachable_at_start": bridge_reachable_at_start}
+        result.setdefault("metadata", {}).update(metadata)
+        save_json(episode_dir(episode_id) / "production_result.json", result)
+        publish({"stage": "exporting", "progress": 0.95})
+        resolved_cues = [
+            {**cue, "asset": load_asset(episode_id, cue.get("asset_id", "")) or {}}
+            for cue in load_media_cues(episode_id).get("cues", [])
+        ]
+        export_social_package(
+            episode_id=episode_id, title=title, topic=topic, script_text=script_text,
+            script_lines=script, audio_path=audio_path,
+            destination=(PROJECT_ROOT / "social" / "generated" / episode_id).resolve(),
+            sponsor_text="Sponsored", media_cues=resolved_cues,
+        )
+        publish({**metadata, "status": "produced", "stage": "completed", "progress": 1.0,
+                 "production_mode": "worker", "audio_file": str(audio_path),
+                 "personality_settings": personality_settings, "voice_settings": voice_settings})
     except Exception as exc:
-        audio_path = _create_placeholder_audio(episode_id, script)
-        production_mode = "placeholder_fallback"
-        production_result = {
-            "episode_id": episode_id,
-            "audio_file": str(audio_path),
-            "transcript": script,
-            "metadata": {
-                "warning": str(exc),
-                "processing": {"processing_chain": "placeholder_fallback"},
-            },
-        }
+        publish({"status": "failed", "failed_stage": state["stage"], "stage": "failed", "error": str(exc)})
 
-    script_meta = {
-        **calculate_script_provenance(script),
-        **calculate_repetition_report(script),
-    }
-    writer_engine = str(script_meta.get("writer_engine", writer_engine))
-    produced_at = datetime.now().isoformat()
-    save_json(
-        episode_dir(episode_id) / "status.json",
-        {
-            "status": "produced",
-            "updated_at": produced_at,
-            "production_mode": production_mode,
-            "audio_file": str(audio_path),
-            "personality_settings": personality_settings,
-            "voice_settings": voice_settings,
-            "writer_engine": writer_engine,
-            "bridge_reachable_at_start": bridge_reachable_at_start,
-            "fallback_used": script_meta.get("fallback_used"),
-            "fallback_sources": script_meta.get("fallback_sources", []),
-            "llm_line_count": script_meta.get("llm_line_count", 0),
-            "fallback_line_count": script_meta.get("fallback_line_count", 0),
-            "unknown_line_count": script_meta.get("unknown_line_count", 0),
-            "line_source_counts": script_meta.get("line_source_counts", {}),
-            "repetition_guard_passed": script_meta.get("repetition_guard_passed"),
-            "max_repeated_line_count": script_meta.get("max_repeated_line_count"),
-        },
-    )
-    production_result.setdefault("metadata", {}).update({
-        "writer_engine": writer_engine,
-        "bridge_reachable_at_start": bridge_reachable_at_start,
-        "fallback_used": script_meta.get("fallback_used"),
-        "fallback_sources": script_meta.get("fallback_sources", []),
-        "llm_line_count": script_meta.get("llm_line_count", 0),
-        "fallback_line_count": script_meta.get("fallback_line_count", 0),
-        "unknown_line_count": script_meta.get("unknown_line_count", 0),
-        "line_source_counts": script_meta.get("line_source_counts", {}),
-        "repetition_guard_passed": script_meta.get("repetition_guard_passed"),
-        "max_repeated_line_count": script_meta.get("max_repeated_line_count"),
-    })
-    save_json(episode_dir(episode_id) / "production_result.json", production_result)
 
-    social_destination = (PROJECT_ROOT / "social" / "generated" / episode_id).resolve()
-    resolved_cues = []
-    for cue in load_media_cues(episode_id).get("cues", []):
-        asset = load_asset(episode_id, cue.get("asset_id", ""))
-        resolved_cues.append({**cue, "asset": asset or {}})
-    export_social_package(
-        episode_id=episode_id,
-        title=title,
-        topic=topic,
-        script_text=script_text,
-        script_lines=script,
-        audio_path=audio_path,
-        destination=social_destination,
-        sponsor_text="Sponsored",
-        media_cues=resolved_cues,
-    )
+@router.get("/episodes/{episode_id}/production-status")
+async def production_status(episode_id: str):
+    from ..services.storage.episode_store import load_json
+    return load_json(episode_dir(episode_id) / "status.json") or {"status": "new", "progress": 0}
 
 
 @router.post("/episodes/produce")
@@ -477,6 +432,8 @@ async def produce_episode(
         raise HTTPException(status_code=404, detail="Job not found")
 
     detail = load_episode_detail(job["episode_id"])
+    if detail.get("status") == "producing":
+        raise HTTPException(status_code=409, detail="Episode production is already running")
     script = detail.get("script", [])
     if not script:
         raise HTTPException(status_code=400, detail="No script found. Generate script first.")
@@ -540,6 +497,7 @@ async def produce_episode(
         voice_settings=voice_settings,
         writer_engine=writer_engine,
         bridge_reachable_at_start=bridge_was_reachable,
+        event_loop=asyncio.get_running_loop(),
     )
 
     return {
