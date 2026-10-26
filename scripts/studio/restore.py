@@ -41,7 +41,9 @@ def list_points() -> None:
 
 
 def restore(name: str, dry_run: bool = False) -> None:
-    rp_dir = RP_DIR / name
+    rp_dir = (RP_DIR / name).resolve()
+    if not rp_dir.is_relative_to(RP_DIR.resolve()):
+        raise ValueError("Invalid restore point path")
     if not rp_dir.exists():
         # Try prefix match
         matches = [p for p in RP_DIR.iterdir() if p.name.endswith(f"_{name}") or p.name == name]
@@ -84,6 +86,11 @@ def restore(name: str, dry_run: bool = False) -> None:
         print("Aborted.")
         return
 
+    with zipfile.ZipFile(zip_path) as zf:
+        for member in zf.infolist():
+            target = (ROOT / member.filename.replace("\\", "/")).resolve()
+            if not target.is_relative_to(ROOT.resolve()) or ":" in member.filename:
+                raise ValueError("Unsafe archive path")
     restored = 0
     with zipfile.ZipFile(zip_path) as zf:
         for member in zf.infolist():

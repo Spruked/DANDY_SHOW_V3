@@ -1,6 +1,12 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
+from .core.safety import validate_id
+import re
+from contextlib import asynccontextmanager
+from .core.safety import file_lock
+from .services.storage.episode_store import recover_interrupted_jobs
 
 from .api.assets import router as assets_router
 from .api.library import router as library_router
@@ -20,7 +26,14 @@ from .websockets.manager import manager
 
 def create_app() -> FastAPI:
     config = load_project_config()
+    @asynccontextmanager
+    async def lifespan(app):
+        with file_lock(PROJECT_ROOT / "staging" / "studio-runtime", timeout=0):
+            recover_interrupted_jobs()
+            yield
+
     app = FastAPI(
+        lifespan=lifespan,
         title="Phil and Jim Dandy Show Studio",
         version="0.1.0",
         description="Private internal React/Vite + FastAPI studio for Phil and Jim Dandy production.",
@@ -49,6 +62,22 @@ def create_app() -> FastAPI:
             "dashboard_reference": config.get("dashboard", {}).get("ui_reference_source"),
             "message": "FastAPI shell is live for the merged private studio build.",
         }
+
+    @app.exception_handler(ValueError)
+    async def invalid_value(request, exc):
+        return JSONResponse(status_code=400, content={"detail": str(exc)})
+
+    @app.middleware("http")
+    async def validate_request(request, call_next):
+        try:
+            for segment in re.findall(r"/(?:episodes|ads|assets)/([^/]+)", request.url.path):
+                validate_id(segment)
+            for key in ("episode_id", "job_id", "slide_id", "card_id"):
+                if key in request.query_params:
+                    validate_id(request.query_params[key])
+        except ValueError as exc:
+            return JSONResponse(status_code=400, content={"detail": str(exc)})
+        return await call_next(request)
 
     app.include_router(system_router)
     app.include_router(system_router, prefix="/api")

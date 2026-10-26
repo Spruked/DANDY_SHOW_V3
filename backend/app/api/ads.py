@@ -1,4 +1,5 @@
 from datetime import datetime
+from ..core.safety import atomic_json, contained_path, validate_id, file_lock
 import json
 import uuid
 from pathlib import Path
@@ -140,7 +141,7 @@ async def produce_ad_audio(episode_id: str, ad_id: str) -> Dict:
     except Exception as e:
         raise HTTPException(503, f"TTS worker unavailable: {e}")
 
-    staging_dir = PROJECT_ROOT / "staging" / "ads" / episode_id / ad_id
+    staging_dir = contained_path(PROJECT_ROOT / "staging" / "ads", validate_id(episode_id), validate_id(ad_id))
     staging_dir.mkdir(parents=True, exist_ok=True)
     raw_mix = staging_dir / "raw_mix.mp3"
 
@@ -150,7 +151,7 @@ async def produce_ad_audio(episode_id: str, ad_id: str) -> Dict:
     except Exception as e:
         raise HTTPException(500, f"TTS synthesis failed: {e}")
 
-    ads_dir = EPISODES_ROOT / episode_id / "ads"
+    ads_dir = contained_path(EPISODES_ROOT, validate_id(episode_id), "ads")
     ads_dir.mkdir(exist_ok=True)
     final_audio = ads_dir / f"{ad_id}.mp3"
     if final_audio.exists():
@@ -189,7 +190,7 @@ async def insert_ad_into_script(episode_id: str, ad_id: str, payload: Dict) -> D
 
 @router.get("/episodes/{episode_id}/ads/{ad_id}/assets")
 async def list_ad_assets(episode_id: str, ad_id: str) -> Dict:
-    meta_path = EPISODES_ROOT / episode_id / "ads" / f"{ad_id}_assets.json"
+    meta_path = contained_path(EPISODES_ROOT, validate_id(episode_id), "ads", f"{validate_id(ad_id)}_assets.json")
     if not meta_path.exists():
         return {"ad_id": ad_id, "assets": []}
     return {"ad_id": ad_id, "assets": json.loads(meta_path.read_text(encoding="utf-8"))}
@@ -202,15 +203,23 @@ async def upload_ad_asset(
     file: UploadFile = File(...),
     label: str = Form(""),
 ) -> Dict:
-    asset_dir = EPISODES_ROOT / episode_id / "ads" / f"{ad_id}_assets"
+    asset_dir = contained_path(EPISODES_ROOT, validate_id(episode_id), "ads", f"{validate_id(ad_id)}_assets")
     asset_dir.mkdir(parents=True, exist_ok=True)
-    meta_path = EPISODES_ROOT / episode_id / "ads" / f"{ad_id}_assets.json"
+    meta_path = contained_path(EPISODES_ROOT, validate_id(episode_id), "ads", f"{validate_id(ad_id)}_assets.json")
 
     asset_id = f"asset_{uuid.uuid4().hex[:8]}"
     suffix = Path(file.filename or "file").suffix
     stored_name = f"{asset_id}{suffix}"
     stored_path = asset_dir / stored_name
-    stored_path.write_bytes(await file.read())
+    total = 0
+    with stored_path.open("wb") as destination:
+        while chunk := await file.read(1024 * 1024):
+            total += len(chunk)
+            if total > 100 * 1024 * 1024:
+                destination.close()
+                stored_path.unlink(missing_ok=True)
+                raise HTTPException(413, "Upload exceeds 100 MiB")
+            destination.write(chunk)
 
     existing = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else []
     record = {
@@ -223,20 +232,20 @@ async def upload_ad_asset(
         "uploaded_at": datetime.now().isoformat(),
     }
     existing.append(record)
-    meta_path.write_text(json.dumps(existing, indent=2), encoding="utf-8")
+    atomic_json(meta_path, existing)
     return {"status": "uploaded", "asset": record}
 
 
 @router.get("/episodes/{episode_id}/ads/{ad_id}/assets/{asset_id}/file")
 async def serve_ad_asset(episode_id: str, ad_id: str, asset_id: str):
-    meta_path = EPISODES_ROOT / episode_id / "ads" / f"{ad_id}_assets.json"
+    meta_path = contained_path(EPISODES_ROOT, validate_id(episode_id), "ads", f"{validate_id(ad_id)}_assets.json")
     if not meta_path.exists():
         raise HTTPException(404, "No assets for this ad")
     assets = json.loads(meta_path.read_text(encoding="utf-8"))
     rec = next((a for a in assets if a["asset_id"] == asset_id), None)
     if not rec:
         raise HTTPException(404, "Asset not found")
-    return FileResponse(rec["stored_path"], media_type=rec["content_type"], filename=rec["original_name"])
+    return FileResponse(contained_path(EPISODES_ROOT, rec["stored_path"]), media_type=rec["content_type"], filename=rec["original_name"])
 
 
 @router.get("/episodes/{episode_id}/ads/{ad_id}/audio")
@@ -249,7 +258,7 @@ async def ad_audio(episode_id: str, ad_id: str):
     if not audio_path:
         raise HTTPException(status_code=404, detail="Audio not found for this ad")
 
-    path = Path(audio_path)
+    path = contained_path(EPISODES_ROOT, audio_path)
     if not path.is_absolute():
         path = (PROJECT_ROOT / path).resolve()
     if not path.exists() or not path.is_file():

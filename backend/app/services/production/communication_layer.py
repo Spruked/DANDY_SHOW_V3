@@ -19,9 +19,9 @@ def _is_bridge_reachable() -> bool:
         from . import llm_writer
         _BRIDGE_REACHABLE = llm_writer.check_bridge()
         if _BRIDGE_REACHABLE:
-            logger.info("LLM governance bridge reachable — using LLM generation path")
+            logger.info("Required Qwen model reachable — using llama.cpp generation")
         else:
-            logger.info("LLM governance bridge unavailable — falling back to SKG path")
+            logger.info("Required Qwen model unavailable — production generation is blocked")
     return _BRIDGE_REACHABLE
 
 

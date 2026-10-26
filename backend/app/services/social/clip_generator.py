@@ -1,3 +1,4 @@
+from ...core.safety import atomic_json
 import json
 import re
 import shutil
@@ -197,7 +198,7 @@ def build_clip_exports(
             "video": video_result,
             "captions_count": len(local_captions),
         }
-        clip_meta.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        atomic_json(clip_meta, payload)
         exports.append(payload)
 
     return exports

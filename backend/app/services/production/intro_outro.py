@@ -153,6 +153,13 @@ def _synthesize_tts_edge_sync(text: str, voice: str, output_path: Path, pause_ms
     Falls back to Edge TTS on Windows if WSL call fails.
     Splits on [pause] markers, inserting silence between segments.
     """
+    from ...core.settings import load_qwen_tts_config
+    if load_qwen_tts_config().get("production", {}).get("required_engine") == "qwen":
+        from .worker import HardenedPodcastWorker
+        worker = HardenedPodcastWorker()
+        worker._synthesize_line(text.replace(PAUSE_MARKER, " "), "announcer_male", "neutral", output_path)
+        return
+
     # Map Edge TTS voice names → Kokoro voice names for the announcer
     _edge_to_kokoro = {
         "en-US-GuyNeural": "am_eric",

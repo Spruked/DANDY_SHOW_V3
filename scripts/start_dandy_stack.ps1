@@ -13,6 +13,10 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $backendDir = Join-Path $root "backend"
 $frontendDir = Join-Path $root "frontend"
 $ffmpegBin = Join-Path $root "staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin"
+$runtimePath = Join-Path $root "config\runtime.local.json"
+$runtime = if (Test-Path $runtimePath) { Get-Content -LiteralPath $runtimePath -Raw | ConvertFrom-Json } else { $null }
+if ($runtime -and $runtime.ffmpeg_bin) { $ffmpegBin = [string]$runtime.ffmpeg_bin }
+if ($runtime -and $runtime.writer_base_url) { $env:DANDY_LLAMACPP_BASE_URL = [string]$runtime.writer_base_url }
 $venvPython = Join-Path $root ".venv\Scripts\python.exe"
 $pythonCmd = if ($env:DANDY_PYTHON) {
     $env:DANDY_PYTHON
@@ -21,7 +25,7 @@ $pythonCmd = if ($env:DANDY_PYTHON) {
 } else {
     "py"
 }
-$backendBaseArgs = @("-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$BackendPort")
+$backendBaseArgs = @("-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "$BackendPort")
 if ($Reload) {
     $backendBaseArgs += "--reload"
 }
@@ -68,10 +72,11 @@ if (-not $NoBackend) {
     $backendArgsLiteral = ($pythonArgs | ForEach-Object { "'$_'" }) -join ", "
     $backendCmd = @"
 `$env:PATH = '$($env:PATH)';
+`$env:DANDY_LLAMACPP_BASE_URL = '$($env:DANDY_LLAMACPP_BASE_URL)';
 Set-Location '$backendDir';
 & '$pythonCmd' @($backendArgsLiteral)
 "@
-    Start-Process -FilePath "powershell" -ArgumentList @(
+    Start-Process -WindowStyle Hidden -FilePath "powershell" -ArgumentList @(
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
         "-Command", $backendCmd
@@ -85,12 +90,16 @@ Set-Location '$frontendDir';
 `$env:DANDY_API_TARGET = 'http://127.0.0.1:$BackendPort';
 npm run dev -- --host 127.0.0.1 --port $FrontendPort
 "@
-    Start-Process -FilePath "powershell" -ArgumentList @(
+    Start-Process -WindowStyle Hidden -FilePath "powershell" -ArgumentList @(
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
         "-Command", $frontendCmd
     ) | Out-Null
     Write-Host "Frontend launch requested on http://127.0.0.1:$FrontendPort"
+}
+
+if (-not $NoBackend) {
+    & (Join-Path $root "secondary_systems/Dandy_Qwen_TTS_Ui/scripts/Start-QwenCustomLocal.ps1")
 }
 
 Start-Sleep -Seconds 2

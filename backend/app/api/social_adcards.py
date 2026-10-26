@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..core.safety import atomic_json
 import json
 from pathlib import Path
 
@@ -7,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from ..schemas.social_visual import AdCard, AdCardCollection, SaveAdCardsRequest, RenderAdCardRequest
 from ..services.social.slideshow_renderer import render_adcard_job
+from ..core.safety import contained_path, validate_id
 from ..core.paths import EPISODES_ROOT, PROJECT_ROOT
 
 router = APIRouter(prefix="/api/social/adcards", tags=["social-adcards"])
@@ -16,7 +18,7 @@ GLOBAL_CARDS_PATH = PROJECT_ROOT / "social" / "ad_cards.json"
 
 def _cards_path(episode_id: str | None) -> Path:
     if episode_id:
-        p = EPISODES_ROOT / episode_id / "ad_cards.json"
+        p = contained_path(EPISODES_ROOT, validate_id(episode_id), "ad_cards.json")
     else:
         p = GLOBAL_CARDS_PATH
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -34,7 +36,7 @@ def load_cards(episode_id: str | None = Query(default=None)):
 @router.post("/save")
 def save_cards(req: SaveAdCardsRequest):
     payload = AdCardCollection(episode_id=req.episode_id, cards=req.cards).model_dump()
-    _cards_path(req.episode_id).write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    atomic_json(_cards_path(req.episode_id), payload)
     return {"ok": True, "count": len(req.cards)}
 
 

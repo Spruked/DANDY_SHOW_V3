@@ -1,0 +1,6 @@
+{
+  "provider": "llamacpp",
+  "base_url": "http://127.0.0.1:16520/v1",
+  "required_model_file": "qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
+  "allow_model_fallback": false
+}

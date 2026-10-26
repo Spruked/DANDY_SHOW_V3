@@ -6,6 +6,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if ($Mode -eq "custom") {
+    & (Join-Path $PSScriptRoot "Start-QwenCustomLocal.ps1")
+    return
+}
+
 $PackageRoot = Split-Path -Parent $PSScriptRoot
 $LogDir = Join-Path $PackageRoot "logs"
 New-Item -ItemType Directory -Force $LogDir | Out-Null

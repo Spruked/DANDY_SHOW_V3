@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from datetime import datetime
 from functools import partial
 import json
@@ -11,6 +12,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Body
 from pydantic import BaseModel
 
 from ..core.paths import PROJECT_ROOT
+from ..core.safety import contained_path
 from ..schemas.episode import EpisodeCreateRequest
 from ..services.production import MergedDandyPodcastWorker
 from ..services.production.quality_guard import QualityDecision, ScriptQualityGuard
@@ -40,6 +42,7 @@ from ..services.storage.episode_store import (
 router = APIRouter(tags=["production"])
 _WORKER: MergedDandyPodcastWorker | None = None
 _QUALITY_GUARD = ScriptQualityGuard()
+_PRODUCTION_SLOT = threading.BoundedSemaphore(1)
 
 
 @router.get("/writer-status")
@@ -48,14 +51,6 @@ def writer_status():
 
     return llm_writer.writer_status()
 
-    from ..services.production.communication_layer import _is_bridge_reachable
-    bridge_ok = _is_bridge_reachable()
-    return {
-        "bridge_reachable": bridge_ok,
-        "active_writer": "llm_bridge" if bridge_ok else "skg_fallback",
-        "bridge_url": "http://127.0.0.1:5199",
-        "warning": None if bridge_ok else "LLM bridge offline — production will use SKG fallback.",
-    }
 
 
 class EditScriptRequest(BaseModel):
@@ -206,6 +201,8 @@ def _resolve_episode_audio_path(episode_id: str) -> Path | None:
         if key in seen:
             continue
         seen.add(key)
+        if not candidate.resolve().is_relative_to(episode_dir(episode_id).resolve()):
+            continue
         if candidate.exists() and candidate.is_file():
             return candidate
     return None
@@ -425,6 +422,13 @@ def _run_produce_background(
         publish({"status": "failed", "failed_stage": state["stage"], "stage": "failed", "error": str(exc)})
 
 
+def _run_reserved_production(**kwargs):
+    try:
+        return _run_produce_background(**kwargs)
+    finally:
+        _PRODUCTION_SLOT.release()
+
+
 @router.get("/episodes/{episode_id}/production-status")
 async def production_status(episode_id: str):
     from ..services.storage.episode_store import load_json
@@ -481,34 +485,41 @@ async def produce_episode(
     writer_engine = str(script_meta.get("writer_engine", "unknown"))
     bridge_was_reachable = writer_engine == "llm_bridge"
 
-    # Mark as producing immediately so the UI can show progress
-    save_json(
-        episode_dir(job["episode_id"]) / "status.json",
-        {
-            "status": "producing",
-            "updated_at": datetime.now().isoformat(),
-            "job_id": job_id,
-            "writer_engine": writer_engine,
-            "bridge_reachable_at_start": bridge_was_reachable,
-            "fallback_used": script_meta.get("fallback_used"),
-            "line_source_counts": script_meta.get("line_source_counts", {}),
-        },
-    )
+    if not _PRODUCTION_SLOT.acquire(blocking=False):
+        raise HTTPException(status_code=409, detail="Studio production is busy; retry after the active job finishes")
 
-    background_tasks.add_task(
-        _run_produce_background,
-        episode_id=job["episode_id"],
-        job_id=job_id,
-        script=script,
-        title=title,
-        topic=topic,
-        script_text=script_text,
-        personality_settings=personality_settings,
-        voice_settings=voice_settings,
-        writer_engine=writer_engine,
-        bridge_reachable_at_start=bridge_was_reachable,
-        event_loop=asyncio.get_running_loop(),
-    )
+    try:
+        # Mark as producing immediately so the UI can show progress
+        save_json(
+            episode_dir(job["episode_id"]) / "status.json",
+            {
+                "status": "producing",
+                "updated_at": datetime.now().isoformat(),
+                "job_id": job_id,
+                "writer_engine": writer_engine,
+                "bridge_reachable_at_start": bridge_was_reachable,
+                "fallback_used": script_meta.get("fallback_used"),
+                "line_source_counts": script_meta.get("line_source_counts", {}),
+            },
+        )
+
+        background_tasks.add_task(
+            _run_reserved_production,
+            episode_id=job["episode_id"],
+            job_id=job_id,
+            script=script,
+            title=title,
+            topic=topic,
+            script_text=script_text,
+            personality_settings=personality_settings,
+            voice_settings=voice_settings,
+            writer_engine=writer_engine,
+            bridge_reachable_at_start=bridge_was_reachable,
+            event_loop=asyncio.get_running_loop(),
+        )
+    except BaseException:
+        _PRODUCTION_SLOT.release()
+        raise
 
     return {
         "status": "queued",

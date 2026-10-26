@@ -15,6 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from ...schemas.social_visual import Slide, AdCard
 from ...core.paths import PROJECT_ROOT
+from ...core.safety import contained_path, validate_id
 
 TEMPLATES_DIR = PROJECT_ROOT / "social" / "templates"
 RENDERS_DIR   = PROJECT_ROOT / "social" / "renders"
@@ -44,7 +45,7 @@ def _resolve_image(filename: str) -> Path | None:
     if not filename:
         return None
     for base in [TEMPLATES_DIR, PROJECT_ROOT / "social" / "assets"]:
-        p = base / filename
+        p = contained_path(base, filename)
         if p.exists():
             return p
     return None
@@ -99,6 +100,7 @@ def render_slideshow_job(
     aspect: str = "16:9",
     fmt: str = "mp4",
 ) -> dict:
+    validate_id(episode_id)
     size = ASPECT_SIZES[aspect]
     data = json.loads(slideshow_path.read_text())
     slides = [Slide(**s) for s in data["slides"]]
@@ -134,12 +136,13 @@ def render_slideshow_job(
     if audio_path.exists():
         cmd += ["-i", str(audio_path), "-map", "0:v", "-map", "1:a", "-shortest"]
     cmd += ["-vsync", "vfr", "-pix_fmt", "yuv420p", "-c:v", "libx264", "-crf", "20", str(mp4_path)]
-    subprocess.run(cmd, check=True)
+    subprocess.run(cmd, check=True, timeout=600)
 
     return {"path": str(mp4_path), "url": f"/renders/{mp4_path.name}"}
 
 
 def render_adcard_job(card: AdCard, aspect: str = "1:1", fmt: str = "png") -> dict:
+    validate_id(card.id)
     size = ASPECT_SIZES[aspect]
     job_id = uuid.uuid4().hex[:8]
 
@@ -186,6 +189,6 @@ def render_adcard_job(card: AdCard, aspect: str = "1:1", fmt: str = "png") -> di
     subprocess.run([
         "ffmpeg", "-y", "-loop", "1", "-t", "4", "-i", str(tmp),
         "-pix_fmt", "yuv420p", "-c:v", "libx264", "-crf", "20", str(out),
-    ], check=True)
+    ], check=True, timeout=120)
     tmp.unlink(missing_ok=True)
     return {"path": str(out), "url": f"/renders/{out.name}"}

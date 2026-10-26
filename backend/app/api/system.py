@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any, Dict
 from urllib.error import URLError
 from urllib.request import urlopen
+from ..core.safety import atomic_json
 import json
 
 from fastapi import APIRouter, Body, HTTPException
@@ -74,7 +75,7 @@ async def voices() -> Dict:
     return {"kokoro": kokoro, "edge": edge, "source": "config/voices.json"}
 
 
-# ── Intro/Outro config ────────────────────────────────────────────────────────
+# â”€â”€ Intro/Outro config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _load_intro_outro_cfg() -> Dict[str, Any]:
     import json
@@ -104,11 +105,11 @@ async def save_intro_outro_config(payload: Dict[str, Any] = Body(...)) -> Dict:
     import json
     cfg_path = CONFIG_ROOT / "config.json"
     data = json.loads(cfg_path.read_text(encoding="utf-8"))
-    # Protect top-level structure — only update intro_outro key
+    # Protect top-level structure â€” only update intro_outro key
     protected = {"intro_outro"}
     incoming = {k: v for k, v in payload.items() if k not in ("_meta",)}
     data["intro_outro"] = incoming
-    cfg_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    atomic_json(cfg_path, data)
     # Bust the lru_cache so fresh config is loaded on next call
     from ..core.settings import load_project_config
     load_project_config.cache_clear()
@@ -124,6 +125,8 @@ async def preview_intro_outro(payload: Dict[str, Any] = Body(...)) -> Any:
     from ..services.production.intro_outro import build_intro, build_outro, DEFAULT_CONFIG
 
     section = str(payload.get("section", "intro")).lower()
+    if section not in {"intro", "outro"}:
+        raise HTTPException(400, "section must be intro or outro")
     topic = str(payload.get("topic", "the show"))
 
     def merge(base, override):
@@ -150,3 +153,20 @@ async def preview_intro_outro(payload: Dict[str, Any] = Body(...)) -> Any:
         audio_bytes = out.read_bytes()
 
     return Response(content=audio_bytes, media_type="audio/mpeg")
+
+
+@router.get("/ready")
+def readiness():
+    import shutil
+    from ..services.production.llm_writer import writer_status
+    writer = writer_status()
+    bridge = _qwen_bridge_status()
+    checks = {"ffmpeg": bool(shutil.which("ffmpeg")),
+              "ffprobe": bool(shutil.which("ffprobe")),
+              "qwen": bridge.get("status") == "ok",
+              "writer": bool(writer.get("bridge_reachable"))}
+    ready = all(checks.values())
+    from fastapi.responses import JSONResponse
+    return JSONResponse(status_code=200 if ready else 503,
+                        content={"ready": ready, "checks": checks,
+                                 "acceptance": "Real voice and complete episode acceptance still required"})

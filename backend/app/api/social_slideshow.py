@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..core.safety import atomic_json
 import json
 import uuid
 from pathlib import Path
@@ -9,19 +10,20 @@ from fastapi import APIRouter, HTTPException, Query
 
 from ..schemas.social_visual import Slide, Slideshow, SaveSlideshowRequest, RenderSlideshowRequest
 from ..services.social.slideshow_renderer import render_slideshow_job
+from ..core.safety import contained_path, validate_id
 from ..core.paths import EPISODES_ROOT
 
 router = APIRouter(prefix="/api/social/slideshow", tags=["social-slideshow"])
 
 
 def _slideshow_path(episode_id: str) -> Path:
-    p = EPISODES_ROOT / episode_id / "slideshow.json"
+    p = contained_path(EPISODES_ROOT, validate_id(episode_id), "slideshow.json")
     p.parent.mkdir(parents=True, exist_ok=True)
     return p
 
 
 def _load_script(episode_id: str) -> Dict[str, Any]:
-    script = EPISODES_ROOT / episode_id / "script.json"
+    script = contained_path(EPISODES_ROOT, validate_id(episode_id), "script.json")
     if not script.exists():
         return {}
     return json.loads(script.read_text(encoding="utf-8"))
@@ -38,7 +40,7 @@ def load_slideshow(episode_id: str = Query(...)):
 @router.post("/save")
 def save_slideshow(req: SaveSlideshowRequest):
     payload = Slideshow(episode_id=req.episode_id, slides=req.slides).model_dump()
-    _slideshow_path(req.episode_id).write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    atomic_json(_slideshow_path(req.episode_id), payload)
     return {"ok": True, "count": len(req.slides)}
 
 
@@ -75,7 +77,7 @@ def auto_generate(episode_id: str = Query(...)):
         for i in range(0, len(lines), chunk):
             group = lines[i:i + chunk]
             first_line = group[0].get("text", "") if group else ""
-            snippet = first_line[:60] + ("…" if len(first_line) > 60 else "")
+            snippet = first_line[:60] + ("â€¦" if len(first_line) > 60 else "")
             slides.append(Slide(
                 id=f"slide_{uuid.uuid4().hex[:8]}",
                 title=f"Part {i // chunk + 1}",
@@ -85,7 +87,7 @@ def auto_generate(episode_id: str = Query(...)):
             ))
 
     payload = Slideshow(episode_id=episode_id, slides=slides).model_dump()
-    _slideshow_path(episode_id).write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    atomic_json(_slideshow_path(episode_id), payload)
     return payload
 
 

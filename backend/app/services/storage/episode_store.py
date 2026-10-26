@@ -1,6 +1,7 @@
 import json
 import shutil
 import uuid
+from functools import wraps
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
@@ -8,6 +9,7 @@ from typing import IO
 from typing import Any, Dict, List, Optional
 
 from ...core.paths import EPISODES_ROOT
+from ...core.safety import atomic_json, contained_path, validate_id, file_lock
 
 
 DRAFTS_ROOT = EPISODES_ROOT / ".drafts"
@@ -47,7 +49,7 @@ def ensure_storage_roots() -> None:
 
 def episode_dir(episode_id: str) -> Path:
     ensure_storage_roots()
-    path = EPISODES_ROOT / episode_id
+    path = contained_path(EPISODES_ROOT, validate_id(episode_id))
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -89,8 +91,8 @@ def ad_settings_path(episode_id: str) -> Path:
 
 
 def save_json(path: Path, payload: Dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    with file_lock(path):
+        atomic_json(path, payload)
 
 
 def load_json(path: Path) -> Optional[Dict[str, Any]]:
@@ -149,7 +151,14 @@ def save_asset_upload(
     stored_path = episode_assets_dir / stored_name
 
     with stored_path.open("wb") as destination:
-        shutil.copyfileobj(file_stream, destination)
+        total = 0
+        while chunk := file_stream.read(1024 * 1024):
+            total += len(chunk)
+            if total > 100 * 1024 * 1024:
+                destination.close()
+                stored_path.unlink(missing_ok=True)
+                raise ValueError("Upload exceeds 100 MiB")
+            destination.write(chunk)
 
     asset_type = _infer_asset_type(filename, content_type)
     extracted_text = _extract_text_preview(stored_path, asset_type)
@@ -182,7 +191,7 @@ def list_assets(episode_id: str) -> List[Dict[str, Any]]:
 
 
 def load_asset(episode_id: str, asset_id: str) -> Optional[Dict[str, Any]]:
-    return load_json(asset_metadata_dir(episode_id) / f"{asset_id}.json")
+    return load_json(contained_path(asset_metadata_dir(episode_id), f"{validate_id(asset_id)}.json"))
 
 
 def save_media_cues(episode_id: str, cues: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -202,6 +211,15 @@ def load_media_cues(episode_id: str) -> Dict[str, Any]:
     return {"episode_id": episode_id, "updated_at": None, "cues": []}
 
 
+def serialized_episode_update(function):
+    @wraps(function)
+    def wrapped(episode_id, *args, **kwargs):
+        with file_lock(episode_dir(episode_id) / "episode-update"):
+            return function(episode_id, *args, **kwargs)
+    return wrapped
+
+
+@serialized_episode_update
 def append_media_cue(episode_id: str, cue: Dict[str, Any]) -> Dict[str, Any]:
     payload = load_media_cues(episode_id)
     cues = payload.get("cues", [])
@@ -230,7 +248,7 @@ def load_ad_settings(episode_id: str) -> Dict[str, Any]:
 
 def save_ad(episode_id: str, ad_payload: Dict[str, Any]) -> Dict[str, Any]:
     ads_path = ads_dir(episode_id)
-    ad_id = ad_payload.get("ad_id") or f"ad_{uuid.uuid4().hex[:8]}"
+    ad_id = validate_id(ad_payload.get("ad_id") or f"ad_{uuid.uuid4().hex[:8]}")
     payload = {
         "ad_id": ad_id,
         "episode_id": episode_id,
@@ -291,7 +309,7 @@ def create_episode_draft(payload: Dict[str, Any], job_id: str) -> Dict[str, Any]
 
 
 def load_job(job_id: str) -> Optional[Dict[str, Any]]:
-    return load_json(JOBS_ROOT / f"{job_id}.json")
+    return load_json(contained_path(JOBS_ROOT, f"{validate_id(job_id)}.json"))
 
 
 def load_draft(episode_id: str) -> Optional[Dict[str, Any]]:
@@ -387,6 +405,7 @@ def _recalculate_script_metadata(script_lines: List[Dict[str, Any]]) -> Dict[str
     return metadata
 
 
+@serialized_episode_update
 def save_script(episode_id: str, script: List[Dict[str, Any]]) -> None:
     ep_dir = episode_dir(episode_id)
     timestamp = datetime.now().isoformat()
@@ -422,16 +441,18 @@ def load_script(episode_id: str) -> Dict[str, Any]:
 
 
 def save_script_version(episode_id: str, script: List[Dict[str, Any]]) -> Dict[str, Any]:
-    versions = list_script_versions(episode_id)
-    version_number = len(versions) + 1
-    payload = {
-        "version": version_number,
-        "saved_at": datetime.now().isoformat(),
-        "script": script,
-        "word_count": sum(len(line.get("text", "").split()) for line in script),
-    }
-    save_json(script_versions_dir(episode_id) / f"version_{version_number:03d}.json", payload)
-    return payload
+    with file_lock(episode_dir(episode_id) / "versions"):
+        versions = list_script_versions(episode_id)
+        version_number = len(versions) + 1
+        payload = {
+            "version": version_number,
+            "saved_at": datetime.now().isoformat(),
+            "script": script,
+            "word_count": sum(len(line.get("text", "").split()) for line in script),
+        }
+        save_json(script_versions_dir(episode_id) / f"version_{version_number:03d}.json", payload)
+        return payload
+
 
 
 def list_script_versions(episode_id: str) -> List[Dict[str, Any]]:
@@ -462,6 +483,7 @@ def load_feedback(episode_id: str) -> Optional[Dict[str, Any]]:
     return load_json(episode_dir(episode_id) / "customer_feedback.json")
 
 
+@serialized_episode_update
 def save_episode_config(episode_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
     ep_dir = episode_dir(episode_id)
     existing = load_json(ep_dir / "config.json") or {}
@@ -555,3 +577,17 @@ def list_episode_summaries() -> List[Dict[str, Any]]:
             }
         )
     return episodes
+
+
+def recover_interrupted_jobs():
+    """Called only while the server holds the exclusive runtime lock."""
+    ensure_storage_roots()
+    for path in EPISODES_ROOT.glob("*/status.json"):
+        state = load_json(path) or {}
+        if state.get("status") in {"producing", "queued"}:
+            state.update(status="interrupted", stage="interrupted",
+                         error="Studio restarted during production. Retry explicitly.",
+                         updated_at=datetime.now().isoformat())
+            save_json(path, state)
+            if state.get("job_id"):
+                save_json(contained_path(JOBS_ROOT, validate_id(state["job_id"]) + ".json"), state)

@@ -52,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File scripts/start_dandy_stack.ps1 -Restart
 2. **Backend** on `:8110`
 ```powershell
 cd backend
-..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8110
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8110
 ```
 3. **Frontend** on `:5173` (proxies `/api` and `/ws` to `:8110`)
 ```bash
@@ -100,3 +100,26 @@ cd frontend && npm run build
 - Operations notes: `docs/operations/NEXT_INSTANCE_NOTES.md`
 - User guide: `docs/USER_GUIDE_AND_OPERATOR_MANUAL.md`
 - Archived testing: `archive/testing/`
+
+
+## Production hardening status
+
+See [the repair record](docs/PRODUCTION_HARDENING.md). Qwen is required by
+`config/qwen_tts.json` (`production.required_engine`); unavailable Qwen fails
+production instead of substituting Kokoro/Edge. Existing Kokoro architecture notes
+above describe the legacy path, not the current acceptance contract.
+
+Run only one backend process: the application holds an OS advisory runtime lock.
+At startup, unfinished production records become `interrupted`, requiring an
+explicit production retry. GPU production is limited to one active episode.
+`/api/ready` returns 503 if FFmpeg, FFprobe, Qwen or the script writer is unavailable.
+This checks dependencies, not final voice identity or media quality.
+
+Create a complete media backup while production is idle:
+```powershell
+.venv\Scripts\python.exe scripts/studio/backup.py --label before-production
+.venv\Scripts\python.exe scripts/studio/backup.py --restore archive/backups/NAME.zip --destination C:/DandyRestoreCheck
+```
+The restore destination must be empty. Copy verified archives to separate storage;
+a backup on this disk does not protect against disk failure. External voice prompts
+outside this repository need a separate backup.

@@ -95,3 +95,9 @@ renders/
 Thumbs.db
 .vscode/
 .idea/
+
+# Runtime advisory locks
+*.lock
+
+# Verified machine-specific runtime locations
+config/runtime.local.json

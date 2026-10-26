@@ -2,6 +2,8 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
+from ..core.paths import EPISODES_ROOT
+from ..core.safety import contained_path
 from pydantic import BaseModel
 
 from ..services.storage.episode_store import (
@@ -77,7 +79,7 @@ async def episode_asset_file(episode_id: str, asset_id: str):
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
     return FileResponse(
-        asset["stored_path"],
+        contained_path(EPISODES_ROOT, asset["stored_path"]),
         media_type=asset.get("content_type", "application/octet-stream"),
         filename=asset.get("original_name", asset_id),
     )

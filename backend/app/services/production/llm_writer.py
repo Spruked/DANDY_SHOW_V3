@@ -1,14 +1,9 @@
 """
 llm_writer.py — LLM script writer for Phil & Jim Dandy Show.
 
-Routes script generation through the substrate governance bridge
-(http://127.0.0.1:5199/query) with role "dandy_scriptwriter".
-
-The LLM writes dialogue within a brief supplied by the system (topic, key
-points, stage, primary source). Bryan is the final decision maker on what
-ships. The validator (ScriptQualityGuard) is the quality gate, not the LLM.
-
-Falls back to the SKG path if the bridge is unavailable.
+All generated dialogue and rewrites use the required local Qwen2.5-7B-Instruct
+Q4_K_M model through llama.cpp. No alternate model provider is used.
+SKG supplies persona guidance; it does not replace model-generated dialogue.
 """
 
 import json
@@ -16,17 +11,31 @@ import logging
 import os
 import re
 import urllib.request
+from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
-_BRIDGE_URL = os.getenv("DANDY_LLM_BRIDGE_URL", "http://127.0.0.1:5199/query")
-_LLAMACPP_BASE_URL = os.getenv("DANDY_LLAMACPP_BASE_URL", "http://127.0.0.1:40343/v1")
-_LLAMACPP_MODEL = os.getenv("DANDY_LLAMACPP_MODEL", "local")
-_ROLE = "dandy_scriptwriter"
-_TIMEOUT = 120  # matches governance config timeout_seconds
+_CONFIG = json.loads((Path(__file__).resolve().parents[4] / "config" / "writer.json").read_text(encoding="utf-8"))
+_LLAMACPP_BASE_URL = os.getenv("DANDY_LLAMACPP_BASE_URL") or _CONFIG["base_url"]
+_LLAMACPP_BASE_URL = _LLAMACPP_BASE_URL.rstrip("/")
+_REQUIRED_MODEL_FILE = _CONFIG["required_model_file"]
+_TIMEOUT = 120
+
+
+def _verified_model() -> str:
+    """Resolve the pinned GGUF from the live server; reject other models."""
+    with urllib.request.urlopen(f"{_LLAMACPP_BASE_URL}/models", timeout=3) as response:
+        models = json.loads(response.read().decode()).get("data", [])
+    for model in models:
+        model_id = str(model.get("id", ""))
+        filename = model_id.replace("\\", "/").rsplit("/", 1)[-1]
+        if filename.lower() == _REQUIRED_MODEL_FILE.lower():
+            return model_id
+    raise RuntimeError(f"Required Qwen2.5-7B-Instruct Q4_K_M model is not loaded: {_REQUIRED_MODEL_FILE}")
+
 
 _STAGES: Dict[str, Dict] = {
     "opening": {
@@ -69,26 +78,10 @@ def _post_json(url: str, payload: Dict, timeout: int = _TIMEOUT) -> Dict:
         return json.loads(resp.read().decode())
 
 
-def _call_governance_bridge(prompt: str) -> Optional[str]:
-    payload = json.dumps({"role": _ROLE, "prompt": prompt}).encode()
-    req = urllib.request.Request(
-        _BRIDGE_URL,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
-            body = json.loads(resp.read().decode())
-            return body.get("text", "")
-    except Exception as exc:
-        logger.warning("LLM governance bridge call failed: %s", exc)
-        return None
-
-
 def _call_llamacpp(prompt: str) -> Optional[str]:
+    model_id = _verified_model()
     payload = {
-        "model": _LLAMACPP_MODEL,
+        "model": model_id,
         "messages": [
             {
                 "role": "system",
@@ -116,9 +109,6 @@ def _call_llamacpp(prompt: str) -> Optional[str]:
 
 
 def _call_bridge(prompt: str) -> Tuple[Optional[str], str]:
-    governance = _call_governance_bridge(prompt)
-    if governance:
-        return governance, "governance_bridge"
     llamacpp = _call_llamacpp(prompt)
     if llamacpp:
         return llamacpp, "llamacpp"
@@ -240,7 +230,7 @@ def generate_segment(
     generation_nonce: Optional[str] = None,
 ) -> List[Dict]:
     """
-    Generate one conversation segment via the governed LLM bridge.
+    Generate one conversation segment using the required Qwen model.
 
     Returns a list of line dicts (speaker, text, emotional_state, pause_after, timestamp).
     Returns [] if the bridge is unreachable or the response is unparseable.
@@ -305,36 +295,25 @@ Request: {uuid4().hex}
 
 
 def writer_status() -> Dict[str, object]:
-    governance_ok = False
-    llamacpp_ok = False
+    model_id = None
+    warning = None
     try:
-        bridge_root = _BRIDGE_URL.rsplit("/", 1)[0] + "/"
-        req = urllib.request.Request(bridge_root, method="GET")
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            governance_ok = resp.status < 500
-    except Exception:
-        governance_ok = False
-
-    try:
-        req = urllib.request.Request(f"{_LLAMACPP_BASE_URL}/models", method="GET")
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            llamacpp_ok = resp.status < 500
-    except Exception:
-        llamacpp_ok = False
-
-    active = "governance_bridge" if governance_ok else "llamacpp" if llamacpp_ok else "offline"
+        model_id = _verified_model()
+    except Exception as exc:
+        warning = f"Required Qwen writer unavailable; generation is blocked: {exc}"
     return {
-        "bridge_reachable": bool(governance_ok or llamacpp_ok),
-        "active_writer": "llm_bridge" if governance_ok or llamacpp_ok else "offline",
-        "writer_backend": active,
-        "bridge_url": _BRIDGE_URL,
+        "bridge_reachable": model_id is not None,
+        "active_writer": "llm_bridge" if model_id else "offline",
+        "writer_backend": "llamacpp" if model_id else "offline",
+        "bridge_url": _LLAMACPP_BASE_URL,
         "llamacpp_url": _LLAMACPP_BASE_URL,
-        "warning": None
-        if governance_ok or llamacpp_ok
-        else "LLM writer offline - generation will fail closed; SKG is persona guidance only.",
+        "model": model_id,
+        "required_model": "Qwen2.5-7B-Instruct Q4_K_M",
+        "allow_model_fallback": False,
+        "warning": warning,
     }
 
 
 def check_bridge() -> bool:
-    """Return True if any configured LLM writer backend is reachable."""
+    """Return True only when the required Qwen model is served."""
     return bool(writer_status()["bridge_reachable"])

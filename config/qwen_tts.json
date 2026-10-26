@@ -1,5 +1,6 @@
 {
   "enabled": true,
+  "model": "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
   "role": "secondary",
   "bridge_url": "http://127.0.0.1:8020",
   "operator_ui_url": "http://127.0.0.1:7861",
@@ -36,8 +37,9 @@
   "production": {
     "enabled": true,
     "explicit_selection_enabled": true,
-    "use_as_secondary_fallback": true,
+    "use_as_secondary_fallback": false,
     "fallback_provider": "edge",
-    "store_outputs_under_episode": true
+    "store_outputs_under_episode": true,
+    "required_engine": "qwen"
   }
 }

@@ -1,3 +1,4 @@
+from ...core.safety import atomic_json
 import json
 import re
 import shutil
@@ -140,7 +141,7 @@ def export_social_package(
         "script_preview": script_text[:200],
         "copy": post_copy,
     }
-    (destination / "social_export.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    atomic_json((destination / "social_export.json"), payload)
     return payload
 
 

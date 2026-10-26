@@ -18,6 +18,7 @@ instead of MergedDandyPodcastWorker.
 
 import asyncio
 from collections import Counter, defaultdict
+from ...core.safety import atomic_json, contained_path, validate_id
 import json
 import logging
 import re
@@ -460,7 +461,7 @@ class HardenedPodcastWorker:
         if not script_lines:
             raise ValueError("script_lines are required for production")
 
-        episode_dir = self.base_path / "episodes" / episode_id
+        episode_dir = contained_path(self.base_path / "episodes", validate_id(episode_id))
         episode_dir.mkdir(parents=True, exist_ok=True)
         final_audio_path = episode_dir / "audio.mp3"
         transcript_path = episode_dir / "transcript.json"
@@ -523,6 +524,8 @@ class HardenedPodcastWorker:
                     processing_result["intro_outro"] = "wrapped"
                     logger.info("Intro/outro applied to %s", episode_id)
                 except Exception as exc:
+                    if self.qwen_tts_config.get("production", {}).get("required_engine") == "qwen":
+                        raise RuntimeError("Required Qwen intro/outro failed") from exc
                     logger.warning("Intro/outro wrap failed (episode audio kept clean): %s", exc)
                     processing_result["intro_outro"] = f"failed: {exc}"
 
@@ -534,7 +537,7 @@ class HardenedPodcastWorker:
                 "script": script_lines,
                 "segments": segment_payloads,
             }
-            transcript_path.write_text(json.dumps(transcript_payload, indent=2), encoding="utf-8")
+            atomic_json(transcript_path, transcript_payload)
 
             metadata = {
                 "episode_id": episode_id,
@@ -556,7 +559,7 @@ class HardenedPodcastWorker:
                     },
                 },
             }
-            metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+            atomic_json(metadata_path, metadata)
 
         return {
             "episode_id": episode_id,
@@ -724,6 +727,9 @@ class HardenedPodcastWorker:
             except Exception as exc:
                 errors.append(f"qwen:{exc}")
 
+        if self.qwen_tts_config.get("production", {}).get("required_engine") == "qwen":
+            raise RuntimeError("Required Qwen production failed; voice substitution is disabled: " + "; ".join(errors))
+
         if self.runtime.primary_engine == "kokoro":
             try:
                 if self._try_kokoro(text, speaker, emotion, output_path):
@@ -745,6 +751,8 @@ class HardenedPodcastWorker:
             raise RuntimeError("Qwen bridge_url is not configured")
 
         voice_map = self.qwen_tts_config.get("voices", {})
+        if not voice_map.get(speaker):
+            raise RuntimeError(f"No Qwen voice configured for {speaker}")
         instruction_map = self.qwen_tts_config.get("instructions", {})
         timeout = float(self.qwen_tts_config.get("timeouts", {}).get("synthesis_seconds", 180))
         payload = {
@@ -772,13 +780,16 @@ class HardenedPodcastWorker:
             detail = exc.read().decode("utf-8", errors="replace")
             raise RuntimeError(f"Qwen bridge HTTP {exc.code}: {detail}") from exc
 
+        if self.qwen_tts_config.get("production", {}).get("required_engine") == "qwen":
+            if result.get("engine") != "qwen" or result.get("voice") != voice_map[speaker]:
+                raise RuntimeError("Qwen bridge returned an unexpected engine or voice")
         produced_path = Path(result.get("audio_file") or result.get("path") or output_path)
         if produced_path.resolve() != output_path.resolve():
             if not produced_path.exists():
                 raise RuntimeError(f"Qwen bridge returned missing file: {produced_path}")
             shutil.copyfile(produced_path, output_path)
-        if not output_path.exists():
-            raise RuntimeError("Qwen bridge did not create an output file")
+        if not output_path.exists() or not output_path.stat().st_size:
+            raise RuntimeError("Qwen bridge did not create a nonempty output file")
         return True
 
     # ── WSL path helpers ────────────────────────────────────────────────
