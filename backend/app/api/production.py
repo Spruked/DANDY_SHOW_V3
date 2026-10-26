@@ -414,6 +414,9 @@ def _run_produce_background(
         )
         publish({**metadata, "status": "produced", "stage": "completed", "progress": 1.0,
                  "production_mode": "worker", "audio_file": str(audio_path),
+                 "engine_stats": result["metadata"].get("engine_stats", {}),
+                 "engine_line_stats": result["metadata"].get("engine_line_stats", {}),
+                 "synthesized_line_count": result["metadata"].get("synthesized_line_count", 0),
                  "personality_settings": personality_settings, "voice_settings": voice_settings})
     except Exception as exc:
         publish({"status": "failed", "failed_stage": state["stage"], "stage": "failed", "error": str(exc)})

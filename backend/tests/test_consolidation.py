@@ -42,7 +42,7 @@ class ProductionTests(unittest.TestCase):
                         raise RuntimeError("TTS unavailable")
                     audio = episode_dir("test") / "audio.mp3"
                     audio.write_bytes(b"fake audio for orchestration test")
-                    return {"audio_file": str(audio), "metadata": {}}
+                    return {"audio_file": str(audio), "metadata": {"engine_stats": {"kokoro": 2}, "engine_line_stats": {"kokoro": 1}}}
             async def run():
                 with patch.object(production, "episode_dir", side_effect=episode_dir), \
                      patch.object(production, "MergedDandyPodcastWorker", Worker), \
@@ -71,6 +71,7 @@ class ProductionTests(unittest.TestCase):
                 self.assertEqual(status["status"], "produced")
                 self.assertEqual(status["progress"], 1)
                 self.assertEqual(events[-1]["type"], "production_complete")
+                self.assertEqual(status["engine_stats"], {"kokoro": 2})
 
     def test_persisted_progress_and_completion(self):
         self.run_job()
@@ -196,6 +197,48 @@ class ToneTests(unittest.TestCase):
             response = client.post("/api/episodes/test/rollback?version=1")
             self.assertEqual(response.status_code, 200, response.text)
             self.assertEqual(store.load_script("test")["script"], original)
+
+
+class EngineStatisticsTests(unittest.TestCase):
+    def test_split_lines_report_actual_engines_in_metadata_and_progress(self):
+        from types import SimpleNamespace
+        import json
+        worker = HardenedPodcastWorker.__new__(HardenedPodcastWorker)
+        worker.voices_config = {"phil": {"primary_voice": "test"}, "jim": {"primary_voice": "test"}}
+        worker.project_config = {}
+        worker.qwen_tts_config = {}
+        engines = iter(["kokoro", "edge", "qwen", "kokoro"])
+        def synthesize(**kwargs):
+            kwargs["output_path"].write_bytes(b"fake TTS")
+            return next(engines)
+        def mix(segments, path):
+            path.write_bytes(b"fake mix")
+        def process(**kwargs):
+            kwargs["output_file"].write_bytes(b"fake processed audio")
+            return {"processing_chain": "test"}
+        worker.post_processor = SimpleNamespace(process_episode=process)
+        events = []
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.object(worker, "_synthesize_line", side_effect=synthesize), \
+             patch.object(worker, "_split_for_tts", return_value=["First chunk", "Second chunk"]), \
+             patch.object(worker, "_concatenate_segments", side_effect=mix), \
+             patch.object(worker, "_probe_duration_seconds", return_value=1):
+            worker.base_path = Path(directory)
+            result = worker.produce_episode("test", "Title", "Topic", [
+                {"speaker": "phil", "text": "First original line"},
+                {"speaker": "jim", "text": "Second original line"}], events.append)
+            metadata = result["metadata"]
+            self.assertEqual(metadata["engine_stats"], {"kokoro": 2, "edge": 1, "qwen": 1})
+            self.assertEqual(metadata["engine_line_stats"], {"kokoro": 2, "edge": 1, "qwen": 1})
+            self.assertEqual(metadata["synthesized_line_count"], 2)
+            self.assertEqual(events[-2]["engine_stats"], metadata["engine_stats"])
+            self.assertEqual(json.loads((Path(directory) / "episodes/test/production_metadata.json").read_text())["engine_stats"], metadata["engine_stats"])
+
+    def test_two_chunks_on_one_engine_count_as_one_line(self):
+        stats = HardenedPodcastWorker.summarize_engines([
+            {"engine": "kokoro", "line_index": 1}, {"engine": "kokoro", "line_index": 1}])
+        self.assertEqual(stats["engine_stats"], {"kokoro": 2})
+        self.assertEqual(stats["engine_line_stats"], {"kokoro": 1})
 
 
 if __name__ == "__main__":

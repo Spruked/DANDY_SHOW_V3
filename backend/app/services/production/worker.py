@@ -17,6 +17,7 @@ instead of MergedDandyPodcastWorker.
 """
 
 import asyncio
+from collections import Counter, defaultdict
 import json
 import logging
 import re
@@ -541,6 +542,7 @@ class HardenedPodcastWorker:
                 "topic": topic,
                 "audio_file": str(final_audio_path),
                 "segment_count": len(segment_payloads),
+                **self.summarize_engines(segment_payloads),
                 "generated_at": datetime.now().isoformat(),
                 "processing": processing_result,
                 "voice_assignments": {
@@ -561,6 +563,18 @@ class HardenedPodcastWorker:
             "audio_file": str(final_audio_path),
             "transcript": script_lines,
             "metadata": metadata,
+        }
+
+    @staticmethod
+    def summarize_engines(segments):
+        """Count TTS chunks and distinct script lines separately (a line can use two engines)."""
+        lines_by_engine = defaultdict(set)
+        for segment in segments:
+            lines_by_engine[segment["engine"]].add(segment["line_index"])
+        return {
+            "engine_stats": dict(Counter(segment["engine"] for segment in segments)),
+            "engine_line_stats": {engine: len(lines) for engine, lines in lines_by_engine.items()},
+            "synthesized_line_count": len({segment["line_index"] for segment in segments}),
         }
 
     # Maps non-canonical speaker keys → voices_config key
@@ -693,6 +707,7 @@ class HardenedPodcastWorker:
                         "total_lines": len(script_lines), "chunk_number": chunk_idx,
                         "chunk_count": len(chunks), "engine": engine_used,
                         "progress": 0.85 * ((idx - 1 + chunk_idx / len(chunks)) / len(script_lines)),
+                        **self.summarize_engines(segments),
                     })
         if not segments:
             raise RuntimeError("No audio segments were generated")

@@ -443,6 +443,10 @@ export default function EpisodeTab() {
             <span>{production.stage || production.status} · {Math.round((production.progress || 0) * 100)}%</span>
             {production.line_number && <span> · line {production.line_number}/{production.total_lines}</span>}
             {production.error && <span> · {production.error}</span>}
+            {production.engine_stats && <div>
+              TTS chunks: {Object.entries(production.engine_stats).map(([engine, count]) => `${engine}: ${count}`).join(' · ')}
+              {production.engine_line_stats && <span> | Lines per engine: {Object.entries(production.engine_line_stats).map(([engine, count]) => `${engine}: ${count}`).join(' · ')}</span>}
+            </div>}
             <progress style={{ width: '100%' }} max="1" value={production.progress || 0} />
           </div>
         )}
