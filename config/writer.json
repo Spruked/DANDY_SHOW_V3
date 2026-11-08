@@ -1,6 +1,10 @@
 {
-  "provider": "llamacpp",
+  "provider": "nvidia",
   "base_url": "http://127.0.0.1:16520/v1",
+  "nvidia_base_url": "https://integrate.api.nvidia.com/v1",
+  "nvidia_model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+  "nvidia_timeout_seconds": 60,
+  "nvidia_max_retries": 1,
   "required_model_file": "qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
   "allow_model_fallback": false
 }
