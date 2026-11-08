@@ -1,0 +1,32 @@
+{
+  "enabled": true,
+  "vault_root": "Dandy_Vault_System/storage/dandy",
+  "aims_store": "Dandy_Vault_System/AIMS/data/dandy",
+  "sync_interval_seconds": 30,
+  "project_paths": [
+    "episodes",
+    "asset_library",
+    "assets",
+    "audio",
+    "social",
+    "config",
+    "backend/app",
+    "frontend/src",
+    "frontend/public",
+    "docs",
+    "scripts",
+    "requirements",
+    "archive/legacy-episode-writer",
+    "Dandy_Vault_System",
+    "README.md",
+    "requirements.txt",
+    "pyproject.toml",
+    "frontend/package.json",
+    "frontend/package-lock.json",
+    "frontend/vite.config.js",
+    "frontend/index.html",
+    "frontend/ORBS",
+    "phil_dandy_skg_v3",
+    "jim_dandy_skg_v3"
+  ]
+}

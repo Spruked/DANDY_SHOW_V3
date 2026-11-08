@@ -1,3 +1,8 @@
+# Historical repair record
+
+Current cleanup decisions and validation: [CLEANUP_RECORD.md](CLEANUP_RECORD.md).
+Dated observations below describe earlier checks, not current service state.
+
 # Production hardening repair record — 2026-10-26
 
 Status: initial security/recovery repairs implemented; NOT production accepted.

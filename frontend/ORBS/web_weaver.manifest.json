@@ -1,0 +1,56 @@
+{
+  "schema": "orbs.web_weaver.manifest.v1",
+  "name": "Web Weaver",
+  "version": "0.1.0-pass6-morb-pointer-actuator",
+  "canonical_root": "C:\\Users\\bryan\\Desktop\\projects_docs)2026\\ORBS_Deployment",
+  "reference_source": "C:\\dev\\Desktop\\website_orb_final",
+  "entrypoints": {
+    "bootstrap": "BROWSER/bootstrap.js",
+    "browser_runtime": "BROWSER/web_weaver.js",
+    "tamp_state_model": "TAMP/states/tamp_state_model.js",
+    "tamp_decision_adapter": "TAMP/intent/tamp_decision_adapter.js",
+    "live_target_geometry": "POINTER/live_geometry/live_target_geometry.js",
+    "relational_stance": "TAMP/geometry/relational_stance.js",
+    "geometry_runtime": "TAMP/geometry/geometry_runtime.js",
+    "one_out_execution": "TAMP/movement/one_out_execution.js",
+    "movement_controller": "TAMP/movement/movement_controller.js",
+    "ping_presenter": "POINTER/ping/ping_presenter.js",
+    "morb_pointer_actuator": "POINTER/morb/morb_pointer_actuator.js",
+    "sound_pack": "POINTER/sound/sound_pack.js",
+    "morb_asset_png": "ASSETS/morb/webweaver-morb.png",
+    "morb_asset_ico": "ASSETS/morb/webweaver-morb.ico",
+    "morb_sound_source": "ASSETS/sounds/morb/morb-deployment-source.mp3",
+    "stylesheet": "BROWSER/web_weaver.css",
+    "embed_snippet": "DEPLOY/embed/web_weaver_snippet.html"
+  },
+  "configuration": {
+    "runtime": "CONFIG/runtime.json",
+    "endpoints": "CONFIG/endpoints.json",
+    "site": "SITE/site_config.json",
+    "sound_profile": "SITE/sound_profile.json"
+  },
+  "pass_scope": [
+    "minimum browser shell",
+    "configuration-driven identity",
+    "configuration-driven API URL",
+    "configuration-driven skin path",
+    "reference movement preserved",
+    "locked TAMP vocabulary",
+    "ACQUIRE authority gate",
+    "verified classifier/governor decision adapter",
+    "live target geometry",
+    "relational stance geometry",
+    "two-in one-out execution",
+    "centralized Ping authorization",
+    "website MORB pointer actuator",
+    "semantic MORB sound events"
+  ],
+  "deferred": [
+    "relational stance",
+    "N distance",
+    "Two In One Out",
+    "latency-owned glide",
+    "Target Loss Recovery",
+    "Clumsy Motion"
+  ]
+}

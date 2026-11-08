@@ -35,7 +35,7 @@ BACKEND_ORDER = [
     url.strip().rstrip("/")
     for url in os.getenv(
         "DANDY_QWEN_BACKENDS",
-        "http://127.0.0.1:8031,http://127.0.0.1:8032,http://127.0.0.1:8033",
+        "http://127.0.0.1:8031",
     ).split(",")
     if url.strip()
 ]
@@ -402,8 +402,7 @@ def voices() -> dict[str, Any]:
     }
 
 
-@app.post("/synthesize")
-def synthesize(payload: SynthesizeRequest) -> dict[str, Any]:
+def _synthesize(payload: SynthesizeRequest) -> dict[str, Any]:
     _phase("request_received", speaker=payload.speaker, requested_format=payload.format, text_len=len(payload.text or ""))
     text = _clean_tts_text(payload.text)
     if not text:
@@ -475,3 +474,16 @@ def synthesize(payload: SynthesizeRequest) -> dict[str, Any]:
         "voice": payload.voice or _custom_speaker(payload),
         "chunks": len(_chunk_text(text)),
     }
+
+
+_SYNTHESIS_SLOT = threading.BoundedSemaphore(1)
+
+
+@app.post("/synthesize")
+def synthesize(payload: SynthesizeRequest) -> dict[str, Any]:
+    if not _SYNTHESIS_SLOT.acquire(blocking=False):
+        raise HTTPException(429, "Qwen synthesis is busy; retry after the current request")
+    try:
+        return _synthesize(payload)
+    finally:
+        _SYNTHESIS_SLOT.release()

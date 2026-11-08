@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=1280, height=720, initial-scale=1.0" name="viewport" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0efff;
+      --bg-card: #ffffff;
+      --text: #1a1040;
+      --text-muted: #5a5080;
+      --accent: #7c3aed;
+      --accent-light: #ede9fe;
+      --spine: #8b5cf6;
+    }
+    body {
+      margin: 0; padding: 0;
+      width: 1280px; height: 720px;
+      overflow: hidden;
+      font-family: 'Calibri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text);
+      font-family: 'Calibri Light', sans-serif;
+    }
+
+    /* Subtle grid pattern */
+    .bg-pattern {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(139,92,246,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139,92,246,0.06) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Decorative top strip */
+    .top-strip {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #7c3aed, #a78bfa, #7c3aed);
+    }
+
+    /* Header section */
+    .header-area {
+      position: absolute;
+      top: 24px;
+      left: 64px;
+      right: 64px;
+    }
+
+    .title-text {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+      letter-spacing: -0.3px;
+    }
+    .title-text span {
+      color: var(--accent);
+    }
+
+    .subtitle-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-family: 'Calibri', sans-serif;
+      font-weight: 400;
+      max-width: 780px;
+    }
+
+    /* Timeline spine */
+    .timeline-container {
+      position: absolute;
+      top: 108px;
+      left: 0; right: 0;
+      bottom: 20px;
+    }
+
+    .spine {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      transform: translateX(-50%);
+      background: linear-gradient(to bottom, #7c3aed 0%, #a78bfa 50%, #7c3aed 100%);
+      box-shadow: 0 0 12px rgba(139,92,246,0.35);
+    }
+
+    /* Node dot */
+    .node-dot {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 0 4px rgba(139,92,246,0.18), 0 0 14px rgba(139,92,246,0.5);
+      z-index: 5;
+    }
+
+    /* Timeline row */
+    .t-row {
+      position: absolute;
+      left: 0; right: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Card styles */
+    .t-card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 16px rgba(100,80,180,0.10), 0 0 0 1.5px rgba(139,92,246,0.12);
+      width: 462px;
+      position: relative;
+    }
+    .t-card:hover { box-shadow: 0 4px 24px rgba(100,80,180,0.18); }
+
+    /* Arrow connector */
+    .t-card-left::after {
+      content: '';
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 8px solid transparent;
+      border-left-color: #ffffff;
+      filter: drop-shadow(2px 0 2px rgba(100,80,180,0.08));
+    }
+    .t-card-right::before {
+      content: '';
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 8px solid transparent;
+      border-right-color: #ffffff;
+      filter: drop-shadow(-2px 0 2px rgba(100,80,180,0.08));
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 5px;
+    }
+    .icon-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-family: 'Calibri', sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1px;
+    }
+    .card-body {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      font-family: 'Calibri', sans-serif;
+    }
+
+    .spacer { flex: 1; }
+
+    .label-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body data-id="0">
+
+  <div data-id="1" class="bg-pattern"></div>
+  <div data-id="2" class="top-strip"></div>
+
+  <!-- Header -->
+  <div data-id="3" class="header-area" id="header-kx3p">
+    <div data-id="4" style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+      <div data-id="5" style="width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;">
+        <svg data-id="6" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path data-id="7" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle data-id="8" cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <div data-id="9" class="title-text" id="title-m8qw">Site Intelligence That <span data-id="10">Never Goes Stale.</span></div>
+    </div>
+    <div data-id="11" class="subtitle-text" id="subtitle-r3jn">ORB Weaver continuously monitors sites and delivers verified refresh packages the moment anything changes.</div>
+    <!-- Divider -->
+    <div data-id="12" style="margin-top:8px;height:1.5px;background:linear-gradient(90deg,rgba(124,58,237,0.4),rgba(124,58,237,0.08));border-radius:2px;"></div>
+  </div>
+
+  <!-- Timeline -->
+  <div data-id="13" class="timeline-container" id="timeline-wz5v">
+
+    <!-- Spine -->
+    <div data-id="14" class="spine" id="spine-vq2m"></div>
+
+    <!-- ROW 1 (LEFT) — Change Detection -->
+    <div data-id="15" class="t-row" id="row1-ld8f" style="top: 6px; height: 145px;">
+      <div data-id="16" style="width:560px; display:flex; justify-content:flex-end; padding-right:42px;">
+        <div data-id="17" class="t-card t-card-left" id="card1-xp4n">
+          <div data-id="18" class="label-badge">01</div>
+          <div data-id="19" class="card-header">
+            <div data-id="20" class="icon-circle">
+              <!-- Bell icon -->
+              <svg data-id="21" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path data-id="22" d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path data-id="23" d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+            </div>
+            <div data-id="24" class="card-title">Change Detection Engine</div>
+          </div>
+          <div data-id="25" class="card-body" id="body1-tz9k">Detects new pages, removed pages, and changed pages. Identifies new, removed, and changed controls, forms, navigation menus, and workflows. Every change is classified, logged, and surfaced.</div>
+        </div>
+      </div>
+      <div data-id="26" class="spacer"></div>
+      <div data-id="27" style="width:560px;"></div>
+    </div>
+    <!-- Node dot 1 -->
+    <div data-id="28" class="node-dot" id="dot1-qr7e" style="top: 51px;"></div>
+
+    <!-- ROW 2 (RIGHT) — Targeted Rescan -->
+    <div data-id="29" class="t-row" id="row2-gm9c" style="top: 158px; height: 145px;">
+      <div data-id="30" style="width:560px;"></div>
+      <div data-id="31" class="spacer"></div>
+      <div data-id="32" style="width:560px; display:flex; justify-content:flex-start; padding-left:42px;">
+        <div data-id="33" class="t-card t-card-right" id="card2-bw5s">
+          <div data-id="34" class="label-badge">02</div>
+          <div data-id="35" class="card-header">
+            <div data-id="36" class="icon-circle">
+              <!-- Scalpel/surgical icon -->
+              <svg data-id="37" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path data-id="38" d="M14.5 2 20 7.5l-5 5"/><path data-id="39" d="m7 20-4.5-4.5 9-9 4.5 4.5Z"/><path data-id="40" d="M3.5 20.5 2 22"/><path data-id="41" d="m14.5 7.5-5 5"/>
+              </svg>
+            </div>
+            <div data-id="42" class="card-title">Targeted Rescan System</div>
+          </div>
+          <div data-id="43" class="card-body" id="body2-hn3j">Incremental rescans issue targeted-page, targeted-route, and targeted-workflow rescans rather than full re-crawls — fast, surgical, and efficient. Full-site rescan available on demand.</div>
+        </div>
+      </div>
+    </div>
+    <!-- Node dot 2 -->
+    <div data-id="44" class="node-dot" id="dot2-lv6p" style="top: 203px;"></div>
+
+    <!-- ROW 3 (LEFT) — Stale Intelligence Detection -->
+    <div data-id="45" class="t-row" id="row3-cz2q" style="top: 310px; height: 145px;">
+      <div data-id="46" style="width:560px; display:flex; justify-content:flex-end; padding-right:42px;">
+        <div data-id="47" class="t-card t-card-left" id="card3-yt8r">
+          <div data-id="48" class="label-badge">03</div>
+          <div data-id="49" class="card-header">
+            <div data-id="50" class="icon-circle">
+              <!-- Warning/flag icon -->
+              <svg data-id="51" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path data-id="52" d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line data-id="53" x1="4" y1="22" x2="4" y2="15"/>
+              </svg>
+            </div>
+            <div data-id="54" class="card-title">Stale Intelligence Detection</div>
+          </div>
+          <div data-id="55" class="card-body" id="body3-uk5m">Stale-content, stale-route, broken-target, missing-pointer-target, duplicate-target, and ambiguous-target detection automatically flag issues before they impact AI performance.</div>
+        </div>
+      </div>
+      <div data-id="56" class="spacer"></div>
+      <div data-id="57" style="width:560px;"></div>
+    </div>
+    <!-- Node dot 3 -->
+    <div data-id="58" class="node-dot" id="dot3-mf4b" style="top: 355px;"></div>
+
+    <!-- ROW 4 (RIGHT) — Versioned Refresh Delivery -->
+    <div data-id="59" class="t-row" id="row4-xe1c" style="top: 462px; height: 145px;">
+      <div data-id="60" style="width:560px;"></div>
+      <div data-id="61" class="spacer"></div>
+      <div data-id="62" style="width:560px; display:flex; justify-content:flex-start; padding-left:42px;">
+        <div data-id="63" class="t-card t-card-right" id="card4-pg7w">
+          <div data-id="64" class="label-badge">04</div>
+          <div data-id="65" class="card-header">
+            <div data-id="66" class="icon-circle">
+              <!-- Refresh/package icon -->
+              <svg data-id="67" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline data-id="68" points="23 4 23 10 17 10"/><polyline data-id="69" points="1 20 1 14 7 14"/><path data-id="70" d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+            </div>
+            <div data-id="71" class="card-title">Versioned Refresh Delivery</div>
+          </div>
+          <div data-id="72" class="card-body" id="body4-rs2n">Updated Site World, pointer-map refresh, and incremental ORB update-data delivered as a new versioned intelligence package. Scan provenance preserved across every version.</div>
+        </div>
+      </div>
+    </div>
+    <!-- Node dot 4 -->
+    <div data-id="73" class="node-dot" id="dot4-jw9a" style="top: 507px;"></div>
+
+    <!-- Spine cap top glow -->
+    <div data-id="74" style="position:absolute;left:50%;top:0;transform:translateX(-50%);width:3px;height:18px;background:linear-gradient(to bottom,rgba(139,92,246,0),#8b5cf6);"></div>
+    <!-- Spine cap bottom glow -->
+    <div data-id="75" style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:3px;height:18px;background:linear-gradient(to top,rgba(139,92,246,0),#8b5cf6);"></div>
+
+  </div>
+
+  <!-- Bottom watermark label -->
+  <div data-id="76" id="footer-hz8k" style="position:absolute;bottom:10px;left:64px;right:64px;display:flex;justify-content:space-between;align-items:center;">
+    <div data-id="77" style="font-size:10px;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase;font-family:'Calibri',sans-serif;font-weight:600;">ORB Weaver · Site Intelligence Platform</div>
+    <div data-id="78" style="font-size:10px;color:rgba(124,58,237,0.5);letter-spacing:0.5px;text-transform:uppercase;font-family:'Calibri',sans-serif;">Continuous Intelligence Refresh</div>
+  </div>
+
+</body>
+</html>

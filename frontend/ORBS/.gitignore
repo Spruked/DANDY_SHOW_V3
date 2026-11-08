@@ -1,0 +1,21 @@
+node_modules/
+dist/
+build/
+
+# Local developer-agent checkouts must not ship in ORBS templates.
+qwen-code-main/
+qwen_code_main/
+**/qwen-code-main/
+**/qwen_code_main/
+
+# Runtime/transient evidence.
+*.log
+*.pid
+REPORTS/runtime/*.log
+REPORTS/runtime/*.pid
+
+# OS/editor noise.
+.DS_Store
+Thumbs.db
+.zed/
+.vscode/

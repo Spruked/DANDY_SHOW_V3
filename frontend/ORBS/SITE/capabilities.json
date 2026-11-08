@@ -1,0 +1,17 @@
+{
+  "schema": "orbs.web_weaver.capabilities.v1",
+  "capabilities": [
+    "browser_mount",
+    "text_question",
+    "optional_api_route_context",
+    "optional_api_answer_text",
+    "baseline_pointer_ping"
+  ],
+  "deferred": [
+    "voice",
+    "TAMP",
+    "relational_stance",
+    "target_loss_recovery",
+    "clumsy_motion"
+  ]
+}

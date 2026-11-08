@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=1280, height=720, initial-scale=1.0" name="viewport" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080818;
+      --bg-card: #13132b;
+      --text: #eeeeff;
+      --text-muted: #9090b8;
+      --accent: #8b5cf6;
+      --accent-glow: rgba(139, 92, 246, 0.18);
+      --accent-glow-strong: rgba(139, 92, 246, 0.32);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      width: 1280px; height: 720px;
+      overflow: hidden;
+      font-family: 'Calibri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text) !important;
+      font-family: 'Calibri Light', sans-serif;
+    }
+
+    /* Subtle background grid pattern */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    /* Top glow */
+    .bg-glow {
+      position: absolute;
+      top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 700px; height: 220px;
+      background: radial-gradient(ellipse at center, rgba(139,92,246,0.22) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Header */
+    .header {
+      position: relative;
+      padding: 24px 56px 0;
+      z-index: 10;
+    }
+    .title-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .eyebrow-line {
+      width: 28px; height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .eyebrow-label {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-family: 'Calibri', sans-serif;
+      font-weight: 600;
+    }
+    .main-title {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 30px;
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--text) !important;
+      margin: 0 0 2px;
+    }
+    .main-title strong {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin: 0;
+      font-family: 'Calibri', sans-serif;
+    }
+
+    /* Grid */
+    .feature-grid {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 10px;
+      padding: 12px 56px 10px;
+    }
+
+    .tile {
+      background: var(--bg-card);
+      border: 1px solid rgba(139,92,246,0.14);
+      border-radius: 10px;
+      padding: 12px 14px 11px;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .tile::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(139,92,246,0.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .icon-wrap {
+      flex-shrink: 0;
+      width: 38px; height: 38px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, rgba(139,92,246,0.30) 0%, rgba(139,92,246,0.12) 100%);
+      border: 1px solid rgba(139,92,246,0.30);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 14px rgba(139,92,246,0.25), inset 0 1px 0 rgba(255,255,255,0.07);
+    }
+    .icon-wrap svg {
+      color: var(--accent);
+    }
+
+    .tile-body {
+      flex: 1;
+      min-width: 0;
+    }
+    .tile-title {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text) !important;
+      margin: 0 0 4px;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tile-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    /* Footer */
+    .footer-bar {
+      position: relative;
+      z-index: 10;
+      margin: 0 56px;
+      padding: 7px 14px 6px;
+      border-top: 1px solid rgba(139,92,246,0.13);
+      border-radius: 0 0 8px 8px;
+      background: rgba(19,19,43,0.6);
+    }
+    .footer-label {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      letter-spacing: 0.02em;
+    }
+    .footer-label span {
+      color: rgba(139,92,246,0.85);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body data-id="0">
+
+  <!-- Background elements -->
+  <div data-id="1" class="bg-grid"></div>
+  <div data-id="2" class="bg-glow"></div>
+
+  <!-- Header -->
+  <div data-id="3" id="header-section-ab3c" class="header">
+    <div data-id="4" class="title-eyebrow">
+      <span data-id="5" class="eyebrow-line"></span>
+      <span data-id="6" class="eyebrow-label">The Scanning Engine</span>
+    </div>
+    <h1 data-id="7" id="main-title-f7d2" class="main-title">
+      <strong data-id="8">220+ Scan Types.</strong> 14 Intelligence Categories.
+    </h1>
+    <p data-id="9" id="subtitle-k9m1" class="subtitle">The most comprehensive website intelligence system ever built.</p>
+  </div>
+
+  <!-- Feature Grid (3 columns × 2 rows) -->
+  <div data-id="10" id="grid-container-p4q8" class="feature-grid">
+
+    <!-- Tile 1: Site Discovery -->
+    <div data-id="11" id="tile-discovery-x1a2" class="tile">
+      <div data-id="12" class="icon-wrap">
+        <!-- Radar icon -->
+        <svg data-id="13" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path data-id="14" d="M12 2a10 10 0 1 0 10 10"/>
+          <path data-id="15" d="M12 6a6 6 0 1 0 6 6"/>
+          <path data-id="16" d="M12 10a2 2 0 1 0 2 2"/>
+          <line data-id="17" x1="12" y1="12" x2="22" y2="2"/>
+        </svg>
+      </div>
+      <div data-id="18" class="tile-body">
+        <h3 data-id="19" id="t1-title-b3c4" class="tile-title">Site Discovery &amp; Structure</h3>
+        <p data-id="20" id="t1-desc-d5e6" class="tile-desc">Domain scan, subdomain discovery, sitemap parsing, robots.txt scan, route discovery, page crawl, internal/external link inventory, redirect detection, broken-link detection, HTTP status collection.</p>
+      </div>
+    </div>
+
+    <!-- Tile 2: Page Intelligence -->
+    <div data-id="21" id="tile-page-f7g8" class="tile">
+      <div data-id="22" class="icon-wrap">
+        <!-- Document icon -->
+        <svg data-id="23" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path data-id="24" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline data-id="25" points="14 2 14 8 20 8"/>
+          <line data-id="26" x1="16" y1="13" x2="8" y2="13"/>
+          <line data-id="27" x1="16" y1="17" x2="8" y2="17"/>
+          <polyline data-id="28" points="10 9 9 9 8 9"/>
+        </svg>
+      </div>
+      <div data-id="29" class="tile-body">
+        <h3 data-id="30" id="t2-title-h9i0" class="tile-title">Page Intelligence</h3>
+        <p data-id="31" id="t2-desc-j1k2" class="tile-desc">Canonical URLs, page titles, meta-descriptions, heading &amp; section-heading collection, page-text extraction, content-block extraction, page-purpose and page-type classification.</p>
+      </div>
+    </div>
+
+    <!-- Tile 3: Navigation Mapping -->
+    <div data-id="32" id="tile-nav-l3m4" class="tile">
+      <div data-id="33" class="icon-wrap">
+        <!-- Menu/Navigation icon -->
+        <svg data-id="34" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line data-id="35" x1="3" y1="6" x2="21" y2="6"/>
+          <line data-id="36" x1="3" y1="12" x2="21" y2="12"/>
+          <line data-id="37" x1="3" y1="18" x2="15" y2="18"/>
+          <polyline data-id="38" points="17 15 21 18 17 21"/>
+        </svg>
+      </div>
+      <div data-id="39" class="tile-body">
+        <h3 data-id="40" id="t3-title-n5o6" class="tile-title">Navigation Mapping</h3>
+        <p data-id="41" id="t3-desc-p7q8" class="tile-desc">Header, footer, sidebar &amp; breadcrumb menus; button, link, CTA discovery; modal, dialog, accordion, tab, dropdown, carousel &amp; pagination control detection.</p>
+      </div>
+    </div>
+
+    <!-- Tile 4: UI Element & Form Intelligence -->
+    <div data-id="42" id="tile-form-r9s0" class="tile">
+      <div data-id="43" class="icon-wrap">
+        <!-- Form icon -->
+        <svg data-id="44" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect data-id="45" x="2" y="3" width="20" height="14" rx="2"/>
+          <line data-id="46" x1="8" y1="21" x2="16" y2="21"/>
+          <line data-id="47" x1="12" y1="17" x2="12" y2="21"/>
+          <line data-id="48" x1="7" y1="8" x2="17" y2="8"/>
+          <line data-id="49" x1="7" y1="12" x2="13" y2="12"/>
+        </svg>
+      </div>
+      <div data-id="50" class="tile-body">
+        <h3 data-id="51" id="t4-title-t1u2" class="tile-title">UI Element &amp; Form Intelligence</h3>
+        <p data-id="52" id="t4-desc-v3w4" class="tile-desc">Complete form discovery — fields, inputs, selects, checkboxes, radio buttons, text areas, submit &amp; search controls; disabled, hidden, visibility &amp; interactive-state detection.</p>
+      </div>
+    </div>
+
+    <!-- Tile 5: Accessibility & DOM -->
+    <div data-id="53" id="tile-a11y-x5y6" class="tile">
+      <div data-id="54" class="icon-wrap">
+        <!-- Accessibility icon -->
+        <svg data-id="55" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle data-id="56" cx="12" cy="4" r="1.5"/>
+          <path data-id="57" d="M6 8h12M9 8v8m3-8v8m3-8v8"/>
+          <path data-id="58" d="M7 21l2-5m4 5l2-5"/>
+        </svg>
+      </div>
+      <div data-id="59" class="tile-body">
+        <h3 data-id="60" id="t5-title-z7a8" class="tile-title">Accessibility &amp; DOM</h3>
+        <p data-id="61" id="t5-desc-b9c0" class="tile-desc">Element IDs, DOM anchors, ARIA labels, accessible names, visible labels, data attributes, element roles, types, states, bounding boxes, screen positions.</p>
+      </div>
+    </div>
+
+    <!-- Tile 6: Flow & Workflow Mapping -->
+    <div data-id="62" id="tile-flow-d1e2" class="tile">
+      <div data-id="63" class="icon-wrap">
+        <!-- Flow/Workflow icon -->
+        <svg data-id="64" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect data-id="65" x="3" y="3" width="5" height="5" rx="1"/>
+          <rect data-id="66" x="16" y="3" width="5" height="5" rx="1"/>
+          <rect data-id="67" x="9.5" y="16" width="5" height="5" rx="1"/>
+          <path data-id="68" d="M5.5 8v3a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V8"/>
+          <line data-id="69" x1="12" y1="12" x2="12" y2="16"/>
+        </svg>
+      </div>
+      <div data-id="70" class="tile-body">
+        <h3 data-id="71" id="t6-title-f3g4" class="tile-title">Flow &amp; Workflow Mapping</h3>
+        <p data-id="72" id="t6-desc-h5i6" class="tile-desc">Authentication, signup, login, purchase, cart, checkout, lead-gen, multi-step workflows; required fields, validation rules, error messages, success &amp; confirmation states.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer bar -->
+  <div data-id="73" id="footer-bar-j7k8" class="footer-bar">
+    <p data-id="74" id="footer-text-l9m0" class="footer-label">
+      <span data-id="75">Plus:</span> Pointer System &nbsp;·&nbsp; Layout Intelligence &nbsp;·&nbsp; Content &amp; Product &nbsp;·&nbsp; Brand &amp; Schema &nbsp;·&nbsp; Site World Compilation &nbsp;·&nbsp; Change Detection &nbsp;·&nbsp; Scan Management &nbsp;·&nbsp; ORB Configuration Generation
+    </p>
+  </div>
+
+</body>
+</html>

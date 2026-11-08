@@ -1,0 +1,106 @@
+│   README.md
+│   VERSION
+│   web_weaver.manifest.json
+│   
+├───ASSETS
+│   ├───branding
+│   ├───motion
+│   ├───orb
+│   ├───ping
+│   ├───skins
+│   └───sounds
+├───BROWSER
+│   │   bootstrap.js
+│   │   web_weaver.css
+│   │   web_weaver.js
+│   │   
+│   ├───events
+│   └───viewport
+├───CONFIG
+│       endpoints.json
+│       motion.json
+│       permissions.json
+│       runtime.json
+│       voice.json
+│       
+├───DEPLOY
+│   ├───embed
+│   │       web_weaver_snippet.html
+│   │       
+│   ├───installer
+│   ├───uninstaller
+│   ├───updater
+│   └───verifier
+├───DOCS
+│   └───doctrine
+├───GOVERNOR
+│   ├───allowed_actions
+│   ├───capabilities
+│   ├───permissions
+│   ├───sensitive_actions
+│   └───stage_governor
+├───INTELLIGENCE
+│   ├───context
+│   ├───knowledge
+│   ├───routes
+│   ├───site_world
+│   ├───terminology
+│   └───workflows
+├───ORB
+│   ├───core
+│   ├───embodiment
+│   ├───movement
+│   ├───personality
+│   └───state
+├───POINTER
+│   ├───anchors
+│   ├───corrections
+│   ├───live_geometry
+│   ├───ping
+│   ├───plot_map
+│   └───verification
+├───REPORTS
+│   ├───diagnostics
+│   ├───installation
+│   ├───runtime
+│   └───validation
+├───SERVER
+│   ├───api
+│   ├───health
+│   ├───runtime
+│   ├───sessions
+│   └───tools
+├───SITE
+│       capabilities.json
+│       pointer_plot_map.json
+│       site_config.json
+│       site_context.llmpack
+│       site_world.json
+│       stage_governor.json
+│       
+├───TAMP
+│   ├───clumsy_motion
+│   ├───geometry
+│   ├───glide
+│   ├───intent
+│   ├───recovery
+│   ├───stance
+│   └───states
+├───TESTS
+│   ├───browser
+│   ├───deployment
+│   ├───governor
+│   ├───pointer
+│   ├───runtime
+│   └───tamp
+├───VAULT
+│   ├───audit
+│   ├───corrections
+│   ├───events
+│   ├───memory
+│   └───runtime_state
+└───VOICE
+    ├───articulation
+    ├───audio
+    ├───listening
+    └───speech

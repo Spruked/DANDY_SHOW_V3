@@ -1,0 +1,7 @@
+{
+  "schema": "orbs.web_weaver.permissions.v1",
+  "browser_mount": true,
+  "api_calls": true,
+  "desktop_mcp": false,
+  "site_modification": false
+}

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=1280, height=720, initial-scale=1.0" name="viewport" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080818;
+      --bg-card: #13132b;
+      --text: #eeeeff;
+      --text-muted: #9090b8;
+      --accent: #8b5cf6;
+      --accent-dim: rgba(139,92,246,0.18);
+      --accent-glow: rgba(139,92,246,0.55);
+    }
+    body {
+      margin: 0; padding: 0;
+      width: 1280px; height: 720px;
+      overflow: hidden;
+      font-family: 'Calibri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text) !important;
+      font-family: 'Calibri Light', sans-serif;
+    }
+
+    /* Background grid pattern */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+    .bg-glow-left {
+      position: absolute;
+      width: 480px; height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+      top: 50%; left: -80px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .bg-glow-right {
+      position: absolute;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
+      bottom: -60px; right: 80px;
+      pointer-events: none;
+    }
+
+    /* Step cards */
+    .step-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid rgba(139,92,246,0.22);
+      border-radius: 18px;
+      padding: 28px 26px 24px 26px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: border-color 0.3s;
+    }
+    .step-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(139,92,246,0.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Step number badge */
+    .step-num {
+      position: absolute;
+      top: -14px;
+      left: 26px;
+      background: var(--accent);
+      color: #fff;
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    /* Icon container */
+    .step-icon-wrap {
+      width: 58px; height: 58px;
+      border-radius: 16px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(139,92,246,0.35);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(139,92,246,0.18);
+    }
+
+    /* Step label */
+    .step-label {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #eeeeff;
+    }
+    .step-label span {
+      color: var(--accent);
+    }
+
+    /* Step body text */
+    .step-body {
+      font-family: 'Calibri', sans-serif;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    /* Connector arrow */
+    .connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 52px;
+      gap: 0;
+      position: relative;
+      top: 20px;
+    }
+    .connector-line {
+      width: 2px;
+      height: 44px;
+      background: linear-gradient(180deg, transparent, var(--accent), transparent);
+      opacity: 0.5;
+      display: none;
+    }
+    .connector-arrow-h {
+      width: 48px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(139,92,246,0.3), var(--accent), rgba(139,92,246,0.3));
+      position: relative;
+    }
+    .connector-arrow-h::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 10px solid var(--accent);
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      filter: drop-shadow(0 0 4px var(--accent-glow));
+    }
+    .connector-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    /* Bottom callout strip */
+    .callout-strip {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 52px;
+      background: linear-gradient(90deg, rgba(139,92,246,0.18) 0%, rgba(139,92,246,0.10) 50%, rgba(139,92,246,0.18) 100%);
+      border-top: 1px solid rgba(139,92,246,0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+    .callout-strip-text {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #d8d0ff;
+    }
+    .callout-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.7;
+    }
+
+    /* Scan lines decorative top edge */
+    .top-accent-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, #c4b5fd 60%, var(--accent) 80%, transparent 100%);
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body data-id="0">
+
+  <!-- Background layers -->
+  <div data-id="1" class="bg-grid"></div>
+  <div data-id="2" class="bg-glow-left"></div>
+  <div data-id="3" class="bg-glow-right"></div>
+  <div data-id="4" class="top-accent-bar"></div>
+
+  <!-- Main content -->
+  <div data-id="5" style="position:relative; z-index:10; padding: 44px 56px 68px 56px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; gap:28px;">
+
+    <!-- Header -->
+    <div data-id="6" id="header-title-9x3a" style="display:flex; flex-direction:column; gap:6px;">
+      <div data-id="7" style="display:flex; align-items:center; gap:12px; margin-bottom:2px;">
+        <div data-id="8" style="width:4px; height:36px; border-radius:2px; background:var(--accent); box-shadow:0 0 12px var(--accent-glow);"></div>
+        <div data-id="9">
+          <div data-id="10" style="font-size:11px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px;">How ORB Weaver Works</div>
+          <h1 data-id="11" id="main-title-7b2f" style="font-size:40px; font-weight:300; margin:0; line-height:1.1; letter-spacing:0.02em; font-family:'Calibri Light',sans-serif;">
+            <span data-id="12" style="color:#eeeeff;">Scan.</span>
+            <span data-id="13" style="color:var(--accent); margin: 0 6px;">Compile.</span>
+            <span data-id="14" style="color:#eeeeff;">Deploy.</span>
+          </h1>
+        </div>
+      </div>
+      <p data-id="15" id="subtitle-k4mz" style="font-size:15.5px; color:var(--text-muted); margin:0 0 0 52px; font-family:'Calibri',sans-serif; line-height:1.4;">
+        Three stages. One complete Site Intelligence package, ready for any ORB-powered AI agent.
+      </p>
+    </div>
+
+    <!-- Process Steps Row -->
+    <div data-id="16" id="steps-row-2wqp" style="display:flex; flex-direction:row; align-items:flex-start; gap:0; flex:1;">
+
+      <!-- STEP 1: SCAN -->
+      <div data-id="17" id="step1-card-m3hj" class="step-card">
+        <div data-id="18" class="step-num">Step 01</div>
+        <div data-id="19" class="step-icon-wrap">
+          <!-- Radar sweep icon -->
+          <svg data-id="20" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle data-id="21" cx="12" cy="12" r="10"/>
+            <circle data-id="22" cx="12" cy="12" r="4"/>
+            <line data-id="23" x1="12" y1="2" x2="12" y2="12"/>
+            <path data-id="24" d="M12 12 L19.07 7" stroke-opacity="0.5"/>
+            <path data-id="25" d="M12 12 L19.07 17" stroke-opacity="0.25"/>
+            <path data-id="26" d="M12 12 L4.93 17" stroke-opacity="0.12"/>
+            <circle data-id="27" cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <div data-id="28" class="step-label"><span data-id="29">SCAN</span></div>
+        <div data-id="30" class="step-body">
+          ORB Weaver dispatches <strong data-id="31" style="color:#c4b5fd;">220+ scan types</strong> across every layer of a target website — structure, navigation, UI elements, accessibility, content, flows, brand, schema, and more. Nothing is left undiscovered. Every control, route, pointer target, and workflow is mapped.
+        </div>
+        <!-- Bottom highlight line -->
+        <div data-id="32" style="height:2px; border-radius:1px; background:linear-gradient(90deg, var(--accent), transparent); margin-top:auto; opacity:0.5;"></div>
+      </div>
+
+      <!-- Connector 1→2 -->
+      <div data-id="33" class="connector" id="connector-1-p9kz">
+        <div data-id="34" class="connector-dot"></div>
+        <div data-id="35" class="connector-arrow-h"></div>
+        <div data-id="36" class="connector-dot"></div>
+      </div>
+
+      <!-- STEP 2: COMPILE -->
+      <div data-id="37" id="step2-card-x7vr" class="step-card" style="border-color: rgba(139,92,246,0.36); box-shadow: 0 8px 40px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.05);">
+        <div data-id="38" class="step-num">Step 02</div>
+        <div data-id="39" class="step-icon-wrap" style="background:rgba(139,92,246,0.28); border-color:rgba(139,92,246,0.55); box-shadow:0 0 28px rgba(139,92,246,0.3);">
+          <!-- Knowledge/brain icon -->
+          <svg data-id="40" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path data-id="41" d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.66Z"/>
+            <path data-id="42" d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.66Z"/>
+          </svg>
+        </div>
+        <div data-id="43" class="step-label"><span data-id="44">COMPILE</span></div>
+        <div data-id="45" class="step-body">
+          All scan data is normalized, deduplicated, cross-referenced, and compiled into a <strong data-id="46" style="color:#c4b5fd;">Site World</strong> — a structured knowledge graph, pointer manifest, route capsule set, and workflow map. Fully versioned, timestamped, and confidence-scored.
+        </div>
+        <div data-id="47" style="height:2px; border-radius:1px; background:linear-gradient(90deg, var(--accent), rgba(196,181,253,0.8), transparent); margin-top:auto; opacity:0.7;"></div>
+      </div>
+
+      <!-- Connector 2→3 -->
+      <div data-id="48" class="connector" id="connector-2-q1ws">
+        <div data-id="49" class="connector-dot"></div>
+        <div data-id="50" class="connector-arrow-h"></div>
+        <div data-id="51" class="connector-dot"></div>
+      </div>
+
+      <!-- STEP 3: DEPLOY -->
+      <div data-id="52" id="step3-card-b8nq" class="step-card">
+        <div data-id="53" class="step-num">Step 03</div>
+        <div data-id="54" class="step-icon-wrap">
+          <!-- Deploy/launch icon -->
+          <svg data-id="55" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path data-id="56" d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+            <path data-id="57" d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+            <path data-id="58" d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+            <path data-id="59" d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+          </svg>
+        </div>
+        <div data-id="60" class="step-label"><span data-id="61">DEPLOY</span></div>
+        <div data-id="62" class="step-body">
+          The compiled ORB intelligence package is delivered as a <strong data-id="63" style="color:#c4b5fd;">structured deployment artifact</strong>. Any ORB-powered AI receives complete site knowledge instantly — no guessing, no custom coding, no integration work.
+        </div>
+        <div data-id="64" style="height:2px; border-radius:1px; background:linear-gradient(90deg, var(--accent), transparent); margin-top:auto; opacity:0.5;"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom callout strip -->
+  <div data-id="65" id="callout-strip-4ygp" class="callout-strip">
+    <div data-id="66" class="callout-dot"></div>
+    <!-- Lightning bolt icon -->
+    <svg data-id="67" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.85;">
+      <polygon data-id="68" points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+    <span data-id="69" id="callout-text-3fhm" class="callout-strip-text">From blank website to fully ORB-ready in a single scan run.</span>
+    <svg data-id="70" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.85;">
+      <polygon data-id="71" points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+    <div data-id="72" class="callout-dot"></div>
+  </div>
+
+</body>
+</html>

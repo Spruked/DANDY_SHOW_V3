@@ -28,9 +28,9 @@ PYTHON_PACKAGES = [
     ("pillow",              "Image rendering — slideshow frames, ad cards"),
     ("ffmpeg-python",       "FFmpeg bindings — audio/video processing"),
     ("pydub",               "Audio segment manipulation"),
-    ("edge-tts",            "Cloud TTS fallback (Microsoft Edge voices)"),
-    ("torch",               "PyTorch — Kokoro TTS inference engine"),
-    ("torchaudio",          "Audio tensor operations for Kokoro"),
+    ("edge-tts",            "Optional legacy TTS; required Qwen blocks substitution"),
+    ("torch",               "Character runtime; separate Qwen CUDA environment"),
+    ("torchaudio",          "Qwen speech runtime (separate environment)"),
     ("numpy",               "Numerical operations — audio processing"),
     ("networkx",            "Graph utilities — production dependency tracking"),
     ("sentence-transformers","Semantic similarity — script analysis"),
@@ -50,8 +50,8 @@ EXTERNAL_SERVICES = [
     ("FFmpeg",          "Audio/video encoding — must be on PATH",           "Required"),
     ("OBS Studio",      "Live stream / recording control via WebSocket",     "Optional — Studio tab"),
     ("Voicemeeter",     "Real-time audio mixer",                             "Optional — Studio tab"),
-    ("Kokoro TTS",      "Local neural TTS engine (primary voice)",           "Required for TTS"),
-    ("CUDA / GPU",      "Accelerates Kokoro inference",                      "Optional — falls back to CPU"),
+    ("Qwen TTS",        "Required 1.7B CustomVoice bridge on 8020",           "Required for production"),
+    ("CUDA / GPU",      "Separate Qwen speech service",                      "Required for supported speech setup"),
 ]
 
 INTERNAL_MODULES = [

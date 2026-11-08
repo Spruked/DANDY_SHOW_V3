@@ -46,8 +46,8 @@
   "audio": {
     "jingles_root": "./audio/jingles",
     "jingles": {
-      "intro": "./audio/jingles/phil_jim_theme.mp3",
-      "outro": "./audio/jingles/phil_jim_theme.mp3",
+      "intro": "./asset_library/sfx/introclip.mp3",
+      "outro": "./asset_library/sfx/introclip.mp3",
       "bumper_in": null,
       "bumper_out": null,
       "bed_loop": null
@@ -60,7 +60,7 @@
   },
   "intro_outro": {
     "enabled": true,
-    "music_file": "./audio/jingles/phil_jim_theme.mp3",
+    "music_file": "./asset_library/sfx/introclip.mp3",
     "intro": {
       "clip_start_ms": 0,
       "clip_duration_ms": 14000,

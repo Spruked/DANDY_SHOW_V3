@@ -1,0 +1,16 @@
+# Windows/Python 3.11 studio and regression tests; Qwen runs separately.
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+numpy
+networkx
+pillow
+pydub
+websockets
+httpx
+
+pypdf>=5,<7
+
+# Local AIMS receipt authority supplied with this workspace.
+-e ./Dandy_Vault_System/AIMS

@@ -29,7 +29,7 @@ class FFmpegPostProcessor:
         with tempfile.TemporaryDirectory(dir=self.base_path) as temp_dir:
             temp_path = Path(temp_dir)
             pass1_output = temp_path / "pass1_cleaned.wav"
-            analysis_data = self._pass1_analysis_and_cleanup(input_path, pass1_output)
+            analysis_data = self._pass1_analysis_and_cleanup(input_path, pass1_output, voice_profile)
             self._pass2_dynamics_and_normalize(
                 input_file=pass1_output,
                 output_file=output_path,
@@ -52,13 +52,22 @@ class FFmpegPostProcessor:
                 "processing_chain": "two_pass_ffmpeg",
             }
 
-    def _pass1_analysis_and_cleanup(self, input_file: Path, output_file: Path) -> Dict[str, Any]:
+    def _pass1_analysis_and_cleanup(self, input_file: Path, output_file: Path, voice_profile: str = "standard") -> Dict[str, Any]:
+        if "phil" in voice_profile.lower():
+            compand_settings = "compand=attacks=0.1:decays=0.3:points=-70/-70|-40/-30|-20/-15|0/-10:soft-knee=3:gain=2"
+        elif "jim" in voice_profile.lower():
+            compand_settings = "compand=attacks=0.3:decays=0.8:points=-70/-70|-50/-45|-30/-25|0/-12:soft-knee=6:gain=0"
+        else:
+            compand_settings = "compand=attacks=0.2:decays=0.5:points=-70/-70|-40/-35|-20/-15|0/-12:soft-knee=3"
+
         filters = [
             "highpass=f=80:poles=2",
             "lowpass=f=8000:poles=2",
             "afftdn=nr=15:nf=-25:bn=1",
             "agate=threshold=-35dB:ratio=1:attack=10:release=100",
-            f"loudnorm=I={self.target_loudness['I']}:TP={self.target_loudness['TP']}:LRA={self.target_loudness['LRA']}:print_format=json:linear=true:dual_mono=true",
+            "dynaudnorm=f=100:g=15:p=0.95:m=10:s=20",
+            compand_settings,
+            "treble=gain=2:f=3000:width_type=h:width=2000",
         ]
         cmd = [
             "ffmpeg",
@@ -78,7 +87,7 @@ class FFmpegPostProcessor:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         if result.returncode != 0:
             raise RuntimeError(f"FFmpeg Pass 1 failed: {result.stderr[-500:]}")
-        return self._parse_loudnorm_output(result.stderr)
+        return self._verify_loudness(output_file)
 
     def _pass2_dynamics_and_normalize(
         self,
@@ -91,13 +100,6 @@ class FFmpegPostProcessor:
         target_offset: float,
         voice_profile: str,
     ) -> None:
-        if "phil" in voice_profile.lower():
-            compand_settings = "compand=attacks=0.1:decays=0.3:points=-70/-70|-40/-30|-20/-15|0/-10:soft-knee=3:gain=2"
-        elif "jim" in voice_profile.lower():
-            compand_settings = "compand=attacks=0.3:decays=0.8:points=-70/-70|-50/-45|-30/-25|0/-12:soft-knee=6:gain=0"
-        else:
-            compand_settings = "compand=attacks=0.2:decays=0.5:points=-70/-70|-40/-35|-20/-15|0/-12:soft-knee=3"
-
         loudnorm_filter = (
             f"loudnorm=I={self.target_loudness['I']}:"
             f"TP={self.target_loudness['TP']}:"
@@ -111,12 +113,7 @@ class FFmpegPostProcessor:
             "dual_mono=true"
         )
 
-        filters = [
-            "dynaudnorm=f=100:g=15:p=0.95:m=10:s=20",
-            compand_settings,
-            loudnorm_filter,
-            "treble=gain=2:f=3000:width_type=h:width=2000",
-        ]
+        filters = [loudnorm_filter]
         cmd = [
             "ffmpeg",
             "-y",
@@ -155,12 +152,14 @@ class FFmpegPostProcessor:
             "-i",
             str(filepath),
             "-af",
-            f"loudnorm=I={self.target_loudness['I']}:print_format=json",
+            f"loudnorm=I={self.target_loudness['I']}:TP={self.target_loudness['TP']}:LRA={self.target_loudness['LRA']}:print_format=json:dual_mono=true",
             "-f",
             "null",
             "-",
         ]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        if result.returncode != 0:
+            raise RuntimeError(f"FFmpeg loudness verification failed: {result.stderr[-500:]}")
         return self._parse_loudnorm_output(result.stderr)
 
     def _check_compliance(self, metrics: Dict[str, Any]) -> bool:

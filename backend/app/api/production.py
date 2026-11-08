@@ -5,17 +5,30 @@ from functools import partial
 import json
 from pathlib import Path
 import re
+import threading
 from typing import Dict, List, Optional
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Body
 from pydantic import BaseModel
+from ..schemas.production import EditScriptRequest
+from .assets import _resolve_any_asset
+import logging
+logger = logging.getLogger(__name__)
 
 from ..core.paths import PROJECT_ROOT
 from ..core.safety import contained_path
+from ..core.settings import load_project_config
 from ..schemas.episode import EpisodeCreateRequest
 from ..services.production import MergedDandyPodcastWorker
 from ..services.production.quality_guard import QualityDecision, ScriptQualityGuard
+from ..services.production.production_manifest import file_hash, load_manifest, script_hash, validate_takes
+from ..services.production.production_editor import QcMorb, build_assembly_graph
+from ..services.production.production_lifecycle import (
+    approve_draft, canonical_versions, create_draft, current_approval,
+    editor_state, get_preview_review, save_draft, save_preview_review,
+    selected_preview_review,
+)
 from ..services.social.package_builder import export_social_package
 from ..services.production.script_seed import generate_seed_script
 from ..services.ads.ad_engine import ADS_CATALOG, generate_ad_script, summarize_context
@@ -28,6 +41,7 @@ from ..services.storage.episode_store import (
     load_draft,
     load_job,
     load_script,
+    load_canonical_script,
     load_script_version,
     list_script_versions,
     load_episode_detail,
@@ -41,8 +55,19 @@ from ..services.storage.episode_store import (
 
 router = APIRouter(tags=["production"])
 _WORKER: MergedDandyPodcastWorker | None = None
-_QUALITY_GUARD = ScriptQualityGuard()
 _PRODUCTION_SLOT = threading.BoundedSemaphore(1)
+_SPOKEN_WPM = max(1, int(load_project_config().get("production", {}).get("spoken_wpm", 160)))
+_QUALITY_GUARD = ScriptQualityGuard(words_per_minute=_SPOKEN_WPM)
+_GENERATION_LOCK = threading.Lock()
+_ACTIVE_GENERATION = None
+_GENERATION_CANCEL = threading.Event()
+_PRODUCTION_CANCEL_EVENTS: dict[str, threading.Event] = {}
+_REVISION_LOCK = threading.Lock()
+_ACTIVE_REVISIONS: set[str] = set()
+
+
+class GenerationCancelled(Exception):
+    """Cooperative cancellation requested by the operator."""
 
 
 @router.get("/writer-status")
@@ -53,17 +78,9 @@ def writer_status():
 
 
 
-class EditScriptRequest(BaseModel):
-    episode_id: str
-    edit_type: str
-    line_index: Optional[int] = None
-    new_content: Optional[Dict] = None
-    new_order: Optional[List[int]] = None
-    tone_adjustment: Optional[str] = None
-    expansion_words: Optional[int] = None
-    section_start: Optional[int] = None
-    section_end: Optional[int] = None
-    instructions: str = ""
+class RegenerateProductionLineRequest(BaseModel):
+    reason: str = "Operator requested a new take"
+    text_change: Optional[str] = None
 
 
 def _reindex(script: List[Dict]) -> List[Dict]:
@@ -209,6 +226,33 @@ def _resolve_episode_audio_path(episode_id: str) -> Path | None:
 
 
 def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings: Dict | None = None) -> List[Dict]:
+    # Only saved, explicitly created ads. Never invent sponsors, change voices,
+    # duplicate a manual insertion, or add another spoken intro/outro here.
+    existing = {line.get("ad_id") for line in script if line.get("ad_id")}
+    available = [ad for ad in ads if ad.get("ad_id") not in existing]
+    result = []
+    elapsed = 0.0
+    next_break = 900.0
+    break_index = 0
+    previous_segment = None
+    for line in script:
+        segment = line.get("segment_index")
+        boundary = previous_segment is not None and segment is not None and segment != previous_segment and not line.get("is_ad")
+        has_sections = any(item.get("segment_index") is not None for item in script)
+        if (boundary or (not has_sections and elapsed >= next_break)) and available:
+            ad = available.pop(0)
+            result.extend({**ad_line, "ad_id": ad["ad_id"], "ad_line_index": index, "is_ad": True, "ad_break_index": break_index + 1}
+                          for index, ad_line in enumerate(ad.get("script", []), start=1))
+            break_index += 1; next_break += 900
+        result.append(dict(line))
+        if not line.get("is_ad"):
+            elapsed += len(str(line.get("text", "")).split()) / 155 * 60 + float(line.get("pause_after", 0) or 0)
+            if segment is not None:
+                previous_segment = segment
+    return _reindex(result)
+
+
+def _legacy_structure_unused(script: List[Dict], ads: List[Dict], ad_settings: Dict | None = None) -> List[Dict]:
     if len(script) < 4:
         return script
     ad_settings = ad_settings or {}
@@ -269,13 +313,17 @@ def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings:
 
 def _get_worker() -> MergedDandyPodcastWorker:
     global _WORKER
-    if _WORKER is None:
+    from ..core.settings import load_project_config, load_voices_config, load_qwen_tts_config
+    if (_WORKER is None or _WORKER.project_config != load_project_config()
+            or _WORKER.voices_config != load_voices_config() or _WORKER.qwen_tts_config != load_qwen_tts_config()):
         _WORKER = MergedDandyPodcastWorker(PROJECT_ROOT)
     return _WORKER
 
 
 @router.post("/episodes/create")
 async def create_episode(payload: EpisodeCreateRequest):
+    if (episode_dir(payload.episode_id) / "config.json").is_file():
+        raise HTTPException(409, "Episode ID already exists; create a new episode or edit its planning record")
     job_id = f"job_{payload.episode_id}_{uuid4().hex[:8]}"
     draft = create_episode_draft(payload.model_dump(), job_id)
     return {
@@ -287,84 +335,58 @@ async def create_episode(payload: EpisodeCreateRequest):
     }
 
 
-@router.post("/episodes/generate-script")
-async def generate_script(
-    job_id: str = Query(...),
-    payload: Dict | None = Body(default=None),
-):
+@router.get("/episodes/jobs/{job_id}")
+def generation_job_status(job_id: str):
+    """Return live script-generation or production status for the UI."""
     job = load_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    detail = load_episode_detail(job["episode_id"]) or {}
+    status = detail.get("status") or {}
+    return {**job, "episode_status": status}
 
-    draft = load_draft(job["episode_id"])
-    if not draft:
-        raise HTTPException(status_code=404, detail="Episode draft not found")
 
-    detail = load_episode_detail(job["episode_id"])
-    if detail.get("status") == "producing":
-        raise HTTPException(409, "Wait for production to finish before generating")
-    generation_config = {**draft["config"], **detail.get("config", {})}
-    if payload and payload.get("personality_settings"):
-        generation_config["personality_settings"] = payload["personality_settings"]
-    generation_config["source_context"] = build_source_context(job["episode_id"])
-    generation_config["require_llm"] = True
-    generation_config["generation_nonce"] = f"{job['episode_id']}-{uuid4().hex}"
-
-    # script_feed mode: use provided_script directly, skip AI generation
-    if generation_config.get("generation_mode") == "script_feed" and generation_config.get("provided_script"):
-        script = _sanitize_script(generation_config["provided_script"])
-        for line in script:
-            line.setdefault("generated_by", "script_feed")
-        save_script(job["episode_id"], script)
-        return {
-            "status": "script_ready",
+@router.post("/episodes/jobs/{job_id}/cancel")
+def cancel_job(job_id: str):
+    """Request cooperative cancellation of script generation or production."""
+    global _ACTIVE_GENERATION
+    job = load_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if _ACTIVE_GENERATION == job_id:
+        _GENERATION_CANCEL.set()
+        return {"status": "cancellation_requested", "job_id": job_id}
+    production_event = _PRODUCTION_CANCEL_EVENTS.get(job_id)
+    if production_event is not None:
+        production_event.set()
+        save_json(episode_dir(job["episode_id"]) / "status.json", {
+            "status": "cancellation_requested",
+            "updated_at": datetime.now().isoformat(),
             "job_id": job_id,
-            "episode_id": job["episode_id"],
-            "script": script,
-            "word_count": sum(len(line["text"].split()) for line in script),
-        }
+        })
+        return {"status": "cancellation_requested", "job_id": job_id}
+    if job.get("status") in {"generating", "producing"}:
+        raise HTTPException(status_code=409, detail="The job is no longer active in this backend process")
+    return {"status": job.get("status", "idle"), "job_id": job_id}
 
-    # Default to ~150 wpm toward a 40-minute optimal length when not provided
-    if not generation_config.get("target_word_count"):
-        target_duration = generation_config.get("target_duration") or 2400
-        generation_config["target_word_count"] = int((target_duration / 60) * 150)
 
-    try:
-        script = await asyncio.to_thread(_get_worker().generate_script, generation_config)
-        # Guard against silent template failures: if >30% of lines contain
-        # unresolved [unknown] placeholders the generator returned bad output.
-        unknown_lines = sum(1 for line in script if "[unknown]" in line.get("text", ""))
-        if not script or (len(script) > 0 and unknown_lines / len(script) > 0.3):
-            raise RuntimeError(f"Script quality check failed: {unknown_lines}/{len(script)} lines contain [unknown]")
-        target_minutes = int(
-            generation_config.get("target_duration_minutes")
-            or (generation_config.get("target_duration", 2400) // 60)
-            or 40
-        )
-        report = _QUALITY_GUARD.evaluate(script, target_minutes, generation_config.get("topic", ""))
-        if report.decision != QualityDecision.ACCEPT:
-            raise RuntimeError(f"Script quality check failed: {report.issues or report.warnings}")
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"LLM script generation failed: {exc}") from exc
-    script = _sanitize_script(script)
-    script_meta = _assert_llm_script_publishable(script, require_llm=True)
-    save_script(job["episode_id"], script)
-    return {
-        "status": "script_ready",
-        "job_id": job_id,
-        "episode_id": job["episode_id"],
-        "script": script,
-        "word_count": sum(len(line["text"].split()) for line in script),
-        "writer_engine": script_meta.get("writer_engine"),
-        "fallback_used": script_meta.get("fallback_used"),
-    }
+@router.post("/episodes/generate-script")
+def generate_script(
+    job_id: str = Query(...),
+    payload: Dict | None = Body(default=None),
+):
+    raise HTTPException(410, "Episode writing has moved to document context and external script import. Build episode context, then import through replace-script.")
+
+
+def _generate_script_impl(job_id, payload=None):
+    raise HTTPException(410, "Episode writing has moved to document context and external script import. Build episode context, then import through replace-script.")
 
 
 def _run_produce_background(
     episode_id: str, job_id: str, script: list, title: str, topic: str,
     script_text: str, personality_settings, voice_settings: dict,
     writer_engine: str = "unknown", bridge_reachable_at_start: bool = False,
-    event_loop=None,
+    event_loop=None, approved_production=None,
 ) -> None:
     """Persist job progress in the worker thread; deliver events on the ASGI loop."""
     from ..websockets.manager import manager
@@ -388,22 +410,32 @@ def _run_produce_background(
         publish({})
         # Each job owns its worker so personality settings cannot leak across episodes.
         worker = MergedDandyPodcastWorker()
+        worker.cancel_event = _PRODUCTION_CANCEL_EVENTS.get(job_id)
         if personality_settings:
             worker._apply_personality_settings(personality_settings)
+        if approved_production is not None:
+            current, version_id = current_approval(episode_id)
+            if version_id != approved_production.get("approved_version_id"):
+                raise RuntimeError("Approved production version changed before synthesis started")
+        approval_args = {"approved_production": approved_production} if approved_production is not None else {}
         result = worker.produce_episode(
             episode_id=episode_id, title=title, topic=topic, script_lines=script,
-            progress_callback=publish,
+            progress_callback=publish, **approval_args,
         )
         audio_path = Path(result["audio_file"])
         if not audio_path.is_file() or not audio_path.stat().st_size:
             raise RuntimeError("Production returned no audio file")
+        manifest = load_manifest(episode_dir(episode_id))
+        if manifest:
+            build_assembly_graph(episode_dir(episode_id), manifest)
+            result["qc_report"] = QcMorb().inspect(episode_dir(episode_id), audio_path)
         metadata = {**calculate_script_provenance(script), **calculate_repetition_report(script),
                     "bridge_reachable_at_start": bridge_reachable_at_start}
         result.setdefault("metadata", {}).update(metadata)
         save_json(episode_dir(episode_id) / "production_result.json", result)
         publish({"stage": "exporting", "progress": 0.95})
         resolved_cues = [
-            {**cue, "asset": load_asset(episode_id, cue.get("asset_id", "")) or {}}
+            {**cue, "asset": _resolve_any_asset(episode_id, cue.get("asset_id", "")) or {}}
             for cue in load_media_cues(episode_id).get("cues", [])
         ]
         export_social_package(
@@ -412,6 +444,11 @@ def _run_produce_background(
             destination=(PROJECT_ROOT / "social" / "generated" / episode_id).resolve(),
             sponsor_text="Sponsored", media_cues=resolved_cues,
         )
+        from ..services.storage.vault_store import preserve_files
+        preserved = [p for p in episode_dir(episode_id).rglob('*') if p.is_file() and p.suffix not in {'.lock', '.tmp'}]
+        social_folder = PROJECT_ROOT / 'social' / 'generated' / episode_id
+        preserved.extend(p for p in social_folder.rglob('*') if p.is_file() and p.suffix not in {'.lock', '.tmp'})
+        preserve_files(preserved, 'completed audio and production exports')
         publish({**metadata, "status": "produced", "stage": "completed", "progress": 1.0,
                  "production_mode": "worker", "audio_file": str(audio_path),
                  "engine_stats": result["metadata"].get("engine_stats", {}),
@@ -419,13 +456,15 @@ def _run_produce_background(
                  "synthesized_line_count": result["metadata"].get("synthesized_line_count", 0),
                  "personality_settings": personality_settings, "voice_settings": voice_settings})
     except Exception as exc:
-        publish({"status": "failed", "failed_stage": state["stage"], "stage": "failed", "error": str(exc)})
+        cancelled = _PRODUCTION_CANCEL_EVENTS.get(job_id)
+        publish({"status": "cancelled" if cancelled and cancelled.is_set() else "failed", "failed_stage": state["stage"], "stage": "failed", "error": str(exc)})
 
 
 def _run_reserved_production(**kwargs):
     try:
         return _run_produce_background(**kwargs)
     finally:
+        _PRODUCTION_CANCEL_EVENTS.pop(kwargs.get("job_id"), None)
         _PRODUCTION_SLOT.release()
 
 
@@ -444,33 +483,37 @@ async def produce_episode(
     job = load_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    if job["episode_id"] in _ACTIVE_REVISIONS:
+        raise HTTPException(status_code=409, detail="A line revision is running for this episode")
 
     detail = load_episode_detail(job["episode_id"])
-    if detail.get("status") == "producing":
+    if detail.get("status") in {"producing", "cancellation_requested"} or job["episode_id"] in _ACTIVE_REVISIONS:
         raise HTTPException(status_code=409, detail="Episode production is already running")
-    script = detail.get("script", [])
+    approved_production = None
+    requested_approval = (payload or {}).get("approved_version_id")
+    editor_exists = (episode_dir(job["episode_id"]) / "production_editor" / "state.json").is_file()
+    if requested_approval or editor_exists:
+        try:
+            approved_production, approved_version_id = current_approval(job["episode_id"])
+        except (ValueError, FileNotFoundError) as exc:
+            raise HTTPException(409, str(exc)) from exc
+        if requested_approval != approved_version_id:
+            raise HTTPException(409, "Produce requires the current approved production version ID")
+    script = approved_production["script"] if approved_production else detail.get("script", [])
     if not script:
-        raise HTTPException(status_code=400, detail="No script found. Generate script first.")
-    script = _sanitize_script(script)
+        raise HTTPException(status_code=400, detail="Approved production version has no script lines")
     require_llm = detail.get("config", {}).get("generation_mode") != "script_feed"
-    WORD_MIN = 5000
-    WORD_MAX = int(45 * 160)
-    est_words = sum(len(l.get("text", "").split()) for l in script)
-    if est_words < WORD_MIN:
-        if require_llm:
-            raise HTTPException(
-                status_code=400,
-                detail=f"LLM-authored episode is too short for production and will not be template-expanded (got {est_words}, need {WORD_MIN}).",
-            )
-        script = _expand_script(script, WORD_MIN / 160)
-    est_words = sum(len(l.get("text", "").split()) for l in script)
-    if est_words > WORD_MAX:
-        script = _trim_script(script, 45.0)
-    est_words = sum(len(l.get("text", "").split()) for l in script)
-    if est_words < WORD_MIN:
-        raise HTTPException(status_code=400, detail=f"Episode must have at least {WORD_MIN} words after normalization (got {est_words}).")
-
-    script = _enforce_ads_and_structure(script, detail.get("ads", []), detail.get("ad_settings"))
+    target_seconds = int(detail.get("config", {}).get("target_duration") or 1800)
+    if not 60 <= target_seconds <= 2700:
+        raise HTTPException(422, "Episode target must be 1 to 45 minutes. Edit the episode configuration first.")
+    target_seconds = int(detail.get("config", {}).get("target_duration") or 2400)
+    est_words = sum(len(str(line.get("text", "")).split()) for line in script)
+    if est_words == 0:
+        raise HTTPException(400, "Script contains no spoken words")
+    if not approved_production and target_seconds > 900:
+        if est_words < 5000:
+            raise HTTPException(400, f"Episode must have at least 5000 words (got {est_words}); use a short target for short scripts")
+        script = _enforce_ads_and_structure(script, detail.get("ads", []), detail.get("ad_settings"))
     try:
         script_meta = _assert_llm_script_publishable(script, require_llm=require_llm)
     except RuntimeError as exc:
@@ -503,6 +546,7 @@ async def produce_episode(
             },
         )
 
+        _PRODUCTION_CANCEL_EVENTS[job_id] = threading.Event()
         background_tasks.add_task(
             _run_reserved_production,
             episode_id=job["episode_id"],
@@ -516,6 +560,7 @@ async def produce_episode(
             writer_engine=writer_engine,
             bridge_reachable_at_start=bridge_was_reachable,
             event_loop=asyncio.get_running_loop(),
+            approved_production=approved_production,
         )
     except BaseException:
         _PRODUCTION_SLOT.release()
@@ -536,40 +581,7 @@ async def edit_script(payload: EditScriptRequest):
     script = script_data.get("script", [])
 
     if payload.edit_type == "regenerate_section":
-        from ..services.production import llm_writer
-        start, end = payload.section_start, payload.section_end
-        if start is None or end is None or not 0 <= start < end <= len(script) or end - start > 30:
-            raise HTTPException(400, "Select between 1 and 30 lines using a zero-based, exclusive range")
-        if any(str(line.get("speaker", "")).lower() not in {"phil", "jim"} for line in script[start:end]):
-            raise HTTPException(400, "Regeneration supports Phil and Jim dialogue only; exclude ads and host lines")
-        detail = load_episode_detail(payload.episode_id)
-        if detail.get("status") == "producing":
-            raise HTTPException(409, "Wait for production to finish before regenerating")
-        config = detail.get("config", {})
-        try:
-            replacement = await asyncio.to_thread(
-                llm_writer.regenerate_section, script, start, end,
-                config.get("topic", ""), payload.instructions,
-                json.dumps(build_source_context(payload.episode_id)),
-            )
-            replacement = _sanitize_script(replacement)
-            if any("[unknown]" in line["text"].lower() or not line["text"].strip() for line in replacement):
-                raise ValueError("Writer returned empty dialogue or unresolved placeholders")
-            candidate = script[:start] + replacement + script[end:]
-            _assert_llm_script_publishable(candidate, require_llm=config.get("generation_mode") != "script_feed")
-            target_minutes = max(1, (config.get("target_duration") or 2400) / 60)
-            report = _QUALITY_GUARD.evaluate(candidate, target_minutes, config.get("topic", ""))
-            if report.decision != QualityDecision.ACCEPT:
-                raise ValueError(f"Regenerated script failed quality checks: {report.issues or report.warnings}")
-        except (RuntimeError, ValueError) as exc:
-            raise HTTPException(502, str(exc)) from exc
-        if load_script(payload.episode_id) != script_data:
-            raise HTTPException(409, "Script changed during generation; reload and select again")
-        if load_episode_detail(payload.episode_id).get("status") == "producing":
-            raise HTTPException(409, "Production started during generation; script was not changed")
-        save_script(payload.episode_id, candidate)
-        return {"status": "script_ready", "episode_id": payload.episode_id,
-                "updated_script": candidate, "line_count": len(candidate)}
+        raise HTTPException(410, "Episode rewriting is external. Export context and import your revised script.")
 
     if payload.edit_type == "modify_line":
         if payload.line_index is None or payload.line_index >= len(script):
@@ -597,15 +609,7 @@ async def edit_script(payload: EditScriptRequest):
         script = [script[i] for i in payload.new_order if 0 <= i < len(script)]
         script = _reindex(script)
     elif payload.edit_type == "expand_script":
-        addition = {
-            "speaker": "phil",
-            "text": "This expanded section is a placeholder for the next production import step.",
-            "emotion": "warm",
-            "pause_after": 0.5,
-            "generated_by": "api_expander",
-        }
-        script.append(addition)
-        script = _reindex(script)
+        raise HTTPException(422, "Episode expansion is external. Export context and import a revised script.")
     elif payload.edit_type == "adjust_tone":
         from ..services.production.script_edits import adjust_tone
         if load_episode_detail(payload.episode_id).get("status") == "producing":
@@ -691,14 +695,264 @@ async def export_episode(episode_id: str, format: str = Query("json")):
     raise HTTPException(status_code=400, detail="Unsupported export format")
 
 
+@router.get("/episodes/{episode_id}/production-manifest")
+def production_manifest(episode_id: str):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    episode_path = episode_dir(episode_id)
+    manifest = load_manifest(episode_path)
+    if manifest is None:
+        raise HTTPException(404, "No addressable production exists for this episode yet")
+    try:
+        approved, approved_id = current_approval(episode_id)
+        manifest["script_current"] = (
+            manifest.get("canonical_version_id") == approved.get("canonical_version_id")
+            and manifest.get("approved_version_id") == approved_id
+            and manifest.get("production_copy_hash") == approved.get("production_copy_hash")
+        )
+    except (ValueError, FileNotFoundError):
+        manifest["script_current"] = False
+    return manifest
+
+
+@router.get("/episodes/{episode_id}/canonical-scripts")
+def get_canonical_scripts(episode_id: str):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    try:
+        return canonical_versions(episode_id)
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+
+@router.get("/episodes/{episode_id}/canonical-scripts/{version_id}")
+def get_canonical_script_version(episode_id: str, version_id: str):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    try:
+        return load_canonical_script(episode_id, version_id)
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+
+@router.get("/episodes/{episode_id}/canonical-scripts/{version_id}/preview")
+def get_canonical_preview(episode_id: str, version_id: str):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    try:
+        return get_preview_review(episode_id, version_id)
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+
+@router.get("/episodes/{episode_id}/preview")
+def get_selected_preview(episode_id: str):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    try:
+        return selected_preview_review(episode_id) or {"episode_id": episode_id, "saved": False}
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+
+@router.put("/episodes/{episode_id}/preview")
+def save_episode_preview(episode_id: str, payload: Dict = Body(...)):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    try:
+        return save_preview_review(episode_id, payload)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@router.post("/episodes/{episode_id}/production-editor/drafts")
+def create_production_editor_draft(episode_id: str, payload: Dict = Body(...)):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    version_id = str(payload.get("canonical_version_id") or "")
+    try:
+        return create_draft(episode_id, version_id)
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@router.put("/episodes/{episode_id}/production-editor/draft")
+def update_production_editor_draft(episode_id: str, payload: Dict = Body(...)):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    try:
+        return save_draft(episode_id, payload)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@router.post("/episodes/{episode_id}/production-editor/approve")
+def approve_production_editor_draft(episode_id: str, payload: Dict = Body(...)):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    try:
+        return approve_draft(episode_id, str(payload.get("draft_id") or ""))
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@router.get("/episodes/{episode_id}/production-editor")
+def production_editor_report(episode_id: str):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    state = editor_state(episode_id)
+    episode_path = episode_dir(episode_id)
+    import json
+    for key, filename in (("assembly_graph", "assembly_graph.v1.json"), ("qc_report", "qc_report.v1.json")):
+        path = episode_path / filename
+        state[key] = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
+    return state
+
+
+@router.get("/episodes/{episode_id}/production-revision")
+def production_revision_status(episode_id: str):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id):
+        raise HTTPException(400, "Invalid episode ID")
+    path = episode_dir(episode_id) / "revision_status.json"
+    if not path.is_file():
+        return {"status": "idle", "episode_id": episode_id}
+    import json
+    state = json.loads(path.read_text(encoding="utf-8"))
+    if state.get("status") == "running" and episode_id not in _ACTIVE_REVISIONS:
+        state.update({"status": "interrupted", "error": "Backend restarted before revision completed",
+                      "updated_at": datetime.now().isoformat()})
+        save_json(path, state)
+    return state
+
+
+def _run_line_revision_background(
+    episode_id: str, segment_id: str, reason: str, text_change: Optional[str], revision_id: str,
+    approved_production: dict,
+) -> None:
+    episode_path = episode_dir(episode_id)
+    committed = False
+    result = None
+    try:
+        manifest = load_manifest(episode_path)
+        before = next(item for item in manifest["segments"] if item["segment_id"] == segment_id)
+        result = _get_worker().regenerate_production_line(
+            episode_id, segment_id, reason, text_change, revision_id=revision_id,
+            approved_production=approved_production,
+        )
+        committed = True
+        updated = load_manifest(episode_path)
+        build_assembly_graph(episode_path, updated)
+        QcMorb().inspect(episode_path, Path(result["audio_file"]))
+        after = next(item for item in updated["segments"] if item["segment_id"] == segment_id)
+        ledger_path = episode_path / "production_change_ledger.json"
+        import json
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8")) if ledger_path.is_file() else {"episode_id": episode_id, "changes": []}
+        ledger["changes"].append({
+            "run_id": revision_id, "segment_id": segment_id, "action": "REGENERATE",
+            "reason": reason, "before_text": before["production_text"],
+            "after_text": after["production_text"], "before_take": before["audio"]["take"],
+            "after_take": after["audio"]["take"], "created_at": datetime.now().isoformat(),
+        })
+        save_json(ledger_path, ledger)
+        metadata_path = episode_path / "production_metadata.json"
+        if metadata_path.is_file():
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            metadata["last_revision_id"] = revision_id
+            metadata["last_revision_at"] = datetime.now().isoformat()
+            metadata["processing"] = result["processing"]
+            save_json(metadata_path, metadata)
+        save_json(episode_path / "revision_status.json", {
+            "status": "completed", "revision_id": revision_id, "episode_id": episode_id,
+            "segment_id": segment_id, "take": result["take"],
+            "updated_at": datetime.now().isoformat(),
+        })
+    except Exception as exc:
+        save_json(episode_path / "revision_status.json", {
+            "status": "completed_with_warnings" if committed else "failed",
+            "revision_id": revision_id, "episode_id": episode_id,
+            "segment_id": segment_id, "error": str(exc),
+            "take": result["take"] if result else None,
+            "updated_at": datetime.now().isoformat(),
+        })
+    finally:
+        with _REVISION_LOCK:
+            _ACTIVE_REVISIONS.discard(episode_id)
+        _PRODUCTION_SLOT.release()
+
+
+@router.post("/episodes/{episode_id}/production/segments/{segment_id}/regenerate", status_code=202)
+def regenerate_production_segment(
+    episode_id: str, segment_id: str, payload: RegenerateProductionLineRequest,
+    background_tasks: BackgroundTasks,
+):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", episode_id) or not re.fullmatch(r"[A-Za-z0-9_-]+", segment_id):
+        raise HTTPException(400, "Invalid episode or segment ID")
+    episode_path = episode_dir(episode_id)
+    manifest = load_manifest(episode_path)
+    if manifest is None:
+        raise HTTPException(409, "Produce this episode once with saved line takes before regenerating a line")
+    try:
+        approved_production, approved_id = current_approval(episode_id)
+    except (ValueError, FileNotFoundError) as exc:
+        raise HTTPException(409, str(exc)) from exc
+    if (manifest.get("approved_version_id") != approved_id
+            or manifest.get("production_copy_hash") != approved_production.get("production_copy_hash")):
+        raise HTTPException(409, "Rendered production does not match the current approved version")
+    if not any(item.get("segment_id") == segment_id for item in manifest["segments"]):
+        raise HTTPException(404, "Production segment not found")
+    if payload.text_change is not None:
+        raise HTTPException(422, "Dialogue changes require a new production editor draft and approval")
+    status_path = episode_path / "status.json"
+    if status_path.is_file():
+        import json
+        if json.loads(status_path.read_text(encoding="utf-8")).get("status") == "producing":
+            raise HTTPException(409, "Episode production is already running")
+    try:
+        validate_takes(episode_path, manifest["segments"])
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    if not _PRODUCTION_SLOT.acquire(blocking=False):
+        raise HTTPException(409, "Studio production is busy; retry after the active job finishes")
+    with _REVISION_LOCK:
+        if episode_id in _ACTIVE_REVISIONS:
+            _PRODUCTION_SLOT.release()
+            raise HTTPException(409, "A line revision is already running for this episode")
+        _ACTIVE_REVISIONS.add(episode_id)
+    revision_id = uuid4().hex
+    try:
+        save_json(episode_path / "revision_status.json", {
+            "status": "running", "revision_id": revision_id, "episode_id": episode_id,
+            "segment_id": segment_id, "updated_at": datetime.now().isoformat(),
+        })
+        background_tasks.add_task(
+            _run_line_revision_background, episode_id, segment_id,
+            payload.reason, payload.text_change, revision_id, approved_production,
+        )
+    except Exception:
+        with _REVISION_LOCK:
+            _ACTIVE_REVISIONS.discard(episode_id)
+        _PRODUCTION_SLOT.release()
+        raise
+    return {"status": "queued", "revision_id": revision_id, "segment_id": segment_id}
+
+
 @router.get("/audio/{episode_id}/final.mp3")
-async def final_audio(episode_id: str):
+@router.head("/audio/{episode_id}/final.mp3")
+async def final_audio(episode_id: str, download: bool = False):
     from fastapi.responses import FileResponse
 
     audio_path = _resolve_episode_audio_path(episode_id)
     if not audio_path:
         raise HTTPException(status_code=404, detail="Audio not found")
-    return FileResponse(audio_path, media_type="audio/mpeg", filename=audio_path.name)
+    return FileResponse(
+        audio_path, media_type="audio/mpeg",
+        filename=audio_path.name if download else None,
+        content_disposition_type="attachment" if download else "inline",
+    )
 
 
 @router.post("/produce")

@@ -3,6 +3,7 @@
 Requires playwright in the local environment and installed Microsoft Edge.
 Run with Vite running: .venv\Scripts\python.exe scripts/verify_consolidation_ui.py
 """
+import re
 import json
 import os
 from urllib.parse import urlsplit
@@ -25,6 +26,12 @@ def main():
             result = {"bridge_reachable": True, "active_writer": "llm_bridge"}
         elif path == "/api/episodes":
             result = {"episodes": [{"episode_id": "test", "title": "UI contract fixture"}]}
+        elif path.endswith("/production-editor"):
+            result = {"approval_state": "approved", "current_approved_version_id": "approved_v0001", "approved": {"script": script}}
+        elif path.endswith("/canonical-scripts"):
+            result = {"active_version_id": "canonical_v0001", "versions": [{"version_id": "canonical_v0001", "word_count": 14}]}
+        elif path.endswith("/canonical-scripts/canonical_v0001"):
+            result = {"script": script, "version_id": "canonical_v0001"}
         elif path.endswith("/production-status"):
             result = status
         elif path.endswith("/script"):
@@ -74,8 +81,9 @@ def main():
         expect(page.locator(".modal-box")).to_have_count(0)
         assert edits[-1]["tone_adjustment"] == "faster_paced"
         assert edits[-1]["section_start"] == 0 and edits[-1]["section_end"] == 2
-        page.get_by_role("button", name="PRODUCE", exact=True).click()
-        expect(page.get_by_role("button", name="PRODUCING…", exact=True)).to_be_disabled()
+        page.get_by_role("button", name=re.compile("04 PRODUCE")).click()
+        page.get_by_role("button", name="PRODUCE APPROVED VERSION", exact=True).click()
+        expect(page.get_by_text("synthesizing · 50%", exact=True)).to_be_visible()
         assert not created_jobs, "Production must reuse the persisted job without resetting episode state"
         for ws in sockets:
             ws.send(json.dumps(status))
@@ -85,7 +93,7 @@ def main():
         for ws in sockets:
             ws.send(json.dumps(status))
         expect(page.get_by_text("· Fixture TTS failure", exact=True)).to_be_visible()
-        expect(page.get_by_role("button", name="PRODUCE", exact=True)).to_be_enabled()
+
         page.reload()
         page.get_by_role("button", name="EPISODES", exact=True).click()
         expect(page.get_by_text("· Fixture TTS failure", exact=True)).to_be_visible()

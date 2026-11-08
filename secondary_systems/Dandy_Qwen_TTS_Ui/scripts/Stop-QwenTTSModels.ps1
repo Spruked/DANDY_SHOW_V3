@@ -1,19 +1,13 @@
 param(
-    [int[]]$Ports = @(8031, 8032, 8033)
+    [int[]]$Ports = @(8032, 8033)
 )
 
 $ErrorActionPreference = "Continue"
 
+if ($Ports -contains 8031) { throw "Port 8031 is a shared PC service. Stop it through the Shared Qwen3 TTS task, not Dandy." }
+
+. (Join-Path $PSScriptRoot "../../../scripts/studio/processes.ps1")
 foreach ($port in $Ports) {
-    Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
-        ForEach-Object {
-            Write-Output "Stopping process $($_.OwningProcess) on port $port"
-            Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
-        }
+    if ($port -notin @(8031, 8032, 8033)) { throw "Unsupported Qwen model port" }
+    Stop-DandyListener -Port $port -ExpectedCommand 'qwen_tts.cli.demo'
 }
-
-Start-Sleep -Seconds 2
-
-Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue |
-    Where-Object { $Ports -contains $_.LocalPort } |
-    Select-Object LocalAddress, LocalPort, OwningProcess

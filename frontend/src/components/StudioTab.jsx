@@ -1,5 +1,5 @@
-// components/StudioTab.jsx — Phil & Jim Dandy Show Full Studio Control Dashboard
-import { useState, useEffect, useCallback } from 'react'
+﻿// components/StudioTab.jsx â€” Phil & Jim Dandy Show Full Studio Control Dashboard
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Mic, Mic2, Volume2, VolumeX, Radio, Monitor, Camera,
   Headphones, Settings, Activity, Zap, ToggleLeft, ToggleRight,
@@ -7,6 +7,8 @@ import {
   Cpu, Globe, Wifi, AlertCircle, CheckCircle, XCircle, Music,
   Video, Layers, Play, Square, Circle, SkipForward, Download
 } from 'lucide-react'
+
+import { Toggle, Fader, KnobRing, Knob, VUMeter, SectionCard, StatusPill, MacroBtn } from './studio/controls'
 
 // ─── tiny helpers ─────────────────────────────────────────────────────────────
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
@@ -35,186 +37,9 @@ const dbToPct = (value) => {
   return Math.round(((db + 60) / 72) * 100)
 }
 
-function Toggle({ on, onClick, color = 'var(--gold)' }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        background: on ? color : 'var(--rim)',
-        border: 'none', borderRadius: 12, width: 36, height: 20,
-        cursor: 'pointer', position: 'relative', transition: 'background .2s',
-        flexShrink: 0,
-      }}
-    >
-      <span style={{
-        position: 'absolute', top: 2, left: on ? 18 : 2,
-        width: 16, height: 16, borderRadius: '50%',
-        background: '#fff', transition: 'left .2s',
-      }} />
-    </button>
-  )
-}
-
-function Fader({ label, value, onChange, color = 'var(--gold)', unit = 'dB', min = -60, max = 12 }) {
-  const range = max - min
-  const pos   = ((value - min) / range) * 100
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 44 }}>
-      <div style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', letterSpacing: '.08em' }}>
-        {label}
-      </div>
-      {/* vertical slider track */}
-      <div style={{ position: 'relative', width: 6, height: 100, background: 'var(--rim)', borderRadius: 3 }}>
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: pct(pos), background: color, borderRadius: 3, transition: 'height .1s',
-        }} />
-        <input
-          type="range" min={min} max={max} value={value}
-          onChange={e => onChange(+e.target.value)}
-          style={{
-            position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer',
-            writingMode: 'vertical-lr', direction: 'rtl', width: '100%', height: '100%',
-          }}
-        />
-      </div>
-      <div style={{ fontSize: '.52rem', color, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
-        {value > 0 ? '+' : ''}{value}
-      </div>
-    </div>
-  )
-}
-
-function KnobRing({ value, max = 100, color = 'var(--gold)', size = 48 }) {
-  const r     = (size - 6) / 2
-  const circ  = 2 * Math.PI * r
-  const angle = (value / max) * 0.75 * circ
-  return (
-    <svg width={size} height={size} style={{ transform: 'rotate(-135deg)' }}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--rim)" strokeWidth={5} strokeDasharray={`${0.75*circ} ${circ}`} strokeLinecap="round" />
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={5} strokeDasharray={`${angle} ${circ}`} strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function Knob({ label, value, onChange, max = 100, color = 'var(--gold)' }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-      <div style={{ position: 'relative', cursor: 'pointer' }}>
-        <KnobRing value={value} max={max} color={color} />
-        <input
-          type="range" min={0} max={max} value={value}
-          onChange={e => onChange(+e.target.value)}
-          style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }}
-        />
-        <div style={{
-          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '.52rem', fontFamily: 'var(--font-mono)', color, fontWeight: 600,
-        }}>
-          {value}
-        </div>
-      </div>
-      <div style={{ fontSize: '.46rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', textAlign: 'center', maxWidth: 52 }}>
-        {label}
-      </div>
-    </div>
-  )
-}
-
-function VUMeter({ level = 0, label = '' }) {
-  const bars  = 20
-  const lit   = Math.round((level / 100) * bars)
-  const color = level > 85 ? 'var(--red)' : level > 65 ? 'var(--gold)' : 'var(--green)'
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
-      <div style={{ display: 'flex', flexDirection: 'column-reverse', gap: 1.5 }}>
-        {Array.from({ length: bars }, (_, i) => (
-          <div key={i} style={{
-            width: 8, height: 3, borderRadius: 1,
-            background: i < lit
-              ? (i > bars * 0.85 ? 'var(--red)' : i > bars * 0.65 ? 'var(--gold)' : 'var(--green)')
-              : 'var(--rim)',
-            transition: 'background .05s',
-          }} />
-        ))}
-      </div>
-      <div style={{ fontSize: '.42rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{label}</div>
-    </div>
-  )
-}
-
-function SectionCard({ title, icon: Icon, children, accent = 'var(--gold)', defaultOpen = true, style = {} }) {
-  const [open, setOpen] = useState(defaultOpen)
-  return (
-    <div style={{
-      background: 'var(--panel)', border: `1px solid var(--rim)`,
-      borderRadius: 'var(--radius-lg)', overflow: 'hidden',
-      borderTop: `2px solid ${accent}`,
-      ...style,
-    }}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: 8,
-          padding: '8px 12px', background: 'none', border: 'none',
-          cursor: 'pointer', color: 'var(--bone)',
-        }}
-      >
-        {Icon && <Icon size={12} style={{ color: accent }} />}
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.1em', flex: 1, textAlign: 'left' }}>
-          {title}
-        </span>
-        {open ? <ChevronUp size={10} style={{ color: 'var(--steel)' }} /> : <ChevronDown size={10} style={{ color: 'var(--steel)' }} />}
-      </button>
-      {open && <div style={{ padding: '0 12px 12px' }}>{children}</div>}
-    </div>
-  )
-}
-
-function StatusPill({ ok, label }) {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 5,
-      background: ok ? '#1a2e1a' : '#2e1a1a',
-      border: `1px solid ${ok ? 'var(--green)' : 'var(--red)'}`,
-      borderRadius: 20, padding: '3px 10px',
-    }}>
-      {ok
-        ? <CheckCircle size={10} style={{ color: 'var(--green)' }} />
-        : <XCircle    size={10} style={{ color: 'var(--red)' }} />
-      }
-      <span style={{ fontSize: '.52rem', fontFamily: 'var(--font-mono)', color: ok ? 'var(--green)' : 'var(--red)' }}>
-        {label}
-      </span>
-    </div>
-  )
-}
-
-function MacroBtn({ label, color = 'var(--gold)', onClick, active = false, disabled = false }) {
-  return (
-    <button
-      disabled={disabled}
-      onClick={onClick}
-      style={{
-        background: active ? color : 'var(--bg)',
-        border: `1px solid ${color}`,
-        borderRadius: 'var(--radius)', padding: '6px 10px',
-        color: active ? '#000' : color,
-        fontFamily: 'var(--font-mono)', fontSize: '.55rem',
-        letterSpacing: '.06em', cursor: 'pointer', transition: 'all .15s',
-        fontWeight: active ? 700 : 400,
-        opacity: disabled ? 0.5 : 1,
-      }}
-    >
-      {label}
-    </button>
-  )
-}
-
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function StudioTab() {
 
-  // ── Voicemeeter channel states ──
+  // â”€â”€ audio mixer channel states â”€â”€
   const initCh = (label, color, gain = 0) => ({
     label, color, gain, mute: false, solo: false,
     gate: 30, comp: 40, eq: false,
@@ -224,23 +49,23 @@ export default function StudioTab() {
   })
 
   const [channels, setChannels] = useState({
-    mic1:  initCh('MIC 1 · PHIL', 'var(--phil)',   0),
-    mic2:  initCh('MIC 2 · JIM',  'var(--jim)',    0),
+    mic1:  initCh('MIC 1 Â· PHIL', 'var(--phil)',   0),
+    mic2:  initCh('MIC 2 Â· JIM',  'var(--jim)',    0),
     guest: initCh('GUEST MIC',    'var(--guest)', -3),
     music: initCh('MUSIC BED',    'var(--steel)', -18),
     sfx:   initCh('SFX',          'var(--ad)',    -6),
-    vm:    initCh('VOICEMEETER',  'var(--gold)',   0),
+    vm:    initCh('AUDIO MIXER',  'var(--gold)',   0),
   })
 
   const [master, setMaster] = useState({ gain: 0, mute: false, comp: 60, limiter: true, vu: 0 })
 
-  // ── Monitor / headphone ──
+  // â”€â”€ Monitor / headphone â”€â”€
   const [monitor, setMonitor] = useState({
     volume: 75, dim: false, mono: false, philHP: 80, jimHP: 80,
     talkback: false, comfortReverb: 20, clickTrack: false, clickLevel: 50,
   })
 
-  // ── OBS states ──
+  // â”€â”€ OBS states â”€â”€
   const [obs, setObs] = useState({
     connected: false, streaming: false, recording: false,
     activeScene: '',
@@ -250,7 +75,7 @@ export default function StudioTab() {
     transitions: ['Cut', 'Fade', 'Swipe', 'Stinger'],
   })
 
-  // ── Camera states ──
+  // â”€â”€ Camera states â”€â”€
   const [cameras, setCameras] = useState({
     main:  { label: 'MAIN', zoom: 50, focus: 70, exposure: 55, active: true  },
     phil:  { label: 'PHIL', zoom: 40, focus: 65, exposure: 55, active: false },
@@ -258,7 +83,7 @@ export default function StudioTab() {
     screen:{ label: 'SCRN', zoom: 100, focus: 100, exposure: 50, active: false },
   })
 
-  // ── Macro buttons ──
+  // â”€â”€ Macro buttons â”€â”€
   const [activeMacros, setActiveMacros] = useState({})
   const macros = [
     { id: 'intro',   label: 'INTRO SEQUENCE',  color: 'var(--gold)'  },
@@ -271,13 +96,13 @@ export default function StudioTab() {
     { id: 'outro',   label: 'OUTRO SEQUENCE',   color: 'var(--gold)'  },
   ]
 
-  // ── Audacity / Recording ──
+  // â”€â”€ Audacity / Recording â”€â”€
   const [audacity, setAudacity] = useState({
     inputGain: 75, noiseReduction: 60, compression: 50,
     eq: 55, deEss: 40, limiter: 80, recording: false,
   })
 
-  // ── Streaming status ──
+  // â”€â”€ Streaming status â”€â”€
   const [stream, setStream] = useState({
     platform: 'OBS', bitrate: '--', fps: '--', resolution: '--',
     duration: 0, viewers: 0,
@@ -289,8 +114,58 @@ export default function StudioTab() {
   const [obsError, setObsError] = useState('')
   const [macroBusy, setMacroBusy] = useState(false)
   const [macroError, setMacroError] = useState('')
-  const [studioView, setStudioView] = useState('audio')
+  const [studioView, setStudioView] = useState('obs')
   const [audioIo, setAudioIo] = useState({ ok: false, label: 'AUDIO I/O' })
+  const cameraVideoRef = useRef(null)
+  const cameraStreamRef = useRef(null)
+  const [cameraDevices, setCameraDevices] = useState([])
+  const [cameraDeviceId, setCameraDeviceId] = useState('')
+  const [cameraConnected, setCameraConnected] = useState(false)
+  const [cameraError, setCameraError] = useState('')
+
+  const stopBrowserCamera = useCallback(() => {
+    cameraStreamRef.current?.getTracks().forEach(track => track.stop())
+    cameraStreamRef.current = null
+    if (cameraVideoRef.current) cameraVideoRef.current.srcObject = null
+    setCameraConnected(false)
+  }, [])
+
+  const refreshBrowserCameras = useCallback(async () => {
+    if (!navigator.mediaDevices?.enumerateDevices) {
+      setCameraError('Browser camera access is unavailable.')
+      return
+    }
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    const camerasFound = devices.filter(device => device.kind === 'videoinput')
+    setCameraDevices(camerasFound)
+    if (!cameraDeviceId && camerasFound[0]) setCameraDeviceId(camerasFound[0].deviceId)
+  }, [cameraDeviceId])
+
+  const startBrowserCamera = useCallback(async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError('This browser does not expose camera access.')
+      return
+    }
+    setCameraError('')
+    stopBrowserCamera()
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: cameraDeviceId ? { deviceId: { exact: cameraDeviceId } } : true,
+        audio: false,
+      })
+      cameraStreamRef.current = stream
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream
+        await cameraVideoRef.current.play()
+      }
+      setCameraConnected(true)
+      await refreshBrowserCameras()
+    } catch (error) {
+      setCameraError(error?.name === 'NotAllowedError' ? 'Camera permission was denied.' : (error?.message || 'Camera could not be opened.'))
+    }
+  }, [cameraDeviceId, refreshBrowserCameras, stopBrowserCamera])
+
+  useEffect(() => () => stopBrowserCamera(), [stopBrowserCamera])
 
   const mixerRequest = useCallback(async (path, options = {}) => {
     const res = await fetch(`/api/mixer${path}`, {
@@ -362,25 +237,9 @@ export default function StudioTab() {
       setMixerError('')
     } catch (err) {
       setMixerConnected(false)
-      setMixerError(err?.message || 'Voicemeeter unavailable')
+      setMixerError(err?.message || 'audio mixer unavailable')
     }
   }, [mixerRequest])
-
-  useEffect(() => {
-    let cancelled = false
-    const init = async () => {
-      await refreshMixerStatus()
-      if (cancelled) return
-    }
-    init()
-    const iv = setInterval(() => {
-      if (!cancelled) refreshMixerStatus()
-    }, MIXER_POLL_MS)
-    return () => {
-      cancelled = true
-      clearInterval(iv)
-    }
-  }, [refreshMixerStatus])
 
   const obsRequest = useCallback(async (path, options = {}) => {
     const res = await fetch(`/api/obs${path}`, {
@@ -570,7 +429,7 @@ export default function StudioTab() {
       setMixerError('')
     } catch (err) {
       setMixerConnected(false)
-      setMixerError(err?.message || 'Voicemeeter write failed')
+      setMixerError(err?.message || 'audio mixer write failed')
     }
   }, [mixerRequest])
 
@@ -593,7 +452,7 @@ export default function StudioTab() {
       setMixerError('')
     } catch (err) {
       setMixerConnected(false)
-      setMixerError(err?.message || 'Voicemeeter write failed')
+      setMixerError(err?.message || 'audio mixer write failed')
     }
   }, [mixerRequest])
 
@@ -623,7 +482,7 @@ export default function StudioTab() {
       setMixerError('')
       return data
     } catch (err) {
-      setMixerError(err?.message || 'Voicemeeter bus write failed')
+      setMixerError(err?.message || 'audio mixer bus write failed')
       return null
     }
   }, [mixerRequest])
@@ -641,7 +500,7 @@ export default function StudioTab() {
       setMixerError('')
       return data
     } catch (err) {
-      setMixerError(err?.message || `Voicemeeter macro ${buttonIndex} failed`)
+      setMixerError(err?.message || `audio mixer macro ${buttonIndex} failed`)
       return null
     }
   }, [mixerRequest])
@@ -675,7 +534,6 @@ export default function StudioTab() {
   const updateCamera  = (k, patch) => setCameras(p => ({ ...p, [k]: { ...p[k], ...patch } }))
   const chKeys = Object.keys(channels)
   const studioViews = [
-    { id: 'audio', label: 'AUDIO MIX', icon: Sliders },
     { id: 'obs', label: 'OBS LIVE', icon: Monitor },
     { id: 'cams', label: 'CAMERAS', icon: Camera },
     { id: 'automate', label: 'MACROS / TOOLS', icon: Zap },
@@ -731,49 +589,34 @@ export default function StudioTab() {
 
   return (
     <div className="tab-body" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* ── TOP STATUS BAR ── */}
+      {/* â”€â”€ TOP STATUS BAR â”€â”€ */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10, padding: '6px 16px',
         background: 'var(--surface)', borderBottom: '1px solid var(--rim)', flexShrink: 0, flexWrap: 'wrap',
       }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', color: 'var(--gold)', letterSpacing: '.12em', marginRight: 8 }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', color: 'var(--gold)', letterSpacing: '.12em', marginRight: 8 }}>
           STUDIO CONTROL
         </span>
-        <StatusPill ok={mixerConnected} label={mixerConnected ? `VOICEMEETER ${mixerKind.toUpperCase()}` : 'VOICEMEETER'} />
         <StatusPill ok={obs.connected} label="OBS WS" />
         <StatusPill ok={audioIo.ok} label={audioIo.label} />
         <StatusPill ok={obs.streaming}  label={obs.streaming ? `LIVE ${fmtTime(stream.duration)}` : 'OFF AIR'} />
         <StatusPill ok={obs.recording}  label={obs.recording  ? 'REC' : 'IDLE'} />
         <button
-          onClick={() => void refreshMixerStatus()}
-          style={{
-            background: 'var(--bg)', border: '1px solid var(--rim)', borderRadius: 6,
-            color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '.5rem', padding: '4px 8px', cursor: 'pointer',
-          }}
-        >
-          REFRESH MIXER
-        </button>
-        <button
           onClick={() => void Promise.all([refreshObsStatus(), refreshObsScenes()])}
           style={{
             background: 'var(--bg)', border: '1px solid var(--rim)', borderRadius: 6,
-            color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '.5rem', padding: '4px 8px', cursor: 'pointer',
+            color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '4px 8px', cursor: 'pointer',
           }}
         >
           REFRESH OBS
         </button>
-        {mixerError && (
-          <span style={{ fontSize: '.48rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
-            {mixerError}
-          </span>
-        )}
         {obsError && (
-          <span style={{ fontSize: '.48rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
+          <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
             {obsError}
           </span>
         )}
         {macroError && (
-          <span style={{ fontSize: '.48rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
+          <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--red)' }}>
             {macroError}
           </span>
         )}
@@ -814,7 +657,7 @@ export default function StudioTab() {
               background: studioView === id ? 'var(--gold-dim)' : 'var(--panel)',
               color: studioView === id ? 'var(--gold)' : 'var(--steel)',
               fontFamily: 'var(--font-mono)',
-              fontSize: '.54rem',
+              fontSize: '0.7rem',
               letterSpacing: '.08em',
               padding: '5px 10px',
               cursor: 'pointer',
@@ -826,7 +669,7 @@ export default function StudioTab() {
         ))}
       </div>
 
-      {/* ── MAIN LAYOUT ── */}
+      {/* â”€â”€ MAIN LAYOUT â”€â”€ */}
       <div style={{ flex: 1, overflow: 'auto', padding: 12, display: 'grid', gap: 10,
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         alignContent: 'start',
@@ -834,16 +677,16 @@ export default function StudioTab() {
 
         {studioView === 'audio' && (
           <>
-        {/* ════════════════════════════════════════════════════════════
-            COL 1 — AUDIO / VOICEMEETER
-        ════════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            COL 1 â€” AUDIO / AUDIO MIXER
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
         {/* Channel mixer */}
-        <SectionCard title="VOICEMEETER — CHANNEL MIXER" icon={Sliders} accent="var(--gold)" defaultOpen={true}>
-          <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+        <SectionCard title="AUDIO MIXER â€” CHANNEL MIXER" icon={Sliders} accent="var(--gold)" defaultOpen={true}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
             {mixerConnected
-              ? 'LIVE: channel controls wired to Voicemeeter Remote API.'
-              : 'OFFLINE: waiting for Voicemeeter Remote API.'}
+              ? 'LIVE: channel controls wired to audio mixer Remote API.'
+              : 'OFFLINE: waiting for audio mixer Remote API.'}
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', overflowX: 'auto', paddingBottom: 4 }}>
             {chKeys.map(k => {
@@ -857,7 +700,7 @@ export default function StudioTab() {
                   border: `1px solid ${ch.mute ? 'var(--red)' : ch.solo ? ch.color : 'var(--rim)'}`,
                   opacity: disabled ? 0.5 : 1,
                 }}>
-                  <div style={{ fontSize: '.44rem', fontFamily: 'var(--font-mono)', color: ch.color, textAlign: 'center', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: ch.color, textAlign: 'center', lineHeight: 1.3 }}>
                     {ch.label}
                   </div>
                   <VUMeter level={ch.vu} />
@@ -873,7 +716,7 @@ export default function StudioTab() {
                           disabled={disabled}
                           style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
                       </div>
-                      <div style={{ fontSize: '.38rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>GATE</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>GATE</div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                       <div style={{ position: 'relative' }}>
@@ -883,13 +726,13 @@ export default function StudioTab() {
                           disabled={disabled}
                           style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
                       </div>
-                      <div style={{ fontSize: '.38rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>COMP</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>COMP</div>
                     </div>
                   </div>
                   {/* EQ toggle */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                     <Toggle on={ch.eq} onClick={() => !disabled && updateChannel(k, { eq: !ch.eq })} color="var(--blue)" />
-                    <span style={{ fontSize: '.4rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>EQ</span>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>EQ</span>
                   </div>
                   {/* Mute / Solo */}
                   <div style={{ display: 'flex', gap: 3 }}>
@@ -897,13 +740,13 @@ export default function StudioTab() {
                       background: ch.mute ? 'var(--red)' : 'var(--bg)',
                       border: '1px solid var(--red)', borderRadius: 4,
                       color: ch.mute ? '#fff' : 'var(--red)',
-                      fontFamily: 'var(--font-mono)', fontSize: '.42rem', padding: '2px 5px', cursor: 'pointer',
+                      fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '2px 5px', cursor: 'pointer',
                     }}>M</button>
                     <button disabled={disabled} onClick={() => !disabled && updateChannel(k, { solo: !ch.solo })} style={{
                       background: ch.solo ? 'var(--gold)' : 'var(--bg)',
                       border: '1px solid var(--gold)', borderRadius: 4,
                       color: ch.solo ? '#000' : 'var(--gold)',
-                      fontFamily: 'var(--font-mono)', fontSize: '.42rem', padding: '2px 5px', cursor: 'pointer',
+                      fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '2px 5px', cursor: 'pointer',
                     }}>S</button>
                   </div>
                   {/* Bus routing */}
@@ -914,7 +757,7 @@ export default function StudioTab() {
                           background: ch[bus.toLowerCase()] ? ch.color : 'var(--bg)',
                           border: `1px solid ${ch.color}`, borderRadius: 3,
                           color: ch[bus.toLowerCase()] ? '#000' : ch.color,
-                          fontFamily: 'var(--font-mono)', fontSize: '.38rem', padding: '1px 2px', cursor: 'pointer',
+                          fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '1px 2px', cursor: 'pointer',
                         }}>{bus}</button>
                     ))}
                   </div>
@@ -930,7 +773,7 @@ export default function StudioTab() {
               border: `2px solid var(--gold)`,
               opacity: mixerConnected ? 1 : 0.5,
             }}>
-              <div style={{ fontSize: '.44rem', fontFamily: 'var(--font-mono)', color: 'var(--gold)', textAlign: 'center' }}>MASTER</div>
+              <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--gold)', textAlign: 'center' }}>MASTER</div>
               <VUMeter level={master.mute ? 0 : (master.vu || 0)} />
               <Fader label="OUT" value={master.gain} min={-60} max={12} color="var(--gold)"
                 onChange={v => mixerConnected && updateMaster({ gain: v })} />
@@ -941,17 +784,17 @@ export default function StudioTab() {
                     onChange={e => setMaster(m => ({ ...m, comp: +e.target.value }))}
                     style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
                 </div>
-                <div style={{ fontSize: '.38rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>COMP</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>COMP</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                 <Toggle on={master.limiter} onClick={() => setMaster(m => ({ ...m, limiter: !m.limiter }))} color="var(--red)" />
-                <span style={{ fontSize: '.38rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>LIM</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>LIM</span>
               </div>
               <button disabled={!mixerConnected} onClick={() => mixerConnected && updateMaster({ mute: !master.mute })} style={{
                 background: master.mute ? 'var(--red)' : 'var(--bg)',
                 border: '1px solid var(--red)', borderRadius: 4,
                 color: master.mute ? '#fff' : 'var(--red)',
-                fontFamily: 'var(--font-mono)', fontSize: '.42rem', padding: '3px 8px', cursor: 'pointer', width: '100%',
+                fontFamily: 'var(--font-mono)', fontSize: '0.68rem', padding: '3px 8px', cursor: 'pointer', width: '100%',
               }}>MUTE ALL</button>
             </div>
           </div>
@@ -963,7 +806,7 @@ export default function StudioTab() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {/* Monitor controls */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: '.5rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>MONITOR OUTPUT</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>MONITOR OUTPUT</div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <Knob label="VOLUME" value={monitor.volume} onChange={updateMonitorVolume} color="var(--blue)" />
                 <Knob label="REVERB" value={monitor.comfortReverb} onChange={v => setMonitor(m => ({ ...m, comfortReverb: v }))} color="var(--guest)" />
@@ -987,13 +830,13 @@ export default function StudioTab() {
                       }}
                       color={color}
                     />
-                    <span style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>{label}</span>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>{label}</span>
                   </div>
                 ))}
               </div>
               {monitor.clickTrack && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: '.46rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>CLICK LVL</span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>CLICK LVL</span>
                   <input type="range" min={0} max={100} value={monitor.clickLevel}
                     onChange={e => setMonitor(m => ({ ...m, clickLevel: +e.target.value }))}
                     style={{ flex: 1, accentColor: 'var(--green)' }} />
@@ -1002,18 +845,18 @@ export default function StudioTab() {
             </div>
             {/* Headphone mixes */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: '.5rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>HEADPHONE MIXES</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>HEADPHONE MIXES</div>
               {[
                 { key: 'philHP', label: 'PHIL HP', color: 'var(--phil)' },
                 { key: 'jimHP',  label: 'JIM HP',  color: 'var(--jim)'  },
               ].map(({ key, label, color }) => (
                 <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Headphones size={10} style={{ color }} />
-                  <span style={{ fontSize: '.46rem', fontFamily: 'var(--font-mono)', color, width: 48, flexShrink: 0 }}>{label}</span>
+                  <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color, width: 48, flexShrink: 0 }}>{label}</span>
                   <input type="range" min={0} max={100} value={monitor[key]}
                     onChange={e => setMonitor(m => ({ ...m, [key]: +e.target.value }))}
                     style={{ flex: 1, accentColor: color }} />
-                  <span style={{ fontSize: '.46rem', fontFamily: 'var(--font-mono)', color, width: 24, textAlign: 'right' }}>
+                  <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color, width: 24, textAlign: 'right' }}>
                     {monitor[key]}
                   </span>
                 </div>
@@ -1023,7 +866,7 @@ export default function StudioTab() {
         </SectionCard>
 
         {/* Audacity / Recording chain */}
-        <SectionCard title="AUDACITY — RECORDING CHAIN" icon={Mic2} accent="var(--guest)" defaultOpen={true}>
+        <SectionCard title="AUDACITY â€” RECORDING CHAIN" icon={Mic2} accent="var(--guest)" defaultOpen={true}>
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: 8 }}>
               {[
@@ -1044,15 +887,15 @@ export default function StudioTab() {
                 background: audacity.recording ? 'var(--red)' : 'var(--bg)',
                 border: '1px solid var(--red)', borderRadius: 'var(--radius)',
                 color: audacity.recording ? '#fff' : 'var(--red)',
-                fontFamily: 'var(--font-mono)', fontSize: '.55rem', padding: '8px 14px', cursor: 'pointer',
+                fontFamily: 'var(--font-mono)', fontSize: '0.72rem', padding: '8px 14px', cursor: 'pointer',
               }}>
                 {audacity.recording ? <Square size={10} /> : <Circle size={10} />}
                 {audacity.recording ? 'STOP' : 'RECORD'}
               </button>
-              <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', lineHeight: 1.6 }}>
+              <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', lineHeight: 1.6 }}>
                 <div>Pre-processing chain</div>
-                <div style={{ color: 'var(--bone)' }}>ReaFIR → ReaComp → ReaEQ</div>
-                <div style={{ color: 'var(--bone)' }}>Spitfish → LoudMax</div>
+                <div style={{ color: 'var(--bone)' }}>ReaFIR â†’ ReaComp â†’ ReaEQ</div>
+                <div style={{ color: 'var(--bone)' }}>Spitfish â†’ LoudMax</div>
               </div>
             </div>
           </div>
@@ -1062,12 +905,12 @@ export default function StudioTab() {
 
         {studioView === 'obs' && (
           <>
-        {/* ════════════════════════════════════════════════════════════
-            COL 2 — OBS / VIDEO
-        ════════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            COL 2 â€” OBS / VIDEO
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
         {/* OBS Scene switcher */}
-        <SectionCard title="OBS — SCENE SWITCHER" icon={Monitor} accent="var(--blue)" defaultOpen={true}>
+        <SectionCard title="OBS â€” SCENE SWITCHER" icon={Monitor} accent="var(--blue)" defaultOpen={true}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginBottom: 8 }}>
             {obs.scenes.map(scene => (
               <button key={scene}
@@ -1078,22 +921,22 @@ export default function StudioTab() {
                   border: `1px solid ${obs.activeScene === scene ? 'var(--blue)' : 'var(--rim)'}`,
                   borderRadius: 'var(--radius)', padding: '6px 8px',
                   color: obs.activeScene === scene ? '#fff' : 'var(--steel)',
-                  fontFamily: 'var(--font-mono)', fontSize: '.52rem',
+                  fontFamily: 'var(--font-mono)', fontSize: '0.68rem',
                   cursor: 'pointer', transition: 'all .15s', textAlign: 'left',
                   opacity: (obsBusy || !obs.connected) ? 0.5 : 1,
                 }}>
-                {obs.activeScene === scene && '▶ '}{scene}
+                {obs.activeScene === scene && 'â–¶ '}{scene}
               </button>
             ))}
           </div>
           {obs.scenes.length === 0 && (
-            <div style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 8 }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 8 }}>
               No OBS scenes available.
             </div>
           )}
           {/* Transition */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <span style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>TRANSITION</span>
+            <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>TRANSITION</span>
             <div style={{ display: 'flex', gap: 4 }}>
               {obs.transitions.map(t => (
                 <button key={t} onClick={() => setObs(o => ({ ...o, transition: t }))} style={{
@@ -1101,7 +944,7 @@ export default function StudioTab() {
                   border: `1px solid ${obs.transition === t ? 'var(--gold)' : 'var(--rim)'}`,
                   borderRadius: 4, padding: '2px 7px',
                   color: obs.transition === t ? '#000' : 'var(--steel)',
-                  fontFamily: 'var(--font-mono)', fontSize: '.44rem', cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)', fontSize: '0.68rem', cursor: 'pointer',
                 }}>{t}</button>
               ))}
             </div>
@@ -1113,16 +956,16 @@ export default function StudioTab() {
             ].map(({ key, label, color }) => (
               <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Toggle on={obs[key]} onClick={() => setObs(o => ({ ...o, [key]: !o[key] }))} color={color} />
-                <span style={{ fontSize: '.48rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>{label}</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)' }}>{label}</span>
               </div>
             ))}
           </div>
         </SectionCard>
 
         {/* OBS Audio levels */}
-        <SectionCard title="OBS — AUDIO SOURCES" icon={Volume2} accent="var(--blue)" defaultOpen={true}>
-          <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
-            {mixerConnected ? 'LIVE: levels mirrored from Voicemeeter.' : 'OFFLINE: waiting on Voicemeeter levels.'}
+        <SectionCard title="OBS â€” AUDIO SOURCES" icon={Volume2} accent="var(--blue)" defaultOpen={true}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+            {mixerConnected ? 'LIVE: levels mirrored from audio mixer.' : 'OFFLINE: waiting on audio mixer levels.'}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
@@ -1133,14 +976,14 @@ export default function StudioTab() {
               { label: 'MASTER OUT',  level: master.mute         ? 0 : (master.vu || 0), color: 'var(--gold)' },
             ].map(({ label, level, color }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: '.46rem', fontFamily: 'var(--font-mono)', color: 'var(--steel)', width: 64, flexShrink: 0 }}>{label}</span>
+                <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--steel)', width: 64, flexShrink: 0 }}>{label}</span>
                 <div style={{ flex: 1, height: 6, background: 'var(--rim)', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{
                     height: '100%', width: pct(level), background: color,
                     borderRadius: 3, transition: 'width .1s',
                   }} />
                 </div>
-                <span style={{ fontSize: '.46rem', fontFamily: 'var(--font-mono)', color, width: 24, textAlign: 'right' }}>
+                <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color, width: 24, textAlign: 'right' }}>
                   {Math.round(level)}
                 </span>
               </div>
@@ -1153,7 +996,7 @@ export default function StudioTab() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {[
               { label: 'PLATFORM',    value: stream.platform,          color: 'var(--gold)' },
-              { label: 'STATUS',      value: obs.streaming ? 'LIVE 🔴' : 'OFF AIR', color: obs.streaming ? 'var(--red)' : 'var(--steel)' },
+              { label: 'STATUS',      value: obs.streaming ? 'LIVE ðŸ”´' : 'OFF AIR', color: obs.streaming ? 'var(--red)' : 'var(--steel)' },
               { label: 'OBS WS',      value: obs.connected ? 'CONNECTED' : 'OFFLINE', color: obs.connected ? 'var(--green)' : 'var(--red)' },
               { label: 'DURATION',    value: fmtTime(stream.duration), color: 'var(--bone)' },
               { label: 'BITRATE',     value: stream.bitrate === '--' ? '--' : `${stream.bitrate} kbps`, color: 'var(--blue)' },
@@ -1161,8 +1004,8 @@ export default function StudioTab() {
               { label: 'RESOLUTION',  value: stream.resolution,        color: 'var(--bone)' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ background: 'var(--bg)', borderRadius: 'var(--radius)', padding: '6px 8px' }}>
-                <div style={{ fontSize: '.42rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 2 }}>{label}</div>
-                <div style={{ fontSize: '.65rem', color, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{value}</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 2 }}>{label}</div>
+                <div style={{ fontSize: '0.85rem', color, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{value}</div>
               </div>
             ))}
           </div>
@@ -1172,13 +1015,39 @@ export default function StudioTab() {
 
         {studioView === 'cams' && (
           <>
-        {/* ════════════════════════════════════════════════════════════
-            COL 3 — CAMERAS + MACROS
-        ════════════════════════════════════════════════════════════ */}
+        <SectionCard title="CONNECTED CAMERA" icon={Camera} accent="var(--green)" defaultOpen={true}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) minmax(180px, .7fr)', gap: 12, alignItems: 'start' }}>
+            <div style={{ background: '#050505', border: '1px solid var(--rim)', borderRadius: 'var(--radius)', minHeight: 170, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              {cameraConnected
+                ? <video ref={cameraVideoRef} muted playsInline autoPlay style={{ display: 'block', width: '100%', maxHeight: 280, objectFit: 'contain' }} />
+                : <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--steel)' }}>NO CAMERA PREVIEW</span>}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: cameraConnected ? 'var(--green)' : 'var(--steel)' }}>
+                {cameraConnected ? 'LIVE CAMERA CONNECTED' : 'CAMERA NOT CONNECTED'}
+              </div>
+              <select className="ds-select" value={cameraDeviceId} onChange={e => { setCameraDeviceId(e.target.value); setCameraConnected(false) }}>
+                <option value="">Default camera</option>
+                {cameraDevices.map((device, index) => <option key={device.deviceId || index} value={device.deviceId}>{device.label || `Camera ${index + 1}`}</option>)}
+              </select>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button className="btn btn-solid btn-sm" onClick={() => void startBrowserCamera()}>{cameraConnected ? 'RECONNECT' : 'CONNECT CAMERA'}</button>
+                {cameraConnected && <button className="btn btn-steel btn-sm" onClick={stopBrowserCamera}>DISCONNECT</button>}
+              </div>
+              <button className="btn btn-steel btn-sm" onClick={() => void refreshBrowserCameras()}>REFRESH DEVICES</button>
+              {cameraError && <div style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: '0.68rem' }}>{cameraError}</div>}
+              <div style={{ color: 'var(--steel)', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', lineHeight: 1.5 }}>Uses the browser camera permission and feeds the local studio preview.</div>
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            COL 3 â€” CAMERAS + MACROS
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
         {/* PTZ Camera controls */}
         <SectionCard title="PTZ CAMERAS" icon={Camera} accent="var(--guest)" defaultOpen={true}>
-          <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
             SIMULATED: waiting on backend PTZ route.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1189,8 +1058,8 @@ export default function StudioTab() {
                 background: cam.active ? 'rgba(192,132,252,0.05)' : 'var(--bg)',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.55rem', color: cam.active ? 'var(--guest)' : 'var(--steel)' }}>
-                    {cam.label} {cam.active && '● LIVE'}
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: cam.active ? 'var(--guest)' : 'var(--steel)' }}>
+                    {cam.label} {cam.active && 'â— LIVE'}
                   </span>
                   <Toggle on={cam.active} onClick={() => {
                     setCameras(p => {
@@ -1213,11 +1082,11 @@ export default function StudioTab() {
                   { key: 'exposure', label: 'EXPOSURE', color: 'var(--gold)'  },
                 ].map(({ key, label, color }) => (
                   <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 }}>
-                    <span style={{ fontSize: '.42rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', width: 44, flexShrink: 0 }}>{label}</span>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', width: 44, flexShrink: 0 }}>{label}</span>
                     <input type="range" min={0} max={100} value={cam[key]}
                       onChange={e => updateCamera(k, { [key]: +e.target.value })}
                       style={{ flex: 1, accentColor: color, height: 3 }} />
-                    <span style={{ fontSize: '.42rem', color, fontFamily: 'var(--font-mono)', width: 20, textAlign: 'right' }}>
+                    <span style={{ fontSize: '0.68rem', color, fontFamily: 'var(--font-mono)', width: 20, textAlign: 'right' }}>
                       {cam[key]}
                     </span>
                   </div>
@@ -1233,7 +1102,7 @@ export default function StudioTab() {
           <>
         {/* Macro buttons */}
         <SectionCard title="MACRO BUTTONS" icon={Zap} accent="var(--gold)" defaultOpen={true}>
-          <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
             LIVE: macro actions use OBS and mixer endpoints when available.
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
@@ -1256,7 +1125,7 @@ export default function StudioTab() {
               { label: 'Mixer API status',    cmd: 'curl http://127.0.0.1:5173/api/mixer/status' },
               { label: 'Audio device list',   cmd: 'python -m sounddevice' },
               { label: 'ffprobe audio',       cmd: 'ffprobe episodes/demo_podcast_gen/audio.mp3' },
-              { label: 'Produce offline',     cmd: 'python staging/produce_demo.py' },
+              { label: 'Start studio',     cmd: 'powershell -File scripts/start_dandy_stack.ps1' },
               { label: 'Stream Deck check',   cmd: 'curl http://localhost:23654' },
             ].map(({ label, cmd }) => (
               <div key={label} style={{
@@ -1267,8 +1136,8 @@ export default function StudioTab() {
                 onClick={() => navigator.clipboard?.writeText(cmd)}
                 title="Click to copy"
               >
-                <div style={{ fontSize: '.44rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 2 }}>{label}</div>
-                <div style={{ fontSize: '.52rem', color: 'var(--gold)', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>{cmd}</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--steel)', fontFamily: 'var(--font-mono)', marginBottom: 2 }}>{label}</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--gold)', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>{cmd}</div>
               </div>
             ))}
           </div>

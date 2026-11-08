@@ -1,0 +1,27 @@
+
+
+{
+  "name": "Bryan Lund",
+  "archetype": "The Intense Truth-Teller",
+  "vocal_fingerprint": {
+    "pitch_center": "A2",
+    "pitch_range": "E2-C3",
+    "pace": "considered_deliberate_unrushed",
+    "energy": "mid_high_sustained_intensity",
+    "texture": "deep_resonant_authoritative"
+  },
+  "personality_markers": {
+    "humor_style": "sudden_deadly_serious",
+    "timing": "builds_to_a_point_then_drops_bomb",
+    "emotional_baseline": "earnest_intense_commitment",
+    "reaction_pattern": "listens_completely_then_responds_with_finality"
+  },
+  "recording_guidelines": {
+    "breathing": "deep_diaphragmatic_before_key_points",
+    "phrasing": "builds_over_long_sentences_to_crescendo",
+    "emotional_notes": "You're delivering the most important information in the world, even if it's about sandwiches",
+    "volume": "strong_confident_projected",
+    "distance_from_mic": "10-14 inches",
+    "noises": "rich_low_end_desired_use_proximity"
+  }
+}

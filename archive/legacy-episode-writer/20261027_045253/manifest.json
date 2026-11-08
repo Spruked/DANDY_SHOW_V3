@@ -1,0 +1,9 @@
+{
+  "backend/app/api/production.py": "8f7b4f4f8b247ec18f93a1c557656f8e47d5506887857bf2f35fbc83e78d91f3",
+  "backend/app/services/production/llm_writer.py": "74d68e8f9e75e2ac777741d69c6e01032bc77fceedf61fcda564090ce4ba756d",
+  "backend/app/services/production/segment_worker.py": "d62e544a7fec61feea1bbeb843a85b038b75e320cad21ce4f31e0a6efb2fe2ce",
+  "backend/app/services/production/worker.py": "e76139c4830b6dc9aac6cf1cd323be3f62f0a50e94248ca69c946df3ed9c666a",
+  "backend/app/services/production/communication_layer.py": "4d6ef461c4928ee2aecd43119d8f18c5dfbbdc3c4daf1670411c78f92afb34c9",
+  "backend/app/services/production/context_builder.py": "6757d6baa43143eb69556fa23571d3875217ecc40fcdc3729db35a651ed1f6ba",
+  "frontend/src/components/EpisodeTab.jsx": "74b6dc4cb0127d36cb05418f68826c74fd80ac6c582ebad350cc27f430488382"
+}

@@ -1,4 +1,6 @@
 import json
+import hashlib
+import re
 import shutil
 import uuid
 from functools import wraps
@@ -60,6 +62,92 @@ def script_versions_dir(episode_id: str) -> Path:
     return path
 
 
+def canonical_scripts_dir(episode_id: str) -> Path:
+    path = episode_dir(episode_id) / "canonical_scripts"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _canonical_script_hash(script: List[Dict[str, Any]]) -> str:
+    serialized = json.dumps(script, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def list_canonical_scripts(episode_id: str) -> List[Dict[str, Any]]:
+    directory = canonical_scripts_dir(episode_id)
+    snapshots = []
+    for path in sorted(directory.glob("canonical_v*.json")):
+        payload = load_json(path)
+        if payload:
+            snapshots.append({key: payload.get(key) for key in
+                              ("version_id", "version", "created_at", "canonical_hash", "word_count", "line_count")})
+    return snapshots
+
+
+def _save_canonical_snapshot(episode_id: str, script: List[Dict[str, Any]], *,
+                             project_active: bool, save_legacy_version: bool) -> Dict[str, Any]:
+    directory = canonical_scripts_dir(episode_id)
+    existing = [int(match.group(1)) for path in directory.glob("canonical_v*.json")
+                if (match := re.fullmatch(r"canonical_v(\d+)\.json", path.name))]
+    version = max(existing, default=0) + 1
+    version_id = f"canonical_v{version:04d}"
+    timestamp = datetime.now().isoformat()
+    canonical_lines = []
+    for index, raw_line in enumerate(script, start=1):
+        line = dict(raw_line)
+        line.pop("canonical_line_id", None)
+        line["canonical_line_id"] = f"{version_id}_line_{index:04d}_{uuid.uuid4().hex[:8]}"
+        canonical_lines.append(line)
+    canonical_hash = _canonical_script_hash(canonical_lines)
+    metadata = _recalculate_script_metadata(canonical_lines)
+    payload = {"episode_id": episode_id, "version_id": version_id, "version": version,
+               "created_at": timestamp, "canonical_hash": canonical_hash,
+               "script": canonical_lines, "metadata": metadata,
+               "word_count": metadata.get("word_count", 0), "line_count": len(canonical_lines)}
+    snapshot_path = directory / f"{version_id}.json"
+    with snapshot_path.open("x", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2, ensure_ascii=False)
+    from .vault_store import preserve_files
+    preserve_files([snapshot_path], 'canonical script saved')
+    if project_active:
+        save_json(directory / "active.json", {"version_id": version_id, "canonical_hash": canonical_hash,
+                                               "updated_at": timestamp})
+        save_json(episode_dir(episode_id) / "script.json", {
+            "episode_id": episode_id, "updated_at": timestamp, "canonical_version_id": version_id,
+            "canonical_hash": canonical_hash, "script": script, "metadata": metadata,
+        })
+        existing_metadata = load_json(episode_metadata_path(episode_id)) or {}
+        existing_metadata.update(metadata)
+        save_json(episode_metadata_path(episode_id), existing_metadata)
+        save_json(episode_dir(episode_id) / "status.json", {"status": "script_ready", "updated_at": timestamp,
+                                                             "canonical_version_id": version_id, **metadata})
+    if save_legacy_version:
+        save_script_version(episode_id, script)
+    return payload
+
+
+def load_canonical_script(episode_id: str, version_id: Optional[str] = None) -> Dict[str, Any]:
+    directory = canonical_scripts_dir(episode_id)
+    active = load_json(directory / "active.json")
+    if not active:
+        legacy = load_json(episode_dir(episode_id) / "script.json") or {"script": []}
+        if not legacy.get("script"):
+            raise FileNotFoundError(f"No canonical script exists for episode {episode_id}")
+        snapshot = _save_canonical_snapshot(episode_id, legacy["script"],
+                                           project_active=True, save_legacy_version=False)
+        active = {"version_id": snapshot["version_id"]}
+    selected = version_id or active.get("version_id")
+    if not isinstance(selected, str) or not re.fullmatch(r"canonical_v\d{4,}", selected):
+        raise ValueError("Invalid canonical script version ID")
+    path = directory / f"{selected}.json"
+    payload = load_json(path)
+    if not payload:
+        raise FileNotFoundError(f"Canonical script version not found: {selected}")
+    if _canonical_script_hash(payload.get("script", [])) != payload.get("canonical_hash"):
+        raise ValueError(f"Canonical script snapshot integrity check failed: {selected}")
+    return payload
+
+
 def assets_dir(episode_id: str) -> Path:
     path = episode_dir(episode_id) / "assets"
     path.mkdir(parents=True, exist_ok=True)
@@ -116,7 +204,7 @@ def _infer_asset_type(filename: str, content_type: str = "") -> str:
         return "document"
     if suffix in {".mp3", ".wav", ".m4a"}:
         return "audio"
-    if suffix in {".mp4", ".mov", ".webm"}:
+    if suffix in {".mp4", ".mov", ".webm", ".mkv", ".avi"}:
         return "video"
     return "file"
 
@@ -177,6 +265,8 @@ def save_asset_upload(
         "extracted_text_preview": extracted_text,
     }
     save_json(asset_metadata_dir(episode_id) / f"{asset_id}.json", metadata)
+    from .vault_store import preserve_files
+    preserve_files([stored_path, asset_metadata_dir(episode_id) / f"{asset_id}.json"], 'episode source uploaded')
     return metadata
 
 
@@ -263,7 +353,7 @@ def list_ads(episode_id: str) -> List[Dict[str, Any]]:
     ads: List[Dict[str, Any]] = []
     for path in sorted(directory.glob("ad_*.json")):
         payload = load_json(path)
-        if payload:
+        if isinstance(payload, dict) and payload.get("ad_id") and "script" in payload:
             ads.append(payload)
     return ads
 
@@ -363,8 +453,8 @@ def calculate_script_provenance(script_lines: List[Dict[str, Any]]) -> Dict[str,
     }
 
 
-def calculate_repetition_report(script_lines: List[Dict[str, Any]], max_allowed: int = 3) -> Dict[str, Any]:
-    texts = [_normal_text(str(line.get("text", line.get("line", "")))) for line in script_lines]
+def calculate_repetition_report(script_lines: List[Dict[str, Any]], max_allowed: int = 1) -> Dict[str, Any]:
+    texts = [re.sub(r"[^\w\s]", "", _normal_text(str(line.get("text", line.get("line", ""))))) for line in script_lines if not line.get("is_ad") and not line.get("ad_id")]
     counts = Counter(text for text in texts if text)
     repeated = [(text, count) for text, count in counts.items() if count > 1]
     repeated.sort(key=lambda item: item[1], reverse=True)
@@ -394,11 +484,15 @@ def _recalculate_script_metadata(script_lines: List[Dict[str, Any]]) -> Dict[str
         "phil_count": sum(1 for line in script_lines if speaker_is(line, "phil")),
         "jim_count": sum(1 for line in script_lines if speaker_is(line, "jim")),
         "host_count": sum(1 for line in script_lines if speaker_is(line, "host")),
-        "ads_count": sum(1 for line in script_lines if speaker_is(line, "ad")),
+        "ads_count": len({line["ad_id"] for line in script_lines if line.get("ad_id")}) + sum(1 for line in script_lines if not line.get("ad_id") and speaker_is(line, "ad")),
     }
 
-    avg_seconds_per_line = 6.5
-    metadata["estimated_runtime_seconds"] = int(metadata["line_count"] * avg_seconds_per_line)
+    words = sum(len(str(line.get("text", "")).split()) for line in script_lines)
+    pauses = sum(float(line.get("pause_after", 0) or 0) for line in script_lines)
+    metadata["word_count"] = words
+    metadata["estimated_runtime_seconds"] = round(words / 160 * 60 + pauses)
+    metadata["runtime_source"] = "word-count plus pauses estimate; final audio requires ffprobe"
+    metadata["segment_count"] = len({line["segment_index"] for line in script_lines if line.get("segment_index") is not None and not line.get("is_ad")})
     metadata.update(calculate_script_provenance(script_lines))
     metadata.update(calculate_repetition_report(script_lines))
 
@@ -407,23 +501,7 @@ def _recalculate_script_metadata(script_lines: List[Dict[str, Any]]) -> Dict[str
 
 @serialized_episode_update
 def save_script(episode_id: str, script: List[Dict[str, Any]]) -> None:
-    ep_dir = episode_dir(episode_id)
-    timestamp = datetime.now().isoformat()
-    metadata = _recalculate_script_metadata(script)
-    save_json(
-        ep_dir / "script.json",
-        {
-            "episode_id": episode_id,
-            "updated_at": timestamp,
-            "script": script,
-            "metadata": metadata,
-        },
-    )
-    existing_metadata = load_json(episode_metadata_path(episode_id)) or {}
-    existing_metadata.update(metadata)
-    save_json(episode_metadata_path(episode_id), existing_metadata)
-    save_json(ep_dir / "status.json", {"status": "script_ready", "updated_at": timestamp, **metadata})
-    save_script_version(episode_id, script)
+    _save_canonical_snapshot(episode_id, script, project_active=True, save_legacy_version=True)
 
 
 def save_generated_script(episode_id: str, script_lines: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -544,6 +622,12 @@ def list_episode_summaries() -> List[Dict[str, Any]]:
     episodes: List[Dict[str, Any]] = []
     for path in sorted(EPISODES_ROOT.iterdir()):
         if not path.is_dir() or path.name.startswith("."):
+            continue
+        # Read helpers may have created empty asset folders. A directory alone
+        # is not a saved episode and must not appear in the episode picker.
+        records = ("config.json", "status.json", "script.json", "metadata.json",
+                   "production_result.json", "production_manifest.json", "audio.mp3")
+        if not any((path / name).is_file() for name in records):
             continue
         config = load_json(path / "config.json") or {}
         status = load_json(path / "status.json") or {}

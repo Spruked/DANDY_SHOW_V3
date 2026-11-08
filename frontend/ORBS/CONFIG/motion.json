@@ -1,0 +1,6 @@
+{
+  "schema": "orbs.web_weaver.motion.v1",
+  "pass": "pass2_baseline_only",
+  "mode": "reference_random_roam",
+  "doctrine_note": "Known temporary baseline. TAMP, relational stance, N distance, glide latency, target recovery, and clumsy motion are deferred."
+}

@@ -1,0 +1,3 @@
+# Optional real semantic embeddings. Never replaced by a fake module.
+-r characters.in
+sentence-transformers

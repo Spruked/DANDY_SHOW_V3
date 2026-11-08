@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..core.resources import render_slot
 from ..core.safety import atomic_json
 import json
 import uuid
@@ -118,10 +119,11 @@ def render(req: RenderSlideshowRequest):
     if not path.exists():
         raise HTTPException(404, "save slideshow before rendering")
 
-    out = render_slideshow_job(
-        episode_id=req.episode_id,
-        slideshow_path=path,
-        aspect=req.aspect,
-        fmt=req.format,
-    )
+    with render_slot():
+        out = render_slideshow_job(
+            episode_id=req.episode_id,
+            slideshow_path=path,
+            aspect=req.aspect,
+            fmt=req.format,
+        )
     return {"ok": True, "download_url": out["url"], "path": out["path"]}

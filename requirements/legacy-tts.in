@@ -1,0 +1,4 @@
+# Explicitly optional legacy synthesis paths; required Qwen forbids fallback.
+edge-tts
+torchaudio
+ffmpeg-python

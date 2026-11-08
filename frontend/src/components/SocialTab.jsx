@@ -21,26 +21,28 @@ const ASSET_SLOTS = [
   { id: 'logo',             filename: 'logo.png',             name: 'Logo Mark'        },
 ]
 
-export default function SocialTab() {
+export default function SocialTab({ episodeId, onEpisodeChange }) {
   const [mode, setMode] = useState('exports')
   const [episodes, setEpisodes] = useState([])
   const [activeEp, setActiveEp] = useState(null)
+  const [assetSlots, setAssetSlots] = useState([])
 
   useEffect(() => {
     api.listEpisodes()
       .then(data => {
         const list = Array.isArray(data) ? data : (data.episodes || [])
         setEpisodes(list)
-        if (list.length) setActiveEp(list[0])
+        if (list.length) setActiveEp(list.find(ep => (ep.episode_id || ep.id) === episodeId) || list[0])
       })
       .catch(() => {})
+    fetch('/api/social/assets').then(r => { if (!r.ok) throw new Error('Asset check failed'); return r.json() }).then(data => setAssetSlots(data.assets || [])).catch(() => {})
   }, [])
 
   const epId = activeEp?.episode_id || activeEp?.id
   const episode = activeEp ? { ...activeEp, id: epId } : null
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+    <div className="social-tab-shell">
 
       {/* Sub-tab mode bar */}
       <div style={{
@@ -52,7 +54,7 @@ export default function SocialTab() {
             key={m.id}
             onClick={() => setMode(m.id)}
             style={{
-              padding: '3px 14px', fontSize: '.65rem', fontFamily: 'var(--font-display)',
+              padding: '3px 14px', fontSize: '0.85rem', fontFamily: 'var(--font-display)',
               letterSpacing: '.08em', cursor: 'pointer', border: '1px solid',
               borderRadius: 'var(--radius)',
               borderColor: mode === m.id ? 'var(--gold)' : 'var(--rim)',
@@ -71,12 +73,12 @@ export default function SocialTab() {
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '5px 14px', borderBottom: '1px solid var(--rim)', flexShrink: 0,
         }}>
-          <span style={{ fontSize: '.62rem', color: 'var(--steel)', whiteSpace: 'nowrap' }}>EPISODE</span>
+          <span style={{ fontSize: '0.81rem', color: 'var(--steel)', whiteSpace: 'nowrap' }}>EPISODE</span>
           <select
             className="ds-select"
             style={{ flex: 1, maxWidth: 340 }}
             value={epId || ''}
-            onChange={e => setActiveEp(episodes.find(ep => (ep.episode_id || ep.id) === e.target.value) || null)}
+            onChange={e => { onEpisodeChange?.(e.target.value); setActiveEp(episodes.find(ep => (ep.episode_id || ep.id) === e.target.value) || null) }}
           >
             {!episodes.length && <option value="">No episodes</option>}
             {episodes.map(ep => {
@@ -88,10 +90,10 @@ export default function SocialTab() {
       )}
 
       {/* Mode body */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
-        {mode === 'exports'   && <ExportsMode />}
-        {mode === 'slideshow' && <SlideshowBuilder episode={episode} assetSlots={ASSET_SLOTS} />}
-        {mode === 'adcards'   && <AdCardsBuilder   episode={episode} assetSlots={ASSET_SLOTS} />}
+      <div className="social-mode-body">
+        {mode === 'exports'   && <ExportsMode episodeId={episodeId || epId} onEpisodeChange={id => { onEpisodeChange?.(id); setActiveEp(episodes.find(ep => (ep.episode_id || ep.id) === id) || null) }} />}
+        {mode === 'slideshow' && <SlideshowBuilder key={epId || "none"} episode={episode} assetSlots={assetSlots} />}
+        {mode === 'adcards'   && <AdCardsBuilder key={epId || "global"} episode={episode} assetSlots={assetSlots} />}
       </div>
 
     </div>

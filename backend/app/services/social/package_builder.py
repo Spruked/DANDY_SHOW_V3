@@ -37,7 +37,7 @@ def _probe_audio_duration(audio_path: str | Path, script_lines: List[Dict]) -> f
             str(audio_path),
         ]
         try:
-            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=600)
             duration = float(result.stdout.strip())
             if duration > 0:
                 return duration
@@ -48,7 +48,7 @@ def _probe_audio_duration(audio_path: str | Path, script_lines: List[Dict]) -> f
     if ffmpeg_path:
         cmd = [ffmpeg_path, "-i", str(audio_path)]
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             output = f"{result.stdout}\n{result.stderr}"
             match = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", output)
             if match:
@@ -126,6 +126,14 @@ def export_social_package(
         topic=topic,
         script_text=script_text,
     )
+
+    required_outputs = {"thumbnail": thumbnail_path, "audiogram": audiogram_path}
+    for clip in clip_exports:
+        required_outputs[f"{clip['clip_id']} audio"] = clip.get("audio")
+        required_outputs[f"{clip['clip_id']} video"] = clip.get("video")
+    for label, output in required_outputs.items():
+        if not output or not Path(output).is_file() or not Path(output).stat().st_size:
+            raise RuntimeError(f"Social export did not produce a nonempty {label}")
 
     payload = {
         "episode_id": episode_id,

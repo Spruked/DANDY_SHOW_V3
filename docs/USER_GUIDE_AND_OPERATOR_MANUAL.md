@@ -2,8 +2,8 @@
 
 ## 1. Runtime and entry points
 - Frontend: `http://127.0.0.1:5173`
-- Backend: `http://127.0.0.1:8010`
-- Backend health: `http://127.0.0.1:8010/health`
+- Backend: `http://127.0.0.1:8110`
+- Backend health: `http://127.0.0.1:8110/health`
 - Frontend source of truth: `frontend/src/`
 - Backend API routes: `backend/app/api/`
 
@@ -12,7 +12,7 @@
 ```powershell
 cd backend
 $env:PATH="C:\Users\bryan\Downloads\dandy_merge\Phil_and_Jim_Dandy_Show\staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin;$env:PATH"
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8010 --reload
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8110
 ```
 2. Start the frontend:
 ```powershell
@@ -37,8 +37,8 @@ The top bar is present on every page.
 
 ### Right side backend indicator
 - `checking...`: startup state while health probe is running.
-- `:8010 online`: backend is reachable.
-- `:8010 offline`: backend probe failed.
+- `:8110 online`: backend is reachable.
+- `:8110 offline`: backend probe failed.
 
 ## 4. EPISODES page
 This page has three columns: episode list, script workspace, and right-side utilities.
@@ -553,7 +553,7 @@ Badges and text indicate engine, role, and whether the voice is currently regist
 ### Hardware card
 Read-only system notes:
 - GPU label
-- Kokoro runtime note
+- Qwen runtime note
 - checkpoint path
 - ffmpeg path
 - Edge TTS fallback note
@@ -564,20 +564,20 @@ Read-only operator notes:
 - log file path
 - target duration note
 - demo audio path
-- Kokoro timing note
+- Qwen timing note
 
 ### Quick Health Check Commands card
 Each command string is clickable and copies itself to the clipboard.
 
 Commands:
-- `curl http://127.0.0.1:8010/health`
-- `curl http://127.0.0.1:8010/api/voices`
+- `curl http://127.0.0.1:8110/health`
+- `curl http://127.0.0.1:8110/api/voices`
 - `ffprobe episodes/demo_podcast_gen/audio.mp3`
-- `python staging/produce_demo.py`
+- `powershell -File scripts/start_dandy_stack.ps1`
 
 ## 9. Recommended front-to-back operator flow
 1. Start backend and frontend.
-2. Confirm `:8010 online` in the top nav.
+2. Confirm `:8110 online` in the top nav.
 3. Open `SYSTEM` and verify backend health plus voice inventory.
 4. Open `EPISODES`, create or select an episode.
 5. Generate the script.

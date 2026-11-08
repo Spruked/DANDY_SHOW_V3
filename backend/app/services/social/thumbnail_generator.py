@@ -104,6 +104,30 @@ def _resolve_path(value: Optional[str]) -> Optional[Path]:
     return path
 
 
+def _draw_fitted_text(draw, text, bounds, font_size, fill, font_path=None):
+    left, top, right, bottom = bounds
+    width, height = right - left, bottom - top
+    for size in range(font_size, 11, -2):
+        font = _load_font(font_path, size)
+        lines = []
+        for paragraph in str(text).splitlines() or [""]:
+            current = ""
+            for word in paragraph.split():
+                proposed = f"{current} {word}".strip()
+                if current and draw.textlength(proposed, font=font) > width:
+                    lines.append(current); current = word
+                else:
+                    current = proposed
+            lines.append(current)
+        value = "\n".join(lines)
+        box = draw.multiline_textbbox((0, 0), value, font=font, spacing=8, align="center")
+        if box[2] - box[0] <= width and box[3] - box[1] <= height:
+            draw.multiline_text((left + (width - (box[2] - box[0])) / 2, top + (height - (box[3] - box[1])) / 2 - box[1]),
+                                value, font=font, fill=fill, spacing=8, align="center")
+            return
+    raise ValueError("Text cannot fit within the selected image size; shorten it")
+
+
 def generate_thumbnail(
     episode_id: str,
     title: str,
@@ -111,8 +135,10 @@ def generate_thumbnail(
     sponsor_text: str = "",
     background_image_path: str | None = None,
     output_dir: str | Path | None = None,
+    config_overrides: Dict | None = None,
 ) -> str:
     config = _load_config()
+    config.update(config_overrides or {})
     output_root = Path(output_dir) if output_dir else (PROJECT_ROOT / "social" / "generated" / episode_id)
     output_root.mkdir(parents=True, exist_ok=True)
     output_path = output_root / f"thumbnail.{config['output_format']}"
@@ -134,6 +160,14 @@ def generate_thumbnail(
         title_font = _load_font(config.get("font_path"), config["font_size_title"])
         subtitle_font = _load_font(config.get("font_path"), config["font_size_subtitle"])
         sponsor_font = _load_font(config.get("font_path"), config["font_size_sponsor"])
+
+        if config.get("wrap_text"):
+            margin = int(min(config["width"], config["height"]) * 0.06)
+            _draw_fitted_text(draw, title, (margin, margin, config["width"] - margin, int(config["height"] * .68)), config["font_size_title"], config["text_color"], config.get("font_path"))
+            if subtitle:
+                _draw_fitted_text(draw, subtitle, (margin, int(config["height"] * .72), config["width"] - margin, config["height"] - margin), config["font_size_subtitle"], config["subtitle_color"], config.get("font_path"))
+            image.save(output_path, format="PNG")
+            return str(output_path)
 
         left = config["safe_zone_x"]
         right = config["width"] - config["safe_zone_x"]

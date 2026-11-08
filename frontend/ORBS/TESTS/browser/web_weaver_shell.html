@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web Weaver Shell Test</title>
+    <style>
+      body {
+        min-height: 140vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f6f8fb;
+        color: #16221b;
+      }
+      main {
+        max-width: 760px;
+        margin: 56px auto;
+        padding: 0 20px;
+      }
+      .target-card {
+        margin-top: 48px;
+        padding: 20px;
+        border: 1px solid #b7c9bf;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Web Weaver Shell Test</h1>
+      <p>
+        This page verifies that the PASS 2 browser shell mounts, loads CSS,
+        loads its configured skin, remains interactive, and survives an
+        offline API.
+      </p>
+      <section class="target-card" data-orb-target="demo-card">
+        <h2>Demo Target</h2>
+        <p>This card exists for later pointer baseline checks.</p>
+      </section>
+    </main>
+    <script src="../../BROWSER/bootstrap.js" data-web-weaver-bootstrap="true" defer></script>
+  </body>
+</html>

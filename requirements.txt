@@ -1,15 +1,2 @@
-# Initial merged project requirements
-fastapi
-uvicorn[standard]
-pydantic
-python-multipart
-networkx
-numpy
-torch
-torchaudio
-edge-tts
-pydub
-sentence-transformers
-pillow
-ffmpeg-python
-voicemeeter-api
+# Validated Windows/Python 3.11 studio dependency lock.
+-r requirements/studio.txt

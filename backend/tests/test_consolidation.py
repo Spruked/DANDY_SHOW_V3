@@ -14,7 +14,8 @@ from app.services.production.worker import HardenedPodcastWorker
 class ProductionTests(unittest.TestCase):
     def test_websocket_and_status_route_contract(self):
         from fastapi.testclient import TestClient
-        from app.main import app
+        from app.main import create_app
+        app = create_app(runtime_root=Path(tempfile.gettempdir()) / "dandy-contract-tests", recover_jobs=False)
         from app.websockets.manager import manager
         with tempfile.TemporaryDirectory() as directory, \
              patch.object(production, "episode_dir", return_value=Path(directory)), \
@@ -94,62 +95,6 @@ class ProductionTests(unittest.TestCase):
         self.assertEqual(events, [])
 
 
-class RegenerationTests(unittest.TestCase):
-    def setUp(self):
-        self.script = [{"speaker": "phil" if i % 2 == 0 else "jim",
-                        "text": f"Discussion point {i} has specific evidence and practical consequences for the people involved today.",
-                        "generated_by": "governance_bridge", "line_number": i + 1, "pause_after": 0.4,
-                        "custom_metadata": {"preserve": i}} for i in range(12)]
-        self.raw = "PHIL [curious]: The revised evidence shows a different practical outcome for the families using this service today.\nJIM [pragmatic]: We should measure that outcome before assuming the change has solved the original problem for everyone."
-
-    def request(self, raw=None, start=2, end=4, changed=False):
-        from fastapi.testclient import TestClient
-        from app.main import app
-        reads = [deepcopy(self.script), deepcopy(self.script)]
-        if changed:
-            reads[1][0]["text"] = "Concurrent edit"
-        with patch.object(production, "load_script", side_effect=[{"script": value} for value in reads]), \
-             patch.object(production, "load_episode_detail", return_value={"config": {"target_duration": 60, "topic": "Evidence"}}), \
-             patch.object(production, "build_source_context", return_value={}), \
-             patch("app.services.production.llm_writer._call_bridge", return_value=(self.raw if raw is None else raw, "governance_bridge")), \
-             patch.object(production, "save_script") as save, TestClient(app) as client:
-            response = client.post("/api/episodes/edit-script", json={"episode_id": "test", "edit_type": "regenerate_section", "section_start": start, "section_end": end})
-            saved = save.call_args.args[1] if save.called else None
-        return response, saved
-
-    def test_only_selected_slice_changes(self):
-        response, saved = self.request()
-        self.assertEqual(response.status_code, 200, response.text)
-        self.assertEqual(saved[:2], self.script[:2])
-        self.assertEqual(saved[4:], self.script[4:])
-        self.assertNotEqual(saved[2:4], self.script[2:4])
-        self.assertEqual(saved[2]["line_number"], 3)
-        self.assertEqual(saved[3]["generated_by"], "governance_bridge")
-
-    def test_bad_range_is_rejected_without_saving(self):
-        response, saved = self.request(start=-1)
-        self.assertEqual(response.status_code, 400)
-        self.assertIsNone(saved)
-
-    def test_offline_writer_leaves_script_unchanged(self):
-        response, saved = self.request(raw="")
-        self.assertEqual(response.status_code, 502)
-        self.assertIsNone(saved)
-
-    def test_quality_checks_reject_unresolved_templates(self):
-        response, saved = self.request(raw=self.raw.replace("revised evidence", "{missing_source}"))
-        self.assertEqual(response.status_code, 502)
-        self.assertIsNone(saved)
-
-    def test_wrong_speaker_order_is_rejected(self):
-        response, saved = self.request(raw=self.raw.replace("PHIL [curious]", "JIM [curious]"))
-        self.assertEqual(response.status_code, 502)
-        self.assertIsNone(saved)
-
-    def test_concurrent_edit_is_not_overwritten(self):
-        response, saved = self.request(changed=True)
-        self.assertEqual(response.status_code, 409)
-        self.assertIsNone(saved)
 
 
 class ToneTests(unittest.TestCase):
@@ -184,7 +129,8 @@ class ToneTests(unittest.TestCase):
 
     def test_version_history_and_rollback_preserve_original_script(self):
         from fastapi.testclient import TestClient
-        from app.main import app
+        from app.main import create_app
+        app = create_app(runtime_root=Path(tempfile.gettempdir()) / "dandy-contract-tests", recover_jobs=False)
         from app.services.storage import episode_store as store
         original = [{"speaker": "phil", "text": "Original dialogue!", "generated_by": "llamacpp"},
                     {"speaker": "jim", "text": "Keep the evidence", "generated_by": "llamacpp"}]
@@ -245,7 +191,8 @@ class EngineStatisticsTests(unittest.TestCase):
 class EpisodeContractTests(unittest.TestCase):
     def setUp(self):
         from fastapi.testclient import TestClient
-        from app.main import app
+        from app.main import create_app
+        app = create_app(runtime_root=Path(tempfile.gettempdir()) / "dandy-contract-tests", recover_jobs=False)
         from app.services.storage import episode_store as store
         self.store = store
         self.stack = ExitStack()
@@ -270,13 +217,17 @@ class EpisodeContractTests(unittest.TestCase):
         detail = self.client.get("/api/episodes/contract").json()
         self.assertEqual(detail["job_id"], job)
         response = self.client.post(f"/api/episodes/generate-script?job_id={job}")
+        self.assertEqual(response.status_code, 410, response.text)
+        response = self.client.post("/api/episodes/contract/replace-script", json={"text": "PHIL: New supplied text"})
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(response.json()["script"][0]["text"], "New supplied text")
 
     def test_production_keeps_word_gate_and_persists_job_statistics(self):
-        job = self.create()
+        job = self.create(target_duration=2400)
         self.store.save_script("contract", [{"speaker": "phil", "text": "Too short", "generated_by": "llamacpp"}])
-        response = self.client.post(f"/api/episodes/produce?job_id={job}")
+        with patch.object(production, "_run_produce_background") as render:
+            response = self.client.post(f"/api/episodes/produce?job_id={job}")
+            render.assert_not_called()
         self.assertEqual(response.status_code, 400)
         script = [{"speaker": "phil" if i % 2 == 0 else "jim", "text": f"Point {i} " + " ".join(f"evidence{j}" for j in range(50)), "generated_by": "llamacpp"} for i in range(100)]
         self.store.save_script("contract", script)

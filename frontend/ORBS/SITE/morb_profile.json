@@ -1,0 +1,60 @@
+{
+  "schema": "orbs.web_weaver.morb_profile.v1",
+  "source_reference": "R:\\Orb_Assistant_Desktop\\Services\\MORB_System",
+  "desktop_morb_pattern": {
+    "name": "Micro-ORB Swarm Agent",
+    "portable_rules": [
+      "one task",
+      "no autonomy",
+      "no cross-talk",
+      "no memory",
+      "deterministic",
+      "bounded payload",
+      "self-prune"
+    ],
+    "desktop_only_rules": [
+      "research templates",
+      "diagnostic templates",
+      "tool inheritance",
+      "queue and watchdog swarm orchestration"
+    ]
+  },
+  "website_morb_pattern": {
+    "role": "precision pointer actuator",
+    "mission_type": "pointer",
+    "canonical_asset": "ASSETS/morb/webweaver-morb.png",
+    "canonical_source_asset": "ASSETS/morb/webweaver-morb.ico",
+    "rendered_size_px": {
+      "width": 50,
+      "height": 50
+    },
+    "sizing_rule": "fixed_50px_not_parent_proportional",
+    "visual_identity": "small black/red ICO-style ORB with matching glow",
+    "sound_events": [
+      "MORB_LAUNCH",
+      "MORB_FLIGHT",
+      "MORB_ARRIVE",
+      "MORB_CONFIRM",
+      "MORB_ABORT"
+    ],
+    "sound_profile": "SITE/sound_profile.json",
+    "authority_source": "parent Web Weaver ORB after Two In lock",
+    "states": [
+      "READY",
+      "LAUNCHED",
+      "IN_FLIGHT",
+      "ARRIVED",
+      "ACTING",
+      "COMPLETE",
+      "ABORTED"
+    ],
+    "forbidden": [
+      "language interpretation",
+      "Stage Governor decisions",
+      "target selection",
+      "Site World mutation",
+      "Pointer Plot Map mutation",
+      "independent cognition"
+    ]
+  }
+}

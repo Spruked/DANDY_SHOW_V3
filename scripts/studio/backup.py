@@ -23,7 +23,7 @@ BACKUP_DIR = ROOT / "archive" / "backups"
 
 # What gets backed up — paths relative to ROOT
 INCLUDE_GLOBS = ["config/**/*", "episodes/**/*", "social/**/*", "audio/**/*", "assets/**/*",
-                 "introclip*.mp3", "docs/**/*.md", "requirements*.txt", "frontend/package*.json"]
+                 "introclip*.mp3", "docs/**/*.md", "requirements*.txt", "requirements/**/*", "frontend/package*.json"]
 EXCLUDE_SUFFIXES = {".lock", ".tmp"}
 
 

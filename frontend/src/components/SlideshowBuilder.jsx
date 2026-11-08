@@ -4,6 +4,7 @@
 // Right: timing + snap-to-script + export options
 
 import { useEffect, useState, useCallback } from "react";
+import { req } from "../lib/api";
 
 const EMPTY_SLIDE = () => ({
   id: `slide_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
@@ -30,16 +31,30 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
   const [aspect, setAspect] = useState("16:9");
   const [format, setFormat] = useState("mp4");
 
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
   // Load existing slideshow.json for this episode
   useEffect(() => {
-    if (!episode?.id) return;
-    fetch(`/api/social/slideshow/load?episode_id=${episode.id}`)
-      .then((r) => r.json())
-      .then((d) => {
-        setSlides(d.slides || []);
-        setSelectedId(d.slides?.[0]?.id || null);
-      });
+    const controller = new AbortController();
+    setSlides([]); setSelectedId(null); setDirty(false); setError(""); setMessage(""); setDownloadUrl("");
+    if (!episode?.id) return () => controller.abort();
+    setLoading(true);
+    req(`/social/slideshow/load?episode_id=${encodeURIComponent(episode.id)}`, { signal: controller.signal })
+      .then(data => { if (!controller.signal.aborted) { setSlides(data.slides || []); setSelectedId(data.slides?.[0]?.id || null); } })
+      .catch(error => { if (!controller.signal.aborted) setError(error.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [episode?.id]);
+
+  const run = async action => {
+    if (rendering || loading) return;
+    setRendering(true); setError(""); setMessage(""); setDownloadUrl("");
+    try { await action(); } catch (error) { setError(error.message); }
+    finally { setRendering(false); }
+  };
 
   const selected = slides.find((s) => s.id === selectedId);
 
@@ -75,8 +90,9 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
 
   const deleteSlide = () => {
     if (!selected) return;
-    setSlides((prev) => prev.filter((s) => s.id !== selectedId));
-    setSelectedId(slides[0]?.id || null);
+    const remaining = slides.filter(s => s.id !== selectedId);
+    setSlides(remaining);
+    setSelectedId(remaining[0]?.id || null);
     setDirty(true);
   };
 
@@ -92,44 +108,36 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
     setDirty(true);
   };
 
-  const autoGenerateFromScript = async () => {
-    const res = await fetch(
-      `/api/social/slideshow/auto-generate?episode_id=${episode.id}`,
-      { method: "POST" }
-    );
-    const data = await res.json();
-    setSlides(data.slides || []);
-    setSelectedId(data.slides?.[0]?.id || null);
-    setDirty(true);
-  };
+  const autoGenerateFromScript = () => run(async () => {
+    const data = await req(`/social/slideshow/auto-generate?episode_id=${encodeURIComponent(episode.id)}`, { method: "POST" });
+    setSlides(data.slides || []); setSelectedId(data.slides?.[0]?.id || null);
+    setDirty(false); setMessage("Generated and saved.");
+  });
 
   const saveDeck = async () => {
-    await fetch("/api/social/slideshow/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ episode_id: episode.id, slides }),
-    });
-    setDirty(false);
+    if (!episode?.id) throw new Error("Select an episode before saving a slideshow.");
+    await req("/social/slideshow/save", { method: "POST", body: JSON.stringify({ episode_id: episode.id, slides }) });
+    setDirty(false); setMessage("Saved.");
   };
 
-  const renderDeck = async () => {
-    setRendering(true);
-    try {
-      if (dirty) await saveDeck();
-      const res = await fetch("/api/social/slideshow/render", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ episode_id: episode.id, aspect, format }),
-      });
-      const data = await res.json();
-      if (data.download_url) window.open(data.download_url, "_blank");
-    } finally {
-      setRendering(false);
-    }
-  };
+  const renderDeck = () => run(async () => {
+    await saveDeck();
+    const data = await req("/social/slideshow/render", {
+      method: "POST", body: JSON.stringify({ episode_id: episode.id, aspect, format }),
+    });
+    if (!data.download_url) throw new Error("Render returned no downloadable output.");
+    setDownloadUrl(data.download_url); setMessage("Render complete.");
+  });
+
+  const snapToScript = () => run(async () => {
+    await saveDeck();
+    const data = await req(`/social/slideshow/snap?episode_id=${encodeURIComponent(episode.id)}&slide_id=${encodeURIComponent(selected.id)}`, { method: "POST" });
+    if (data.start != null) updateSelected({ start: data.start, end: data.end });
+  });
 
   return (
     <div className="slideshow-builder">
+      <fieldset disabled={rendering || loading || !episode?.id} style={{ display: "contents" }}>
       {/* LEFT PANEL — slide list */}
       <div className="panel panel-left">
         <div className="panel-header">
@@ -173,7 +181,7 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
               className="slide-preview"
               style={{
                 aspectRatio: aspect === "9:16" ? "9/16" : aspect === "1:1" ? "1/1" : "16/9",
-                backgroundImage: selected.background ? `url(/assets/${selected.background})` : "none",
+                backgroundImage: selected.background ? `url(/api/social/assets/${encodeURIComponent(selected.background)})` : "none",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 color: selected.style.color,
@@ -201,7 +209,7 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
                 <select value={selected.background} onChange={(e) => updateSelected({ background: e.target.value })}>
                   <option value="">— none —</option>
                   {(assetSlots || []).map((a) => (
-                    <option key={a.id} value={a.filename}>{a.name}</option>
+                    <option key={a.id} value={a.filename} disabled={!a.available}>{a.name}{!a.available ? " (missing)" : ""}</option>
                   ))}
                 </select>
               </label>
@@ -255,11 +263,7 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
               Duration: {(selected.end - selected.start).toFixed(1)}s
             </div>
 
-            <button onClick={async () => {
-              const res = await fetch(`/api/social/slideshow/snap?episode_id=${episode.id}&slide_id=${selected.id}`, { method: "POST" });
-              const data = await res.json();
-              if (data.start != null) updateSelected({ start: data.start, end: data.end });
-            }}>
+            <button onClick={snapToScript}>
               Snap to script
             </button>
           </>
@@ -281,14 +285,18 @@ export default function SlideshowBuilder({ episode, assetSlots }) {
         </label>
 
         <div className="export-actions">
-          <button onClick={saveDeck} disabled={!dirty}>
+          <button onClick={() => run(saveDeck)} disabled={!dirty}>
             {dirty ? "Save" : "Saved ✓"}
           </button>
           <button className="btn-render" onClick={renderDeck} disabled={rendering || slides.length === 0}>
             {rendering ? "Rendering..." : "⚡ Render"}
           </button>
         </div>
+        <div role="status">{loading ? "Loading slideshow..." : !episode?.id ? "Select an episode to edit slides." : message}</div>
+        {error && <div role="alert" style={{ color: "var(--red)", overflowWrap: "anywhere" }}>{error}</div>}
+        {downloadUrl && <a href={downloadUrl} download>Download render</a>}
       </div>
+      </fieldset>
     </div>
   );
 }

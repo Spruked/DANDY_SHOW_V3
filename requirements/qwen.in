@@ -1,0 +1,10 @@
+# Separate CUDA-capable Qwen service; model weights are provisioned separately.
+qwen-tts==0.1.1
+gradio==6.17.3
+gradio-client==2.5.0
+fastapi
+uvicorn[standard]
+soundfile
+huggingface-hub==0.36.2
+torch==2.11.0
+torchaudio==2.11.0

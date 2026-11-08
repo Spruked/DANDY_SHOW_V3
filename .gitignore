@@ -73,7 +73,7 @@ secondary_systems/**/logs/
 secondary_systems/**/staging/
 secondary_systems/**/probe*.json
 
-# Audio binaries â€” track jingle metadata in config, not the files
+# Audio binaries — track jingle metadata in config, not the files
 audio/jingles/*.mp3
 audio/sfx/*.mp3
 audio/ads/*.mp3
@@ -101,3 +101,13 @@ Thumbs.db
 
 # Verified machine-specific runtime locations
 config/runtime.local.json
+
+# Operator runtime records are preserved locally and backed up, not source.
+episodes/
+introclipdandy222.mp3
+.venv-*/
+
+# Local vault evidence and AIMS runtime data are preserved separately.
+Dandy_Vault_System/storage/
+Dandy_Vault_System/AIMS/data/
+Dandy_Vault_System/AIMS/*.egg-info/

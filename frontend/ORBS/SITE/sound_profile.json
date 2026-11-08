@@ -1,0 +1,38 @@
+{
+  "schema": "orbs.web_weaver.sound_profile.v1",
+  "sound_profile": "web_weaver_signature",
+  "default_volume": 0.5,
+  "voice_relative_volume": 0.5,
+  "events": {
+    "MORB_LAUNCH": {
+      "asset": "ASSETS/sounds/morb/morb-deployment-source.mp3",
+      "start_seconds": 0.0,
+      "duration_seconds": 0.55,
+      "volume": 0.5
+    },
+    "MORB_FLIGHT": {
+      "asset": "ASSETS/sounds/morb/morb-deployment-source.mp3",
+      "start_seconds": 0.55,
+      "duration_seconds": 0.45,
+      "volume": 0.32
+    },
+    "MORB_ARRIVE": {
+      "asset": "ASSETS/sounds/morb/morb-deployment-source.mp3",
+      "start_seconds": 1.05,
+      "duration_seconds": 0.35,
+      "volume": 0.5
+    },
+    "MORB_CONFIRM": {
+      "asset": "ASSETS/sounds/morb/morb-deployment-source.mp3",
+      "start_seconds": 1.45,
+      "duration_seconds": 0.35,
+      "volume": 0.5
+    },
+    "MORB_ABORT": {
+      "asset": "ASSETS/sounds/morb/morb-deployment-source.mp3",
+      "start_seconds": 1.85,
+      "duration_seconds": 0.4,
+      "volume": 0.4
+    }
+  }
+}

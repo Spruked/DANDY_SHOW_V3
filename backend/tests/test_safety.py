@@ -43,8 +43,10 @@ class SafetyTests(unittest.TestCase):
 
     def test_required_qwen_never_calls_other_engines(self):
         worker = HardenedPodcastWorker.__new__(HardenedPodcastWorker)
-        worker.qwen_tts_config = {"enabled": True, "production": {"required_engine": "qwen"}}
+        worker.qwen_tts_config = {"enabled": True, "voices": {"phil": "Ryan"}, "production": {"required_engine": "qwen"}}
         worker.runtime = Mock(primary_engine="kokoro")
+        worker.voices_config = {"phil": {"primary_voice": "test"}}
+        worker.project_config = {"tts": {"primary_engine": "kokoro"}}
         worker._try_qwen_bridge = Mock(side_effect=RuntimeError("offline"))
         worker._try_kokoro = Mock()
         worker._synthesize_edge = Mock()

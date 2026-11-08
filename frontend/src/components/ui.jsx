@@ -1,12 +1,35 @@
 // components/ui.jsx — Dandy Studio shared UI primitives
 
+import { Children, cloneElement, isValidElement, useEffect, useId, useRef } from 'react'
+
 export function Modal({ title, onClose, children, footer, wide }) {
+  const titleId = useId()
+  const dialogRef = useRef(null)
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+  useEffect(() => {
+    const previousFocus = document.activeElement
+    const dialog = dialogRef.current
+    const focusable = () => [...dialog.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]')]
+    focusable()[0]?.focus()
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); closeRef.current() }
+      if (event.key !== 'Tab') return
+      const items = focusable()
+      const first = items[0], last = items[items.length - 1]
+      if (!first) { event.preventDefault(); return }
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
+    dialog.addEventListener('keydown', onKeyDown)
+    return () => { dialog.removeEventListener('keydown', onKeyDown); previousFocus?.focus?.() }
+  }, [])
   return (
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className={`modal-box${wide ? ' wide' : ''}`}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className={`modal-box${wide ? ' wide' : ''}`}>
         <div className="modal-head">
-          <span className="modal-title">{title}</span>
-          <button className="icon-btn" onClick={onClose} style={{ marginLeft: 8 }}>✕</button>
+          <span id={titleId} className="modal-title">{title}</span>
+          <button className="icon-btn" aria-label="Close dialog" onClick={onClose} style={{ marginLeft: 8 }}>✕</button>
         </div>
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-footer">{footer}</div>}
@@ -16,10 +39,14 @@ export function Modal({ title, onClose, children, footer, wide }) {
 }
 
 export function Field({ label, children }) {
+  const generatedId = useId()
+  const content = Children.toArray(children)
+  const control = content.find(child => isValidElement(child) && ['input', 'select', 'textarea'].includes(child.type))
+  const controlId = control?.props.id || generatedId
   return (
     <div className="field">
-      <div className="field-label">{label}</div>
-      {children}
+      {control ? <label className="field-label" htmlFor={controlId}>{label}</label> : <div className="field-label">{label}</div>}
+      {content.map(child => child === control ? cloneElement(child, { id: controlId }) : child)}
     </div>
   )
 }
@@ -65,5 +92,5 @@ export function Divider() {
 
 export function Toast({ visible, message }) {
   if (!visible) return null
-  return <div className="toast">{message}</div>
+  return <div className="toast" role="status" aria-live="polite">{message}</div>
 }

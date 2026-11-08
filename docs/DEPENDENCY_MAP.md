@@ -1,25 +1,25 @@
 # Dandy Studio — Dependency Map
 
-_Generated: 2026-04-16 15:09_
+_Generated: 2026-10-26 16:19_
 
 ## Python Packages
 
 | Package | Version | Purpose |
 |---|---|---|
-| `fastapi` | 0.135.3 | Web framework — REST API |
-| `uvicorn` | 0.44.0 | ASGI server — runs FastAPI |
-| `pydantic` | 2.13.1 | Data validation and schemas |
-| `python-multipart` | 0.0.26 | File upload support |
-| `pillow` | 12.2.0 | Image rendering — slideshow frames, ad cards |
-| `ffmpeg-python` | 0.2.0 | FFmpeg bindings — audio/video processing |
+| `fastapi` | 0.162.0 | Web framework — REST API |
+| `uvicorn` | 0.54.0 | ASGI server — runs FastAPI |
+| `pydantic` | 2.14.1 | Data validation and schemas |
+| `python-multipart` | 0.0.32 | File upload support |
+| `pillow` | 13.0.0 | Image rendering — slideshow frames, ad cards |
+| `ffmpeg-python` | not installed | FFmpeg bindings — audio/video processing |
 | `pydub` | 0.25.1 | Audio segment manipulation |
-| `edge-tts` | 7.2.8 | Cloud TTS fallback (Microsoft Edge voices) |
-| `torch` | 2.11.0 | PyTorch — Kokoro TTS inference engine |
-| `torchaudio` | 2.11.0 | Audio tensor operations for Kokoro |
-| `numpy` | 2.4.4 | Numerical operations — audio processing |
+| `edge-tts` | not installed | Optional legacy TTS; required Qwen blocks substitution |
+| `torch` | 2.11.0 | Character runtime; separate Qwen CUDA environment |
+| `torchaudio` | not installed | Qwen speech runtime (separate environment) |
+| `numpy` | 2.4.6 | Numerical operations — audio processing |
 | `networkx` | 3.6.1 | Graph utilities — production dependency tracking |
-| `sentence-transformers` | 5.4.1 | Semantic similarity — script analysis |
-| `voicemeeter-api` | 2.7.2 | Voicemeeter real-time mixer integration |
+| `sentence-transformers` | not installed | Semantic similarity — script analysis |
+| `voicemeeter-api` | not installed | Voicemeeter real-time mixer integration |
 
 ## Node / Frontend Packages
 
@@ -27,8 +27,8 @@ _Generated: 2026-04-16 15:09_
 |---|---|---|
 | `react` | 18.3.1 | UI framework |
 | `react-dom` | 18.3.1 | React DOM renderer |
-| `vite` | 8.0.3 | Frontend build tool / dev server |
-| `@vitejs/plugin-react` | 4.7.0 | Vite React plugin |
+| `vite` | 8.3.5 | Frontend build tool / dev server |
+| `@vitejs/plugin-react` | 6.1.2 | Vite React plugin |
 | `tailwindcss` | 3.4.19 | Utility CSS framework |
 | `lucide-react` | 0.383.0 | Icon library |
 
@@ -39,8 +39,8 @@ _Generated: 2026-04-16 15:09_
 | FFmpeg | Audio/video encoding — must be on PATH | Required |
 | OBS Studio | Live stream / recording control via WebSocket | Optional — Studio tab |
 | Voicemeeter | Real-time audio mixer | Optional — Studio tab |
-| Kokoro TTS | Local neural TTS engine (primary voice) | Required for TTS |
-| CUDA / GPU | Accelerates Kokoro inference | Optional — falls back to CPU |
+| Qwen TTS | Required 1.7B CustomVoice bridge on 8020 | Required for production |
+| CUDA / GPU | Separate Qwen speech service | Required for supported speech setup |
 
 ## Internal Module Map
 
@@ -79,8 +79,8 @@ Episode config + topic
 
 | Slot | File | Status |
 |---|---|---|
-| `intro` | `audio/jingles/intro_outro.mp3` | present |
-| `outro` | `audio/jingles/intro_outro.mp3` | present |
+| `intro` | `audio/jingles/intro_outro.mp3` | missing |
+| `outro` | `audio/jingles/intro_outro.mp3` | missing |
 | `bumper_in` | `audio/jingles/bumper_in.mp3` | missing |
 | `bumper_out` | `audio/jingles/bumper_out.mp3` | missing |
 | `bed_loop` | `audio/jingles/bed_loop.mp3` | missing |

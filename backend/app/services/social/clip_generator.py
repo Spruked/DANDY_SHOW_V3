@@ -103,7 +103,7 @@ def _extract_audio_clip(audio_path: Path, output_path: Path, start: float, end: 
         str(output_path),
     ]
     try:
-        subprocess.run(cmd, check=True, capture_output=True, text=True)
+        subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=600)
         if not output_path.exists() or output_path.stat().st_size < 2048:
             return ""
         return str(output_path)
@@ -118,7 +118,7 @@ def _probe_clip_duration(audio_path: Path) -> float | None:
 
     cmd = [ffmpeg_path, "-i", str(audio_path)]
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         output = f"{result.stdout}\n{result.stderr}"
         match = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", output)
         if not match:

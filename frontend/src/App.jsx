@@ -1,48 +1,126 @@
 // App.jsx — Dandy Studio root
 import { useState, useEffect } from 'react'
-import { Mic2, Radio, Image, Settings, Sliders } from 'lucide-react'
+import { Mic2, Radio, Image, Settings, Sliders, Trash2, FileText, Eye } from 'lucide-react'
 import EpisodeTab from './components/EpisodeTab'
+import ContextTab from './components/ContextTab'
 import AdTab      from './components/AdTab'
 import SocialTab  from './components/SocialTab'
 import SystemTab  from './components/SystemTab'
-import StudioTab  from './components/StudioTab'
-import { api }    from './lib/api'
+import StudioConsole from './components/StudioConsole'
+import ProductionEditorTab from './components/ProductionEditorTab'
+import PreviewTab from './components/PreviewTab'
+import AssemblyTab from './components/AssemblyTab'
+import ProductionProgress from './components/ProductionProgress'
+import VaultStatus from './components/VaultStatus'
+import { api, req } from './lib/api'
 
 const TABS = [
+  { id: 'context', label: 'CONTEXT GENERATOR & EDITOR', icon: FileText, component: ContextTab },
+  { id: 'assembly', label: 'ASSEMBLY', icon: Sliders, component: AssemblyTab },
   { id: 'episodes', label: 'EPISODES',  icon: Radio,    component: EpisodeTab },
   { id: 'ads',      label: 'ADS',       icon: Mic2,     component: AdTab      },
   { id: 'social',   label: 'SOCIAL',    icon: Image,    component: SocialTab  },
-  { id: 'studio',   label: 'STUDIO',    icon: Sliders,  component: StudioTab  },
+  { id: 'studio',   label: 'STUDIO',    icon: Sliders,  component: StudioConsole },
   { id: 'system',   label: 'SYSTEM',    icon: Settings, component: SystemTab  },
+  { id: 'preview', label: 'PREVIEW', icon: Eye, component: PreviewTab },
+  { id: 'production-editor', label: 'PRODUCTION EDITOR', icon: FileText, component: ProductionEditorTab },
+]
+
+const WORKSPACES = [
+  { id: 'context', label: 'CONTEXT GENERATOR & EDITOR', icon: FileText, tabs: ['context'] },
+  { id: 'production', label: 'PRODUCTION', icon: Radio, tabs: ['episodes', 'preview', 'production-editor', 'assembly'] },
+  { id: 'ads', label: 'ADS', icon: Mic2, tabs: ['ads'] },
+  { id: 'social', label: 'SOCIAL', icon: Image, tabs: ['social'] },
+  { id: 'tools', label: 'TOOLS', icon: Settings, tabs: ['studio', 'system'] },
 ]
 
 export default function App() {
-  const [activeTab, setActiveTab]     = useState('studio')
+  const [activeTab, setActiveTab] = useState(() => {
+    const requestedTab = window.location.hash.slice(1)
+    const rememberedTab = window.localStorage.getItem('dandyActiveTab')
+    if (TABS.some(tab => tab.id === requestedTab)) return requestedTab
+    return TABS.some(tab => tab.id === rememberedTab) ? rememberedTab : 'context'
+  })
   const [backendOk, setBackendOk]     = useState(null)   // null = checking
+  const [episodeId, setEpisodeId] = useState(() => window.localStorage.getItem('dandyEpisodeId') || null)
+  useEffect(() => {
+    if (episodeId) window.localStorage.setItem('dandyEpisodeId', episodeId)
+    else window.localStorage.removeItem('dandyEpisodeId')
+  }, [episodeId])
+  const [deletingEpisode, setDeletingEpisode] = useState(false)
+
+  const navigateTab = (tabId) => {
+    if (!TABS.some(tab => tab.id === tabId)) return
+    setActiveTab(tabId)
+    if (window.location.hash !== `#${tabId}`) {
+      window.history.pushState({ dandyTab: tabId }, '', `${window.location.pathname}${window.location.search}#${tabId}`)
+    }
+  }
 
   useEffect(() => {
-    api.health()
-      .then(() => setBackendOk(true))
-      .catch(() => setBackendOk(false))
+    window.localStorage.setItem('dandyActiveTab', activeTab)
+    if (window.location.hash !== `#${activeTab}`) {
+      window.history.replaceState({ dandyTab: activeTab }, '', `${window.location.pathname}${window.location.search}#${activeTab}`)
+    }
+  }, [activeTab])
+
+  useEffect(() => {
+    const syncTabFromUrl = () => {
+      const requestedTab = window.location.hash.slice(1)
+      if (TABS.some(tab => tab.id === requestedTab)) setActiveTab(requestedTab)
+    }
+    window.addEventListener('popstate', syncTabFromUrl)
+    window.addEventListener('hashchange', syncTabFromUrl)
+    return () => {
+      window.removeEventListener('popstate', syncTabFromUrl)
+      window.removeEventListener('hashchange', syncTabFromUrl)
+    }
   }, [])
 
+  useEffect(() => {
+    let active = true
+    const check = () => api.health().then(() => { if (active) setBackendOk(true) }).catch(() => { if (active) setBackendOk(false) })
+    check()
+    const interval = setInterval(check, 30000)
+    return () => { active = false; clearInterval(interval) }
+  }, [])
+
+  const deleteSelectedEpisode = async () => {
+    if (!episodeId || deletingEpisode) return
+    if (!window.confirm(`Delete episode ${episodeId}?\n\nThis removes the episode folder, draft, and matching job records. This cannot be undone.`)) return
+    setDeletingEpisode(true)
+    try {
+      await req(`/episodes/${encodeURIComponent(episodeId)}`, { method: 'DELETE' })
+      setEpisodeId(null)
+      window.location.reload()
+    } catch (error) {
+      window.alert(`Delete failed: ${error.message}`)
+      setDeletingEpisode(false)
+    }
+  }
+
+  const workspace = WORKSPACES.find(group => group.tabs.includes(activeTab)) || WORKSPACES[0]
   const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || EpisodeTab
 
   return (
     <div className="app-shell">
 
       {/* ── Top nav ── */}
-      <nav className="top-nav">
-        <div className="nav-logo">
-          <div className="nav-logo-mark">D</div>
+      <nav className="top-nav compact-nav" aria-label="Main workspaces">
+        <div className="nav-logo" title="Dandy Studio V3">
+          <img
+            className="nav-logo-image"
+            src="/dandy-show-phil-jim.png?v=2"
+            alt="The Dandy Show Phil and Jim"
+          />
         </div>
 
         <div className="tab-bar">
-          {TABS.map(({ id, label, icon: Icon }) => (
+          {WORKSPACES.map(({ id, label, icon: Icon, tabs }) => (
             <button
               key={id}
-              className={`tab-btn${activeTab === id ? ' active' : ''}`}
-              onClick={() => setActiveTab(id)}
+              className={`tab-btn${workspace.id === id ? ' active' : ''}`}
+              onClick={() => { if (!tabs.includes(activeTab)) navigateTab(tabs[0]) }}
             >
               <Icon size={12} />
               {label}
@@ -51,6 +129,23 @@ export default function App() {
         </div>
 
         <div className="nav-status">
+          {activeTab === 'episodes' && episodeId && (
+            <button
+              className="btn btn-sm"
+              type="button"
+              onClick={deleteSelectedEpisode}
+              disabled={deletingEpisode}
+              title={`Delete episode ${episodeId}`}
+              style={{
+                marginRight: 12,
+                border: '1px solid rgba(239,68,68,.65)',
+                color: '#f87171',
+                background: 'rgba(127,29,29,.18)',
+              }}
+            >
+              <Trash2 size={11} /> {deletingEpisode ? 'DELETING…' : 'DELETE EPISODE'}
+            </button>
+          )}
           <div className={`status-dot${backendOk === true ? ' ok' : backendOk === false ? ' err' : ''}`} />
           <span>
             {backendOk === null  ? 'checking…' :
@@ -60,8 +155,17 @@ export default function App() {
         </div>
       </nav>
 
+      {workspace.tabs.length > 1 && <nav className="workspace-subnav" aria-label={`${workspace.label} sections`}>
+        {workspace.tabs.map(id => {
+          const tab = TABS.find(item => item.id === id)
+          return <button key={id} className={activeTab === id ? 'active' : ''} aria-current={activeTab === id ? 'page' : undefined} onClick={() => navigateTab(id)}>{tab.label}</button>
+        })}
+      </nav>}
+      <VaultStatus />
+      <ProductionProgress onOpenEpisode={id => { setEpisodeId(id); navigateTab('episodes') }} />
+
       {/* ── Active tab ── */}
-      <ActiveComponent />
+      <ActiveComponent episodeId={episodeId} onEpisodeChange={setEpisodeId} onNavigate={navigateTab} />
     </div>
   )
 }

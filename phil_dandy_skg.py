@@ -16,7 +16,6 @@ import networkx as nx
 from collections import deque
 import random
 import logging
-from sentence_transformers import SentenceTransformer
 from shared_encoder import get_shared_encoder
 
 @dataclass

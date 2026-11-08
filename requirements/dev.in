@@ -1,0 +1,4 @@
+-c studio.txt
+-r studio.in
+ruff
+pip-tools==7.6.2

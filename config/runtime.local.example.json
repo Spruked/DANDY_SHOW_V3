@@ -1,0 +1,8 @@
+{
+  "python": ".venv/Scripts/python.exe",
+  "qwen_python": ".venv-qwen/Scripts/python.exe",
+  "qwen_shared_launcher": "C:/AI-Services/Start-Shared-QwenTTS.ps1",
+  "ffmpeg_bin": "C:/Program Files/FFmpeg/9.0.2/bin",
+  "writer_base_url": "http://127.0.0.1:16520/v1",
+  "tesseract_path": "C:/Program Files/Tesseract-OCR/tesseract.exe"
+}

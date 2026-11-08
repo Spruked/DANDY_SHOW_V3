@@ -4,25 +4,23 @@
 const BASE = '/api'
 const jobCache = new Map()
 
-async function req(path, opts = {}) {
+export async function req(path, opts = {}) {
   const res = await fetch(BASE + path, {
-    headers: { 'Content-Type': 'application/json', ...opts.headers },
     ...opts,
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
   })
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
-    throw new Error(text || `HTTP ${res.status}`)
+    let message = text
+    try {
+      const detail = JSON.parse(text).detail
+      message = Array.isArray(detail) ? detail.map(item => `${item.loc?.slice(1).join('.') || 'Input'}: ${item.msg}`).join('; ') : (detail || text)
+    } catch { /* Non-JSON errors retain their response text. */ }
+    throw new Error(message || `HTTP ${res.status}`)
   }
   const ct = res.headers.get('content-type') || ''
   if (ct.includes('application/json')) return res.json()
   return res.text()
-}
-
-function normalizeDurationToAdBucket(seconds) {
-  const value = Number(seconds) || 30
-  if (value <= 17) return 15
-  if (value <= 25) return 20
-  return 30
 }
 
 function normalizeAd(ad = {}) {
@@ -32,7 +30,10 @@ function normalizeAd(ad = {}) {
   return {
     ...ad,
     voice: ad.voice || ad.announcer_key || ad.announcer || '',
-    status: ad.status || 'done',
+    title: ad.title || ad.label || ad.sponsor,
+    ad_type: ad.ad_type || ad.label || 'custom',
+    script_lines: Array.isArray(ad.script) ? ad.script : (ad.script_lines || []),
+    status: ad.status || (ad.audio_file ? 'produced' : 'draft'),
     script: adScript,
     audio_file: ad.audio_file || ad.audio_path || ad.audio || '',
   }
@@ -42,7 +43,7 @@ async function ensureJob(episodeId) {
   const cached = jobCache.get(episodeId)
   if (cached) return cached
 
-  let detail = {}
+  let detail
   try {
     detail = await req(`/episodes/${encodeURIComponent(episodeId)}`)
   } catch {
@@ -63,9 +64,9 @@ async function ensureJob(episodeId) {
     topic: topic || title || episodeId,
     description: config.description || '',
     key_points: Array.isArray(config.key_points) ? config.key_points : [],
-    target_duration: Number(config.target_duration) || 2400,
+    target_duration: Number(config.target_duration) || 300,
     intensity: config.intensity || 'medium',
-    generation_mode: config.generation_mode || 'ai_generate',
+    generation_mode: config.generation_mode || 'script_feed',
   }
   if (config.target_word_count) payload.target_word_count = Number(config.target_word_count)
 
@@ -141,8 +142,7 @@ async function normalizeEditPayload(body) {
 }
 
 export const api = {
-  // ── Health ──────────────────────────────────────────────────────────
-  health: () => req('/health'),
+  health: () => req('/health', { signal: AbortSignal.timeout(10000) }),
   writerStatus: () => req('/writer-status'),
   voices: async () => {
     const data = await req('/voices')
@@ -153,24 +153,16 @@ export const api = {
     return { voices, raw: data }
   },
 
-  // ── Episodes ─────────────────────────────────────────────────────────
   listEpisodes: () => req('/episodes'),
   createEpisode: async (body) => {
-    const episodeId = String(body.episode_id || `ep_${Date.now()}`).trim()
-    const title = String(body.title || episodeId).trim()
-    const topic = String(body.topic || title || episodeId).trim()
-    const payload = {
-      ...body,
-      episode_id: episodeId,
-      title,
-      topic: topic || title || episodeId,
-      key_points: Array.isArray(body.key_points) ? body.key_points : [],
-      target_duration: Number(body.target_duration) || 2400,
-      intensity: body.intensity || 'medium',
-      generation_mode: body.generation_mode || 'ai_generate',
-    }
+    const episodeId = String(body.episode_id || '').trim()
+    const title = String(body.title || 'Untitled episode').trim()
+    const payload = { ...body, title, topic: String(body.topic || title).trim(),
+      target_duration: Number(body.target_duration) || 300, generation_mode: 'script_feed' }
+    if (episodeId) payload.episode_id = episodeId
+    else delete payload.episode_id
     const created = await req('/episodes/create', { method: 'POST', body: JSON.stringify(payload) })
-    if (created?.job_id) jobCache.set(episodeId, created.job_id)
+    if (created?.job_id && created?.episode_id) jobCache.set(created.episode_id, created.job_id)
     return created
   },
   getEpisode: (id) => req(`/episodes/${encodeURIComponent(id)}`),
@@ -180,8 +172,24 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  // ── Script ───────────────────────────────────────────────────────────
   getScript: (id) => req(`/episodes/${encodeURIComponent(id)}/script`),
+  canonicalScripts: (id) => req(`/episodes/${encodeURIComponent(id)}/canonical-scripts`),
+  canonicalScript: (id, versionId) => req(`/episodes/${encodeURIComponent(id)}/canonical-scripts/${encodeURIComponent(versionId)}`),
+  previewReview: (id, versionId) => req(`/episodes/${encodeURIComponent(id)}/canonical-scripts/${encodeURIComponent(versionId)}/preview`),
+  selectedPreview: (id) => req(`/episodes/${encodeURIComponent(id)}/preview`),
+  savePreview: (id, body) => req(`/episodes/${encodeURIComponent(id)}/preview`, { method: 'PUT', body: JSON.stringify(body) }),
+  createProductionDraft: (id, canonical_version_id) => req(
+    `/episodes/${encodeURIComponent(id)}/production-editor/drafts`,
+    { method: 'POST', body: JSON.stringify({ canonical_version_id }) },
+  ),
+  saveProductionDraft: (id, body) => req(
+    `/episodes/${encodeURIComponent(id)}/production-editor/draft`,
+    { method: 'PUT', body: JSON.stringify(body) },
+  ),
+  approveProductionDraft: (id, draft_id) => req(
+    `/episodes/${encodeURIComponent(id)}/production-editor/approve`,
+    { method: 'POST', body: JSON.stringify({ draft_id }) },
+  ),
   generateScript: async (id, body = {}) => {
     const jobId = await ensureJob(id)
     return req(`/episodes/generate-script?job_id=${encodeURIComponent(jobId)}`, {
@@ -189,17 +197,28 @@ export const api = {
       body: JSON.stringify(body),
     })
   },
+  generationStatus: async (id) => {
+    const jobId = await ensureJob(id)
+    return req(`/episodes/jobs/${encodeURIComponent(jobId)}`)
+  },
+  cancelJob: async (id) => {
+    const jobId = await ensureJob(id)
+    return req(`/episodes/jobs/${encodeURIComponent(jobId)}/cancel`, { method: 'POST' })
+  },
   editScript: async (body) => {
     const normalized = await normalizeEditPayload(body)
     return req('/episodes/edit-script', { method: 'POST', body: JSON.stringify(normalized) })
   },
+  replaceScript: (id, text) =>
+    req(`/episodes/${encodeURIComponent(id)}/replace-script`, {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }),
   exportEpisode: (id, fmt) => req(`/episodes/${encodeURIComponent(id)}/export?format=${encodeURIComponent(fmt)}`),
 
-  // ── Versions ─────────────────────────────────────────────────────────
   getVersions: (id) => req(`/episodes/${encodeURIComponent(id)}/script-versions`),
   rollback: (id, version) => req(`/episodes/${encodeURIComponent(id)}/rollback?version=${encodeURIComponent(version)}`, { method: 'POST' }),
 
-  // ── Production ───────────────────────────────────────────────────────
   produce: async (id, body = {}) => {
     const jobId = await ensureJob(id)
     return req(`/episodes/produce?job_id=${encodeURIComponent(jobId)}`, {
@@ -209,13 +228,18 @@ export const api = {
   },
   produceStatus: (id) => req(`/episodes/${encodeURIComponent(id)}/production-status`),
 
-  // ── Assets ───────────────────────────────────────────────────────────
   listAssets: (id) => req(`/episodes/${encodeURIComponent(id)}/assets`),
+  listAssetLibrary: (query = '', role = '') =>
+    req(`/asset-library?query=${encodeURIComponent(query)}&role=${encodeURIComponent(role)}`),
   uploadAsset: (id, formData) =>
-    fetch(`${BASE}/episodes/${encodeURIComponent(id)}/assets`, { method: 'POST', body: formData }).then((r) => r.json()),
+    fetch(`${BASE}/episodes/${encodeURIComponent(id)}/assets`, { method: 'POST', body: formData }).then(async (r) => {
+      const data = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(data.detail || `Asset upload failed (${r.status})`)
+      return data
+    }),
   assetUrl: (id, assetId) => `${BASE}/episodes/${encodeURIComponent(id)}/assets/${encodeURIComponent(assetId)}/file`,
+  libraryAssetUrl: (assetId) => `${BASE}/asset-library/${encodeURIComponent(assetId)}/file`,
 
-  // ── Media cues ───────────────────────────────────────────────────────
   addMediaCue: (id, body) =>
     req(`/episodes/${encodeURIComponent(id)}/media-cues`, {
       method: 'POST',
@@ -229,11 +253,9 @@ export const api = {
       }),
     }),
 
-  // ── Feedback ─────────────────────────────────────────────────────────
   submitFeedback: (id, text) =>
     req(`/episodes/${encodeURIComponent(id)}/customer-feedback`, { method: 'POST', body: JSON.stringify({ feedback: text }) }),
 
-  // ── Ads ──────────────────────────────────────────────────────────────
   listAds: async (id) => {
     const data = await req(`/episodes/${encodeURIComponent(id)}/ads`)
     const ads = Array.isArray(data) ? data : (data.ads || [])
@@ -245,10 +267,12 @@ export const api = {
       product: body.product || '',
       offer: body.tagline || '',
       cta: body.cta || 'Visit the link in the show notes.',
-      duration_seconds: normalizeDurationToAdBucket(body.duration_seconds),
+      duration_seconds: Number(body.duration_seconds) || 30,
       tone: body.tone || 'confident',
       label: body.ad_type || 'custom',
-      announcer_key: body.voice === 'INTRO_FEMALE' ? 'announcer_female' : (body.voice ? 'announcer_male' : null),
+      announcer_key: body.voice === 'CUSTOM' ? String(body.custom_voice_key || '').trim().toLowerCase() : (({ INTRO_MALE: 'announcer_male', INTRO_FEMALE: 'announcer_female', PHIL: 'phil', JIM: 'jim', HOST: 'host', GUEST: 'guest' })[body.voice] || null),
+      ad_type: body.ad_type || 'custom',
+      custom_script: body.custom_script || '',
       insert_into_script: false,
     }
     const data = await req(`/episodes/${encodeURIComponent(id)}/ads`, { method: 'POST', body: JSON.stringify(payload) })
@@ -293,7 +317,6 @@ export const api = {
   adAssetFileUrl: (epId, adId, assetId) =>
     `${BASE}/episodes/${encodeURIComponent(epId)}/ads/${encodeURIComponent(adId)}/assets/${encodeURIComponent(assetId)}/file`,
 
-  // ── Social ───────────────────────────────────────────────────────────
   socialPresets: async () => {
     const data = await req('/social/presets')
     return Array.isArray(data) ? data : (data.presets || [])
@@ -303,10 +326,15 @@ export const api = {
   listSocialExports: (id) => req(`/episodes/${encodeURIComponent(id)}/social`),
   socialDownloadUrl: (exportId) => `${BASE}/social/${encodeURIComponent(exportId)}/download`,
 
-  // ── Audio ────────────────────────────────────────────────────────────
   audioUrl: (id) => `${BASE}/audio/${encodeURIComponent(id)}/final.mp3`,
+  productionManifest: (id) => req(`/episodes/${encodeURIComponent(id)}/production-manifest`),
+  productionEditor: (id) => req(`/episodes/${encodeURIComponent(id)}/production-editor`),
+  productionRevision: (id) => req(`/episodes/${encodeURIComponent(id)}/production-revision`),
+  regenerateProductionLine: (id, segmentId, body) => req(
+    `/episodes/${encodeURIComponent(id)}/production/segments/${encodeURIComponent(segmentId)}/regenerate`,
+    { method: 'POST', body: JSON.stringify(body) },
+  ),
 
-  // ── Intro/Outro config ───────────────────────────────────────────────
   getIntroOutroConfig: () => req('/intro-outro-config'),
   saveIntroOutroConfig: (body) =>
     req('/intro-outro-config', { method: 'POST', body: JSON.stringify(body) }),
@@ -325,11 +353,14 @@ export const api = {
   },
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
-// ~160 words per minute average speech
+export const RUNTIME_WPM = 160
+export function scriptRuntimeSeconds(lines = []) {
+  return Math.round(lines.reduce((total, line) => total + String(line.spoken_text || line.text || line.line || '').trim().split(/\s+/).filter(Boolean).length / RUNTIME_WPM * 60 + Number(line.pause_after || 0), 0))
+}
+
 export function wordsToSeconds(text = '') {
   const words = text.trim().split(/\s+/).filter(Boolean).length
-  return Math.round((words / 160) * 60)
+  return Math.round((words / RUNTIME_WPM) * 60)
 }
 
 export function secondsToDisplay(sec) {

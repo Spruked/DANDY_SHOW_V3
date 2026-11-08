@@ -1,0 +1,7 @@
+{
+  "schema": "orbs.web_weaver.endpoints.v1",
+  "api_base_url": "",
+  "route_context_path": "/orb/route-context",
+  "answer_text_path": "/orb/answer-text",
+  "pointer_map_path": "/orb/pointer-map"
+}

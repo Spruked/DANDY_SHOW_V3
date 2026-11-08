@@ -1,6 +1,6 @@
 // components/SocialTab.jsx
-import { useState, useEffect } from 'react'
-import { Zap, Download, RefreshCw, Image } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Zap, Download, RefreshCw, Image, Upload } from 'lucide-react'
 import { api } from '../lib/api'
 import { Modal, Field, SectionHead, Spinner, Empty, Badge, Divider, Toast } from './ui'
 import { useToast } from '../hooks/useToast'
@@ -11,15 +11,19 @@ const ASPECT_OPTS  = ['1:1', '16:9', '9:16', '4:5']
 
 // Asset slot names from ASSET_SLOTS.md
 const ASSET_SLOTS = [
-  { key: 'thumbnail_base',  label: 'Thumbnail Base',    desc: 'Main official social thumbnail' },
-  { key: 'waveform_base',   label: 'Waveform Base',     desc: 'Main audiogram background' },
-  { key: 'alternate_cover', label: 'Alternate Cover',   desc: 'Blue countryside alternate' },
-  { key: 'character_logo',  label: 'Character Logo',    desc: 'Vintage cream Phil/Jim logo' },
-  { key: 'segment_tech_talk',label:'Tech Talk Card',    desc: 'Tech Talk segment card' },
-  { key: 'logo',            label: 'Logo Mark',         desc: 'Main simplified mark' },
+  { key: 'thumbnail_base',  label: 'Thumbnail Background', desc: 'Background role for a promoted product or campaign', accent: '#e8b84b' },
+  { key: 'waveform_base',   label: 'Audiogram Background', desc: 'Background role for any promoted audio or product', accent: '#58a6ff' },
+  { key: 'alternate_cover', label: 'Alternate Cover Art', desc: 'Alternate artwork for a product or promotion', accent: '#a78bfa' },
+  { key: 'character_logo',  label: 'Product / Character Art', desc: 'Promoted product, character, or brand artwork', accent: '#f0c987' },
+  { key: 'segment_tech_talk',label:'Feature / Segment Card', desc: 'Feature, segment, or campaign card artwork', accent: '#38bdf8' },
+  { key: 'logo',            label: 'Product Logo / Mark', desc: 'Logo or mark for the item being promoted', accent: '#4ade80' },
 ]
 
-export default function ExportsMode() {
+const PRESET_ACCENTS = {
+  youtube_thumbnail: '#f87171', youtube_shorts: '#fb7185', tiktok: '#22d3ee',
+  instagram_reels: '#e879f9', facebook_feed: '#60a5fa', linkedin_post: '#38bdf8', x_post: '#a1a1aa',
+}
+export default function ExportsMode({ episodeId, onEpisodeChange }) {
   const { toast, showToast } = useToast()
   const [episodes,  setEpisodes]  = useState([])
   const [activeEp,  setActiveEp]  = useState(null)
@@ -28,6 +32,7 @@ export default function ExportsMode() {
   const [generating, setGenerating] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedPreset, setSelectedPreset] = useState(null)
+  const selectionRequest = useRef(0)
 
   useEffect(() => {
     loadEpisodes()
@@ -39,7 +44,7 @@ export default function ExportsMode() {
       const data = await api.listEpisodes()
       const list = Array.isArray(data) ? data : (data.episodes || [])
       setEpisodes(list)
-      if (list.length) selectEpisode(list[0])
+      if (list.length) selectEpisode(list.find(ep => (ep.episode_id || ep.id) === episodeId) || list[0])
     } catch { showToast('Could not load episodes') }
   }
 
@@ -51,11 +56,14 @@ export default function ExportsMode() {
   }
 
   const selectEpisode = async (ep) => {
+    const requestId = ++selectionRequest.current
     setActiveEp(ep)
+    setExports([])
+    onEpisodeChange?.(ep.episode_id || ep.id)
     try {
       const data = await api.listSocialExports(ep.episode_id || ep.id)
-      setExports(Array.isArray(data) ? data : (data.exports || []))
-    } catch { setExports([]) }
+      if (requestId === selectionRequest.current) setExports(Array.isArray(data) ? data : (data.exports || []))
+    } catch { if (requestId === selectionRequest.current) setExports([]) }
   }
 
   const epId = activeEp?.episode_id || activeEp?.id
@@ -65,16 +73,16 @@ export default function ExportsMode() {
     setGenerating(true)
     try {
       await api.generateSocial({ ...form, episode_id: epId })
-      showToast('Social export queued ✓')
+      showToast('Social export completed')
       setShowCreate(false)
       await selectEpisode(activeEp)
     } catch (e) {
-      showToast('Generate failed: ' + e.message.slice(0, 80))
+      showToast('Generate failed: ' + e.message)
     } finally { setGenerating(false) }
   }
 
   return (
-    <div className="tab-body">
+    <div className="tab-body social-exports-layout">
 
       {/* LEFT — episode picker */}
       <div className="pane-left">
@@ -108,7 +116,7 @@ export default function ExportsMode() {
           </button>
         </div>
 
-        <div className="scrollable" style={{ padding: '10px 14px' }}>
+        <div className="scrollable social-exports-list" style={{ padding: '10px 14px' }}>
           {!activeEp && <Empty msg="← Select an episode" />}
           {activeEp && exports.length === 0 && (
             <div style={{ textAlign: 'center', paddingTop: '3rem' }}>
@@ -119,27 +127,30 @@ export default function ExportsMode() {
             <div key={ex.export_id || i} className="preset-card" style={{ cursor: 'default' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <Image size={14} style={{ color: 'var(--gold)', flexShrink: 0 }} />
-                <span className="font-display" style={{ fontSize: '.9rem', color: 'var(--bone)', letterSpacing: '.06em' }}>
+                <span className="font-display" style={{ fontSize: '1.17rem', color: 'var(--bone)', letterSpacing: '.06em' }}>
                   {ex.export_type || `Export #${i + 1}`}
                 </span>
                 <Badge type="gold">{ex.platform || '—'}</Badge>
                 <Badge type={ex.status === 'done' ? 'green' : 'steel'}>{ex.status || 'pending'}</Badge>
               </div>
-              <div className="font-mono" style={{ fontSize: '.5rem', color: 'var(--steel)', marginBottom: 8 }}>
+              <div className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)', marginBottom: 8 }}>
                 {ex.aspect_ratio || '—'} · Asset: {ex.asset_slot || 'thumbnail_base'} · {ex.created_at || '—'}
               </div>
               {ex.preview_url && (
-                <img
-                  src={ex.preview_url}
-                  alt="preview"
-                  style={{ width: '100%', borderRadius: 'var(--radius)', border: '1px solid var(--rim)', marginBottom: 8 }}
-                />
+                ex.media_type?.startsWith('video/') ? <video
+                  controls preload="metadata" src={ex.preview_url} aria-label={`${ex.export_type || 'Social'} video preview`}
+                  className="social-export-media"
+                /> : ex.media_type?.startsWith('audio/') ? <audio
+                  controls preload="metadata" src={ex.preview_url} aria-label={`${ex.export_type || 'Social'} audio preview`}
+                  style={{ display: 'block', width: '100%', marginBottom: 8 }}
+                /> : <img src={ex.preview_url} alt={`${ex.export_type || 'Social'} preview`} className="social-export-media" />
               )}
               {ex.file_path && (
                 <button className="btn btn-steel btn-sm" onClick={() => window.open(api.socialDownloadUrl(ex.export_id))}>
                   <Download size={9} /> DOWNLOAD
                 </button>
               )}
+              {ex.post_text && <div style={{ marginTop: 10 }}><div className="field-label">Post copy</div><pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '1.04rem' }}>{ex.post_text}</pre><button className="btn btn-steel btn-sm" onClick={() => navigator.clipboard.writeText(ex.post_text).then(() => showToast('Post copy copied')).catch(() => showToast('Clipboard unavailable; use the download link'))}>COPY POST</button>{ex.post_copy_url && <a className="btn btn-steel btn-sm" href={ex.post_copy_url} download>DOWNLOAD COPY</a>}</div>}
             </div>
           ))}
         </div>
@@ -148,38 +159,49 @@ export default function ExportsMode() {
       {/* RIGHT — asset slots & presets */}
       <div className="pane-right">
         <SectionHead label="Asset Slots" />
-        <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--rim)' }}>
-          {ASSET_SLOTS.map(slot => (
-            <div key={slot.key} style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--bone)', marginBottom: 2 }}>{slot.label}</div>
-              <div className="font-mono" style={{ fontSize: '.46rem', color: 'var(--steel)' }}>{slot.desc}</div>
-            </div>
-          ))}
-        </div>
+        <div className="social-right-scroll">
+          <div className="social-assets-list" style={{ padding: '10px 12px', borderBottom: '1px solid var(--rim)' }}>
+            {ASSET_SLOTS.map(slot => (
+              <div key={slot.key} style={{ marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 5, alignItems: 'baseline' }}>
+                  <div style={{ fontSize: '0.91rem', fontWeight: 600, color: 'var(--bone)', marginBottom: 2 }}>{slot.label}</div>
+                  <span className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)', whiteSpace: 'nowrap' }}>ROLE</span>
+                </div>
+                <div className="font-mono" style={{ fontSize: '0.68rem', color: 'var(--steel)' }}>{slot.desc}</div>
+              </div>
+            ))}
+            <div className="social-asset-help">These are reusable artwork roles, not product-specific slots. Choose the promoted product’s image from the shared asset library when generating an export. Product originals remain filed under their own asset-library folders.</div>
+          </div>
 
-        <SectionHead label="Presets" />
-        <div className="scrollable" style={{ padding: '10px 12px' }}>
-          {presets.length === 0 && <Empty msg="No presets" />}
-          {presets.map((p, i) => (
-            <div
-              key={i}
-              className={`preset-card${selectedPreset === i ? ' selected' : ''}`}
-              onClick={() => setSelectedPreset(selectedPreset === i ? null : i)}
-            >
-              <div style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--bone)', marginBottom: 3 }}>
-                {p.name || p.preset_id || `Preset ${i + 1}`}
-              </div>
-              <div className="font-mono" style={{ fontSize: '.48rem', color: 'var(--steel)' }}>
-                {p.platform || ''} {p.export_type || ''} {p.aspect_ratio || ''}
-              </div>
-            </div>
-          ))}
+          <SectionHead label="Presets" />
+          <div className="social-preset-grid">
+            {presets.length === 0 && <Empty msg="No presets" />}
+            {presets.map((p, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`preset-card social-preset-tile${selectedPreset === i ? ' selected' : ''}`}
+                aria-pressed={selectedPreset === i}
+                style={{ '--preset-accent': PRESET_ACCENTS[p.platform] || ['#e8b84b', '#58a6ff', '#a78bfa', '#4ade80'][i % 4] }}
+                onClick={() => { setSelectedPreset(i); setShowCreate(true) }}
+              >
+                <div className="social-preset-name">
+                  {p.name || p.preset_id || `Preset ${i + 1}`}
+                </div>
+                <div className="font-mono social-preset-meta">
+                  {p.export_type || ''} · {p.aspect_ratio || ''}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {showCreate && (
         <GenerateSocialModal
+          episodeId={epId}
           presets={presets}
+          preset={presets[selectedPreset]}
           onClose={() => setShowCreate(false)}
           onGenerate={handleGenerate}
           generating={generating}
@@ -191,18 +213,63 @@ export default function ExportsMode() {
   )
 }
 
-function GenerateSocialModal({ presets, onClose, onGenerate, generating }) {
+function GenerateSocialModal({ episodeId, presets, preset, onClose, onGenerate, generating }) {
+  const defaultBackground = preset?.export_type === 'audiogram' ? 'waveform_base' : 'thumbnail_base'
   const [form, setForm] = useState({
-    export_type: 'audiogram',
-    platform: 'instagram',
-    aspect_ratio: '1:1',
-    asset_slot: 'thumbnail_base',
+    export_type: preset?.export_type || 'audiogram',
+    platform: preset?.platform || 'instagram',
+    aspect_ratio: preset?.aspect_ratio || '1:1',
+    asset_slot: defaultBackground,
+    background_asset_id: '',
     clip_start: 0,
     clip_duration: 60,
     quote_text: '',
+    post_text: '',
     show_waveform: true,
+    visual_mode: 'waveform',
+    visual_asset_id: '',
+    visual_asset_ids: [],
+    visual_clip_start: 0,
   })
+  const [visualAssets, setVisualAssets] = useState([])
+  const [uploadingMedia, setUploadingMedia] = useState(false)
+  const visualFileRef = useRef(null)
+  useEffect(() => {
+    if (!episodeId) return
+    api.listAssets(episodeId).then(data => {
+      const assets = Array.isArray(data) ? data : (data.assets || [])
+      setVisualAssets(assets.filter(asset => ['image', 'video'].includes(String(asset.asset_type || '').toLowerCase())))
+    }).catch(() => setVisualAssets([]))
+  }, [episodeId])
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  const uploadVisualMedia = async (files) => {
+    if (!files?.length) return
+    setUploadingMedia(true)
+    try {
+      for (const file of files) {
+        if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) throw new Error(`${file.name} is not an image or video`)
+        const data = new FormData()
+        data.append('file', file)
+        data.append('label', file.name)
+        data.append('description', 'Social export visual source')
+        data.append('role', 'social_visual')
+        await api.uploadAsset(episodeId, data)
+      }
+      const data = await api.listAssets(episodeId)
+      const assets = Array.isArray(data) ? data : (data.assets || [])
+      const media = assets.filter(asset => ['image', 'video'].includes(String(asset.asset_type || '').toLowerCase()))
+      setVisualAssets(media)
+      const uploadedNames = new Set(Array.from(files, file => file.name))
+      const uploaded = media.filter(asset => uploadedNames.has(asset.original_name || asset.filename)).map(asset => asset.asset_id)
+      if (form.visual_mode === 'slideshow') set('visual_asset_ids', [...new Set([...form.visual_asset_ids, ...uploaded])])
+      else if (uploaded.length) set('visual_asset_id', uploaded[uploaded.length - 1])
+    } catch (error) {
+      window.alert(`Media upload failed: ${error.message}`)
+    } finally {
+      setUploadingMedia(false)
+      if (visualFileRef.current) visualFileRef.current.value = ''
+    }
+  }
 
   return (
     <Modal
@@ -224,7 +291,7 @@ function GenerateSocialModal({ presets, onClose, onGenerate, generating }) {
           </Field>
           <Field label="Platform">
             <select className="ds-select" value={form.platform} onChange={e => set('platform', e.target.value)}>
-              {PLATFORMS.map(p => <option key={p}>{p}</option>)}
+              {[...new Set([...PLATFORMS, ...presets.map(p => p.platform)])].map(p => <option key={p}>{p}</option>)}
             </select>
           </Field>
           <Field label="Aspect Ratio">
@@ -232,12 +299,41 @@ function GenerateSocialModal({ presets, onClose, onGenerate, generating }) {
               {ASPECT_OPTS.map(a => <option key={a}>{a}</option>)}
             </select>
           </Field>
-          <Field label="Asset Slot">
-            <select className="ds-select" value={form.asset_slot} onChange={e => set('asset_slot', e.target.value)}>
-              {ASSET_SLOTS.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+          <Field label="Promoted Product Artwork / Background">
+            <select className="ds-select" value={form.background_asset_id} onChange={e => set('background_asset_id', e.target.value)}>
+              <option value="">No image (use selected visual style)</option>
+              {visualAssets.filter(asset => asset.asset_type === 'image').map(asset => <option key={asset.asset_id} value={asset.asset_id}>{asset.label || asset.original_name || asset.filename}{asset.relative_path ? ` · ${asset.relative_path}` : ''}</option>)}
             </select>
           </Field>
         </div>
+        <Field label="Video Visual Style">
+          <select className="ds-select" value={form.visual_mode} onChange={e => set('visual_mode', e.target.value)}>
+            <option value="plain">1 · Plain color background</option>
+            <option value="waveform">2 · Animated waveform</option>
+            <option value="image">3 · Single image</option>
+            <option value="slideshow">4 · Image slideshow</option>
+            <option value="video">5 · Background video clip</option>
+          </select>
+        </Field>
+        {['image', 'video'].includes(form.visual_mode) && <Field label={form.visual_mode === 'video' ? 'Background Video' : 'Display Image'}>
+          <select className="ds-select" value={form.visual_asset_id} onChange={e => set('visual_asset_id', e.target.value)}>
+            <option value="">Select existing media…</option>
+            {visualAssets.filter(asset => form.visual_mode === 'image' ? asset.asset_type === 'image' : asset.asset_type === 'video').map(asset => <option key={asset.asset_id} value={asset.asset_id}>{asset.label || asset.original_name || asset.filename}</option>)}
+          </select>
+        </Field>}
+        {form.visual_mode === 'slideshow' && <Field label="Slideshow Images (Ctrl/Shift-click to select several)">
+          <select className="ds-select" multiple value={form.visual_asset_ids} onChange={e => set('visual_asset_ids', Array.from(e.target.selectedOptions, option => option.value))} style={{ minHeight: 100 }}>
+            {visualAssets.filter(asset => asset.asset_type === 'image').map(asset => <option key={asset.asset_id} value={asset.asset_id}>{asset.label || asset.original_name || asset.filename}</option>)}
+          </select>
+        </Field>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <input ref={visualFileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,video/mp4,video/webm,video/quicktime,video/x-matroska,video/x-msvideo" multiple={form.visual_mode === 'slideshow'} hidden onChange={e => uploadVisualMedia(Array.from(e.target.files || []))} />
+          <button type="button" className="btn btn-steel btn-sm" disabled={uploadingMedia} onClick={() => visualFileRef.current?.click()}>
+            {uploadingMedia ? <Spinner size={11} /> : <Upload size={11} />} ADD EXISTING IMAGE / VIDEO
+          </button>
+          <span style={{ fontSize: '.9rem', color: 'var(--steel)' }}>Choose files from TrueMark Mint or your ad folders; they are copied into this episode’s asset library.</span>
+        </div>
+        {form.visual_mode === 'video' && <Field label="Start video at (seconds)"><input className="ds-input" type="number" min={0} step={0.1} value={form.visual_clip_start} onChange={e => set('visual_clip_start', +e.target.value)} /></Field>}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <Field label="Clip Start (seconds)">
             <input className="ds-input" type="number" min={0} value={form.clip_start} onChange={e => set('clip_start', +e.target.value)} />
@@ -249,12 +345,14 @@ function GenerateSocialModal({ presets, onClose, onGenerate, generating }) {
         <Field label="Quote Text (for quote cards)">
           <textarea className="ds-textarea" style={{ minHeight: 64 }} value={form.quote_text} onChange={e => set('quote_text', e.target.value)} placeholder="Pull quote from episode…" />
         </Field>
-        <Field label="Options">
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '.78rem', color: 'var(--bone)' }}>
+        <Field label="Post copy (optional; blank uses episode title and topic)"><textarea className="ds-textarea" value={form.post_text} onChange={e => set('post_text', e.target.value)} /></Field>
+        <div style={{ fontSize: '0.94rem', color: 'var(--steel)' }}>Choose artwork for whatever is being promoted. Images and videos from the shared asset library and episode/ad folders are available here; quote text appears as a video hook.</div>
+        {['image', 'slideshow', 'video'].includes(form.visual_mode) && <Field label="Options">
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '1.01rem', color: 'var(--bone)' }}>
             <input type="checkbox" checked={form.show_waveform} onChange={e => set('show_waveform', e.target.checked)} />
             Show waveform animation
           </label>
-        </Field>
+        </Field>}
       </div>
     </Modal>
   )

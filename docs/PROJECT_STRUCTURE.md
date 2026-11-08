@@ -11,7 +11,7 @@ These are the active SKG modules loaded by backend personality wiring.
 ## Active structure
 
 ```text
-Phil_and_Jim_Dandy_Show/
+DANDY_SHOW_V3/
 ├── phil_dandy_skg.py
 ├── Jim_dandy_skg.py
 ├── archive/
@@ -72,3 +72,7 @@ Phil_and_Jim_Dandy_Show/
 - `social/assets/`: extra reusable images for cards, promos, and one-off social work
 - `archive/testing/`: archived test/probe runs and test logs
 - `archive/cleanup/`: archived empty/obsolete local directories/files
+
+Root worker/context/quality/seed/expander modules are compatibility imports.
+Maintained implementations live in backend/app/services/production. Historical
+originals are under archive/legacy-python. Runtime episodes are local and ignored.

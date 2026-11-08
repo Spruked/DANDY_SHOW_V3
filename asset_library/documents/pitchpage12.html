@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=1280, height=720, initial-scale=1.0" name="viewport" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080818;
+      --bg-card: #f0efff;
+      --text: #eeeeff;
+      --text-dark: #12103a;
+      --text-muted: #5a557a;
+      --accent: #8b5cf6;
+      --accent-light: #ede9fe;
+      --accent-mid: #6d28d9;
+    }
+    body {
+      margin: 0; padding: 0;
+      width: 1280px; height: 720px;
+      overflow: hidden;
+      font-family: 'Calibri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-dark) !important;
+      font-family: 'Calibri Light', sans-serif;
+    }
+
+    /* Subtle grid background on dark strip */
+    .bg-dark-strip {
+      background: #080818;
+    }
+
+    /* Revenue card */
+    .rev-card {
+      background: #f0efff;
+      border-radius: 14px;
+      padding: 18px 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      border: 1.5px solid #d8d3f7;
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+      box-shadow: 0 4px 18px rgba(139,92,246,0.10);
+      transition: box-shadow 0.2s;
+    }
+
+    .rev-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #8b5cf6, #6d28d9);
+      border-radius: 14px 14px 0 0;
+    }
+
+    .icon-wrap {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-bottom: 2px;
+    }
+
+    .card-title {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #12103a !important;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .price-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #8b5cf6, #6d28d9);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 20px;
+      padding: 2px 10px;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+      width: fit-content;
+    }
+
+    .card-body {
+      font-size: 12px;
+      color: #5a557a;
+      line-height: 1.45;
+    }
+
+    /* Bottom callout */
+    .callout {
+      background: linear-gradient(90deg, #1a1040, #13132b);
+      border: 1.5px solid #8b5cf6;
+      border-radius: 12px;
+      padding: 11px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .callout-stat {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: #a78bfa;
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+    }
+
+    .callout-divider {
+      width: 1px; height: 36px;
+      background: rgba(139,92,246,0.35);
+      flex-shrink: 0;
+    }
+
+    .callout-text {
+      font-size: 13.5px;
+      color: #c4bfea;
+      line-height: 1.45;
+    }
+
+    .callout-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #8b5cf6;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body data-id="0">
+  <div data-id="1" style="width:1280px;height:720px;display:flex;flex-direction:column;background:#080818;padding:36px 52px 28px;">
+
+    <!-- Header -->
+    <div data-id="2" id="header-area-kx9z" style="margin-bottom:18px;">
+      <div data-id="3" style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+        <div data-id="4" style="width:4px;height:32px;border-radius:2px;background:linear-gradient(180deg,#8b5cf6,#6d28d9);flex-shrink:0;"></div>
+        <h1 data-id="5" id="slide-title-b3qw" style="font-size:30px;font-weight:300;letter-spacing:-0.02em;color:#eeeeff !important;font-family:'Calibri Light',sans-serif;margin:0;line-height:1.1;">
+          Four Revenue Pillars. <span data-id="6" style="color:#a78bfa;font-weight:600;">No Subscriptions. No Hardware.</span>
+        </h1>
+      </div>
+      <p data-id="7" id="slide-subtitle-m7vp" style="font-size:14px;color:#9090b8;margin:0 0 0 14px;line-height:1.4;padding-left:14px;">
+        ORB Weaver monetizes through licensing, packages, and ecosystem — not monthly billing, not physical product.
+      </p>
+    </div>
+
+    <!-- 4 Cards Grid -->
+    <div data-id="8" id="cards-grid-r2tn" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;flex:1;min-height:0;">
+
+      <!-- Card 1: Site Intelligence Packages -->
+      <div data-id="9" id="card-packages-7wqx" class="rev-card">
+        <div data-id="10" class="icon-wrap">
+          <svg data-id="11" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path data-id="12" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline data-id="13" points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line data-id="14" x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <div data-id="15" class="price-badge">$299 – $2,499 / site</div>
+        <div data-id="16" class="card-title" id="card1-title-9pla">Site Intelligence Packages</div>
+        <div data-id="17" class="card-body" id="card1-body-2nmw">
+          Per-site compiled <strong data-id="18" style="color:#4c1d95;">Site World</strong> packages licensed by scale and complexity. Refresh packages sold separately. Volume tiers for agencies and resellers.
+        </div>
+        <div data-id="19" style="margin-top:auto;padding-top:8px;border-top:1px solid #d8d3f7;">
+          <div data-id="20" style="display:flex;align-items:center;gap:6px;">
+            <svg data-id="21" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline data-id="22" points="20 6 9 17 4 12"/></svg>
+            <span data-id="23" style="font-size:11px;color:#6d28d9;font-weight:600;">Core revenue driver</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Add-On Ecosystem -->
+      <div data-id="24" id="card-addon-5hnr" class="rev-card">
+        <div data-id="25" class="icon-wrap">
+          <svg data-id="26" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path data-id="27" d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+            <line data-id="28" x1="7" y1="7" x2="7.01" y2="7"/>
+          </svg>
+        </div>
+        <div data-id="29" class="price-badge">À la carte + 30% fee</div>
+        <div data-id="30" class="card-title" id="card2-title-4qxk">Add-On Ecosystem</div>
+        <div data-id="31" class="card-body" id="card2-body-8pls">
+          Behavior packs, intent libraries, workflow modules, audit packs, and enterprise integration packs. <strong data-id="32" style="color:#4c1d95;">30% platform fee</strong> on all third-party add-on sales.
+        </div>
+        <div data-id="33" style="margin-top:auto;padding-top:8px;border-top:1px solid #d8d3f7;">
+          <div data-id="34" style="display:flex;align-items:center;gap:6px;">
+            <svg data-id="35" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline data-id="36" points="20 6 9 17 4 12"/></svg>
+            <span data-id="37" style="font-size:11px;color:#6d28d9;font-weight:600;">Marketplace flywheel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Enterprise Engine License -->
+      <div data-id="38" id="card-enterprise-2wvt" class="rev-card">
+        <div data-id="39" class="icon-wrap">
+          <svg data-id="40" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect data-id="41" x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path data-id="42" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+        </div>
+        <div data-id="43" class="price-badge">Annual license</div>
+        <div data-id="44" class="card-title" id="card3-title-6yqm">Enterprise Engine License</div>
+        <div data-id="45" class="card-body" id="card3-body-1nxc">
+          For enterprise teams running ORB Weaver at scale. Includes <strong data-id="46" style="color:#4c1d95;">bulk scan credits, priority processing, SLA support</strong>, and unlimited refresh packages.
+        </div>
+        <div data-id="47" style="margin-top:auto;padding-top:8px;border-top:1px solid #d8d3f7;">
+          <div data-id="48" style="display:flex;align-items:center;gap:6px;">
+            <svg data-id="49" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline data-id="50" points="20 6 9 17 4 12"/></svg>
+            <span data-id="51" style="font-size:11px;color:#6d28d9;font-weight:600;">High-ACV anchor</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: White-Label Platform License -->
+      <div data-id="52" id="card-whitelabel-9kfz" class="rev-card">
+        <div data-id="53" class="icon-wrap">
+          <svg data-id="54" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline data-id="55" points="16 18 22 12 16 6"/>
+            <polyline data-id="56" points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        <div data-id="57" class="price-badge">OEM licensing</div>
+        <div data-id="58" class="card-title" id="card4-title-3rsw">White-Label Platform License</div>
+        <div data-id="59" class="card-body" id="card4-body-7qhp">
+          OEM licensing of the scanning and compilation engine for <strong data-id="60" style="color:#4c1d95;">AI agent platforms, automation vendors</strong>, and enterprise software embedding site intelligence natively.
+        </div>
+        <div data-id="61" style="margin-top:auto;padding-top:8px;border-top:1px solid #d8d3f7;">
+          <div data-id="62" style="display:flex;align-items:center;gap:6px;">
+            <svg data-id="63" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline data-id="64" points="20 6 9 17 4 12"/></svg>
+            <span data-id="65" style="font-size:11px;color:#6d28d9;font-weight:600;">Highest-leverage channel</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Callout -->
+    <div data-id="66" id="callout-box-5vzm" class="callout" style="margin-top:16px;">
+      <div data-id="67" style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <svg data-id="68" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line data-id="69" x1="12" y1="1" x2="12" y2="23"/>
+          <path data-id="70" d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <div data-id="71" class="callout-stat" id="callout-margin-lk7q">82%+</div>
+        <span data-id="72" style="font-size:12px;color:#9090b8;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">Target Gross Margin</span>
+      </div>
+      <div data-id="73" class="callout-divider"></div>
+      <div data-id="74" class="callout-dot"></div>
+      <div data-id="75" class="callout-text" id="callout-text-8ynv">
+        <strong data-id="76" style="color:#c4bfea;">Zero cost of goods. Pure software economics.</strong> No manufacturing. No infrastructure COGS. All four pillars operate at identical margin — every dollar of revenue drops nearly entirely to gross profit.
+      </div>
+      <div data-id="77" class="callout-divider"></div>
+      <div data-id="78" class="callout-dot"></div>
+      <div data-id="79" style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+        <div data-id="80" style="display:flex;align-items:center;gap:6px;">
+          <svg data-id="81" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline data-id="82" points="20 6 9 17 4 12"/></svg>
+          <span data-id="83" style="font-size:11.5px;color:#9090b8;">No manufacturing</span>
+        </div>
+        <div data-id="84" style="display:flex;align-items:center;gap:6px;">
+          <svg data-id="85" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline data-id="86" points="20 6 9 17 4 12"/></svg>
+          <span data-id="87" style="font-size:11.5px;color:#9090b8;">No infrastructure COGS</span>
+        </div>
+        <div data-id="88" style="display:flex;align-items:center;gap:6px;">
+          <svg data-id="89" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline data-id="90" points="20 6 9 17 4 12"/></svg>
+          <span data-id="91" style="font-size:11.5px;color:#9090b8;">No subscriptions required</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

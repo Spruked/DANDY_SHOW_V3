@@ -1,111 +1,42 @@
 param(
-    [switch]$Restart,
-    [switch]$NoBackend,
-    [switch]$NoFrontend,
-    [switch]$Reload,
-    [int]$BackendPort = 8110,
-    [int]$FrontendPort = 5173
+    [switch]$Restart, [switch]$NoBackend, [switch]$NoFrontend,
+    [switch]$NoQwen, [switch]$Reload, [switch]$Production,
+    [int]$BackendPort = 8110, [int]$FrontendPort = 5173
 )
-
 $ErrorActionPreference = "Stop"
-
+if ($Production) { $NoFrontend = $true; if ($Reload) { throw "Production mode cannot use reload" } }
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$backendDir = Join-Path $root "backend"
-$frontendDir = Join-Path $root "frontend"
-$ffmpegBin = Join-Path $root "staging\ffmpeg\ffmpeg-master-latest-win64-gpl\bin"
-$runtimePath = Join-Path $root "config\runtime.local.json"
+. (Join-Path $PSScriptRoot "studio/processes.ps1")
+$runtimePath = Join-Path $root "config/runtime.local.json"
 $runtime = if (Test-Path $runtimePath) { Get-Content -LiteralPath $runtimePath -Raw | ConvertFrom-Json } else { $null }
-if ($runtime -and $runtime.ffmpeg_bin) { $ffmpegBin = [string]$runtime.ffmpeg_bin }
-if ($runtime -and $runtime.writer_base_url) { $env:DANDY_LLAMACPP_BASE_URL = [string]$runtime.writer_base_url }
-$venvPython = Join-Path $root ".venv\Scripts\python.exe"
-$pythonCmd = if ($env:DANDY_PYTHON) {
-    $env:DANDY_PYTHON
-} elseif (Test-Path $venvPython) {
-    $venvPython
-} else {
-    "py"
+$pythonCmd = if ($env:DANDY_PYTHON) { $env:DANDY_PYTHON } elseif ($runtime.python) { $runtime.python } else { Join-Path $root ".venv/Scripts/python.exe" }
+if (-not [IO.Path]::IsPathRooted($pythonCmd)) { $pythonCmd = Join-Path $root $pythonCmd }
+if (-not $NoBackend -and -not (Test-Path -LiteralPath $pythonCmd)) { throw "Create the studio venv or set DANDY_PYTHON." }
+if ($runtime.ffmpeg_bin) { $env:PATH = "$($runtime.ffmpeg_bin);$env:PATH" }
+if ($runtime.writer_base_url) { $env:DANDY_LLAMACPP_BASE_URL = $runtime.writer_base_url }
+foreach ($tool in @("ffmpeg", "ffprobe")) {
+    if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool is missing from PATH" }
 }
-$backendBaseArgs = @("-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "$BackendPort")
-if ($Reload) {
-    $backendBaseArgs += "--reload"
-}
-$pythonArgs = if ($env:DANDY_PYTHON) {
-    $backendBaseArgs
-} elseif (Test-Path $venvPython) {
-    $backendBaseArgs
-} else {
-    @("-3.12") + $backendBaseArgs
-}
-
-function Stop-ByPort {
-    param([int]$Port)
-    $listeners = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
-    if (-not $listeners) {
-        return
-    }
-    $pids = $listeners | Select-Object -ExpandProperty OwningProcess -Unique
-    foreach ($processId in $pids) {
-        try {
-            Stop-Process -Id $processId -Force -ErrorAction Stop
-            Write-Host "Stopped PID $processId on port $Port"
-        } catch {
-            Write-Warning "Could not stop PID $processId on port ${Port}: $($_.Exception.Message)"
-        }
-    }
-}
-
-if (Test-Path $ffmpegBin) {
-    $alreadyPresent = ($env:PATH -split ";") -contains $ffmpegBin
-    if (-not $alreadyPresent) {
-        $env:PATH = "$ffmpegBin;$env:PATH"
-    }
-} else {
-    Write-Warning "FFmpeg path not found: $ffmpegBin"
-}
-
-if ($Restart) {
-    Stop-ByPort -Port $BackendPort
-    Stop-ByPort -Port $FrontendPort
-}
-
+if ($Restart) { & (Join-Path $PSScriptRoot "stop_dandy_stack.ps1") -BackendPort $BackendPort -FrontendPort $FrontendPort -KeepQwen }
+if ($Production -and -not (Test-Path (Join-Path $root "frontend/dist/index.html"))) { throw "Build the frontend with npm ci and npm run build first" }
+$logDir = Join-Path $root "logs"
+New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 if (-not $NoBackend) {
-    $backendArgsLiteral = ($pythonArgs | ForEach-Object { "'$_'" }) -join ", "
-    $backendCmd = @"
-`$env:PATH = '$($env:PATH)';
-`$env:DANDY_LLAMACPP_BASE_URL = '$($env:DANDY_LLAMACPP_BASE_URL)';
-Set-Location '$backendDir';
-& '$pythonCmd' @($backendArgsLiteral)
-"@
-    Start-Process -WindowStyle Hidden -FilePath "powershell" -ArgumentList @(
-        "-NoProfile",
-        "-ExecutionPolicy", "Bypass",
-        "-Command", $backendCmd
-    ) | Out-Null
-    Write-Host "Backend launch requested on http://127.0.0.1:$BackendPort"
+    Assert-DandyListener -Port $BackendPort -ExpectedCommand 'uvicorn.*app.main:app'
+    if (-not (Get-NetTCPConnection -LocalPort $BackendPort -State Listen -ErrorAction SilentlyContinue)) {
+        $backendArgs = @("-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "$BackendPort")
+        if ($Reload) { $backendArgs += "--reload" }
+        Start-Process -FilePath $pythonCmd -ArgumentList $backendArgs -WorkingDirectory (Join-Path $root "backend") -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logDir "backend.out.log") -RedirectStandardError (Join-Path $logDir "backend.err.log") | Out-Null
+    }
 }
-
 if (-not $NoFrontend) {
-    $frontendCmd = @"
-Set-Location '$frontendDir';
-`$env:DANDY_API_TARGET = 'http://127.0.0.1:$BackendPort';
-npm run dev -- --host 127.0.0.1 --port $FrontendPort
-"@
-    Start-Process -WindowStyle Hidden -FilePath "powershell" -ArgumentList @(
-        "-NoProfile",
-        "-ExecutionPolicy", "Bypass",
-        "-Command", $frontendCmd
-    ) | Out-Null
-    Write-Host "Frontend launch requested on http://127.0.0.1:$FrontendPort"
+    Assert-DandyListener -Port $FrontendPort -ExpectedCommand "$([regex]::Escape($root)).*vite"
+    if (-not (Get-NetTCPConnection -LocalPort $FrontendPort -State Listen -ErrorAction SilentlyContinue)) {
+        $frontendScript = Join-Path $PSScriptRoot "studio/start_frontend.ps1"
+        $frontendShell = if (Get-Command pwsh.exe -ErrorAction SilentlyContinue) { (Get-Command pwsh.exe).Source } else { "powershell.exe" }
+        Start-Process -FilePath $frontendShell -ArgumentList @("-NoProfile", "-File", "`"$frontendScript`"", "-Port", "$FrontendPort", "-BackendPort", "$BackendPort") -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logDir "frontend.out.log") -RedirectStandardError (Join-Path $logDir "frontend.err.log") | Out-Null
+    }
 }
-
-if (-not $NoBackend) {
-    & (Join-Path $root "secondary_systems/Dandy_Qwen_TTS_Ui/scripts/Start-QwenCustomLocal.ps1")
-}
-
-Start-Sleep -Seconds 2
-try {
-    $health = Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:$BackendPort/health" -TimeoutSec 3
-    Write-Host "Backend health:" ($health | ConvertTo-Json -Compress)
-} catch {
-    Write-Warning "Backend health check not ready yet."
-}
+if (-not $NoBackend -and -not $NoQwen) { & (Join-Path $root "secondary_systems/Dandy_Qwen_TTS_Ui/scripts/Start-QwenCustomLocal.ps1") }
+if ($Production) { Write-Output "Production studio: http://127.0.0.1:$BackendPort/studio" }
+Write-Output "Dandy launch requested: http://127.0.0.1:$FrontendPort ; API http://127.0.0.1:$BackendPort"

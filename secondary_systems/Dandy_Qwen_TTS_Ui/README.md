@@ -1,5 +1,15 @@
 # Dandy Qwen TTS Package
 
+Current supported production setup reuses the shared 1.7B CustomVoice service on
+localhost:8031 and runs the Dandy bridge on localhost:8020. Configure bridge Python
+and the shared launcher through root `config/runtime.local.json` or
+`DANDY_QWEN_PYTHON` / `DANDY_QWEN_SHARED_LAUNCHER`.
+Root `scripts/stop_dandy_stack.ps1` preserves shared model services.
+Dependency and CUDA boundaries: `../../docs/ENVIRONMENT.md`.
+
+The clone/design/operator notes and R: paths below describe preserved legacy
+tools, not the supported CustomVoice production setup.
+
 Local operator package for Qwen TTS.
 
 Modes:

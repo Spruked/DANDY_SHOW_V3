@@ -1,11 +1,8 @@
 import importlib.util
 import sys
-import types
 from pathlib import Path
 from typing import Any, Dict
 
-import numpy as np
-import torch
 
 from ...core.paths import PROJECT_ROOT
 from ...core.settings import load_voices_config
@@ -32,36 +29,8 @@ def _load_module_from_path(module_name: str, file_path: Path):
     return module
 
 
-def _ensure_sentence_transformers_stub() -> None:
-    try:
-        from sentence_transformers import SentenceTransformer  # noqa: F401
-        return
-    except Exception:
-        pass
-
-    stub_module = types.ModuleType("sentence_transformers")
-
-    class SentenceTransformer:  # type: ignore[override]
-        def __init__(self, *args, **kwargs):
-            self.args = args
-            self.kwargs = kwargs
-
-        def encode(self, value, *args, **kwargs):
-            if isinstance(value, list):
-                return [self.encode(item, *args, **kwargs) for item in value]
-            text = str(value)
-            vector = np.zeros(16, dtype=float)
-            if not text:
-                return vector
-            for idx, char in enumerate(text.encode("utf-8")[:16]):
-                vector[idx] = (char % 31) / 31.0
-            return vector
-
-    stub_module.SentenceTransformer = SentenceTransformer
-    sys.modules["sentence_transformers"] = stub_module
-
-
 def load_personality(personality: str) -> Any:
+    import torch
     voices = load_voices_config()
     personality_key = personality.lower()
     voice_payload: Dict[str, Any] = voices.get(personality_key, {})
@@ -77,7 +46,6 @@ def load_personality(personality: str) -> Any:
     if not class_name:
         raise ValueError(f"Unsupported personality: {personality_key}")
 
-    _ensure_sentence_transformers_stub()
     module = _load_module_from_path(f"merged_{personality_key}_skg", file_path)
     klass = getattr(module, class_name)
 

@@ -1,0 +1,17 @@
+{
+  "schema": "orbs.web_weaver.runtime.v1",
+  "runtime_id": "web-weaver-pass2-shell",
+  "display_name": "Web Weaver",
+  "orb_name": "Web Weaver",
+  "default_prompt": "Ask Web Weaver",
+  "default_answer": "Tap or ask. I know where I am on this site.",
+  "offline_answer": "I am here, but the Web Weaver runtime is unavailable.",
+  "size": 164,
+  "asset_base_path": "./ASSETS",
+  "skin_path": "./ASSETS/orb/webweaver-orb.png",
+  "movement": {
+    "mode": "reference_random_roam",
+    "edge_px": 8,
+    "cursor_safe_radius_px": 180
+  }
+}

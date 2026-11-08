@@ -1,8 +1,13 @@
-# Production helpers for script generation and episode orchestration.
+# Audio production from externally written, reviewed scripts.
 
 from .worker import HardenedPodcastWorker
+from .segment_worker import SegmentAwarePodcastWorker
 
-# Backward-compat alias so existing API code needs no changes
-MergedDandyPodcastWorker = HardenedPodcastWorker
+# Preserve existing API imports and the ad/media-aware renderer.
+MergedDandyPodcastWorker = SegmentAwarePodcastWorker
 
-__all__ = ["HardenedPodcastWorker", "MergedDandyPodcastWorker"]
+__all__ = [
+    "HardenedPodcastWorker",
+    "SegmentAwarePodcastWorker",
+    "MergedDandyPodcastWorker",
+]

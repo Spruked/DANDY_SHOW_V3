@@ -1,0 +1,6 @@
+{
+  "schema": "orbs.web_weaver.voice.v1",
+  "enabled": false,
+  "mode": "text_only_pass2",
+  "note": "Voice/TTS synchronization is deferred until after the baseline browser shell is verified."
+}

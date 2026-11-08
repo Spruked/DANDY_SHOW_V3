@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=1280, height=720, initial-scale=1.0" name="viewport" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080818;
+      --bg-card: #13132b;
+      --text: #eeeeff;
+      --text-muted: #9090b8;
+      --accent: #8b5cf6;
+      --accent-light: #a78bfa;
+      --amber: #f59e0b;
+      --amber-light: #fcd34d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      width: 1280px; height: 720px;
+      overflow: hidden;
+      font-family: 'Calibri', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text) !important;
+      font-family: 'Calibri Light', sans-serif;
+    }
+
+    /* Starfield background */
+    .starfield {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 30%, rgba(245,158,11,0.05) 0%, transparent 50%),
+        #080818;
+      z-index: 0;
+    }
+    .starfield::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(238,238,255,0.25) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 40%, rgba(238,238,255,0.15) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 10%, rgba(238,238,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 55%, rgba(238,238,255,0.18) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 70%, rgba(238,238,255,0.12) 0%, transparent 100%),
+        radial-gradient(1px 1px at 92% 80%, rgba(238,238,255,0.22) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 85%, rgba(238,238,255,0.14) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 90%, rgba(238,238,255,0.16) 0%, transparent 100%);
+    }
+
+    .slide-wrap {
+      position: relative;
+      width: 1280px;
+      height: 720px;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 28px 40px 18px 40px;
+    }
+
+    /* HEADER */
+    .slide-header {
+      text-align: center;
+      margin-bottom: 14px;
+      flex-shrink: 0;
+    }
+    .slide-title {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 36px;
+      font-weight: 300;
+      letter-spacing: 0.03em;
+      color: var(--text) !important;
+      line-height: 1.1;
+      margin: 0 0 4px 0;
+    }
+    .slide-subtitle {
+      font-family: 'Calibri', sans-serif;
+      font-size: 13.5px;
+      color: var(--accent-light);
+      font-style: italic;
+      letter-spacing: 0.04em;
+      margin: 0;
+    }
+
+    /* HEADER RULE */
+    .header-rule {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--accent), var(--amber), transparent);
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    /* COLUMNS AREA */
+    .columns-area {
+      display: flex;
+      flex: 1;
+      gap: 0;
+      min-height: 0;
+    }
+
+    /* COLUMN */
+    .col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-height: 0;
+    }
+
+    .col-header {
+      font-family: 'Calibri Light', sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+    .col-header-left { color: var(--amber); }
+    .col-header-right { color: var(--accent-light); }
+
+    /* MOMENT */
+    .moment {
+      padding: 7px 0 7px 0;
+      flex-shrink: 0;
+    }
+    .moment + .moment {
+      border-top: 1px solid rgba(144,144,184,0.2);
+    }
+    .moment-year {
+      font-family: 'Calibri', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .moment-year-left { color: var(--amber); }
+    .moment-year-right { color: var(--accent-light); }
+
+    .moment-body {
+      font-family: 'Calibri', sans-serif;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+    .moment-body strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .moment-quote {
+      font-family: 'Calibri', sans-serif;
+      font-size: 11.5px;
+      font-style: italic;
+      line-height: 1.5;
+      color: rgba(144,144,184,0.75);
+      margin-top: 2px;
+    }
+
+    /* DIVIDER */
+    .divider-wrap {
+      width: 36px;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      position: relative;
+    }
+    .divider-line {
+      width: 1.5px;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        var(--amber) 20%,
+        var(--amber-light) 40%,
+        var(--accent-light) 60%,
+        var(--accent) 80%,
+        transparent 100%
+      );
+      box-shadow:
+        0 0 6px rgba(245,158,11,0.5),
+        0 0 14px rgba(139,92,246,0.4);
+      border-radius: 2px;
+    }
+    .divider-orb {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber), var(--accent));
+      box-shadow: 0 0 10px var(--amber), 0 0 18px var(--accent);
+    }
+
+    /* BOTTOM CALLOUT */
+    .callout-wrap {
+      flex-shrink: 0;
+      margin-top: 12px;
+    }
+    .callout-rule {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(139,92,246,0.5), transparent);
+      margin-bottom: 8px;
+    }
+    .callout-box {
+      border: 1px solid rgba(139,92,246,0.45);
+      border-radius: 6px;
+      background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(19,19,43,0.8) 50%, rgba(139,92,246,0.07) 100%);
+      padding: 9px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .callout-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(245,158,11,0.04) 0%, transparent 40%, rgba(139,92,246,0.06) 100%);
+      pointer-events: none;
+    }
+    .callout-glow {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(139,92,246,0.8), transparent);
+    }
+    .callout-text {
+      font-family: 'Calibri', sans-serif;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .callout-text .num {
+      color: var(--amber-light);
+      font-weight: 700;
+    }
+    .callout-text .kicker {
+      color: var(--accent-light);
+      font-weight: 600;
+    }
+    .callout-text .final {
+      color: var(--text);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body data-id="0">
+
+<div data-id="1" class="starfield"></div>
+
+<div data-id="2" class="slide-wrap">
+
+  <!-- HEADER -->
+  <div data-id="3" class="slide-header" id="slide-header-main">
+    <h1 data-id="4" class="slide-title" id="title-talkie">The Second Talkie Revolution.</h1>
+    <p data-id="5" class="slide-subtitle" id="subtitle-rhyme">History does not repeat. It rhymes. And it runs on a 33-year clock.</p>
+  </div>
+
+  <div data-id="6" class="header-rule" id="header-rule-divider"></div>
+
+  <!-- COLUMNS -->
+  <div data-id="7" class="columns-area" id="columns-area-main">
+
+    <!-- LEFT COLUMN -->
+    <div data-id="8" class="col" id="col-left-cinema">
+
+      <div data-id="9" class="col-header col-header-left" id="col-left-header">
+        1895 → 1927 &nbsp;|&nbsp; Cinema Finds Its Voice
+      </div>
+
+      <!-- Moment 1 -->
+      <div data-id="10" class="moment" id="moment-l1-lumiere">
+        <div data-id="11" class="moment-year moment-year-left">1895 — The Lumière Brothers</div>
+        <div data-id="12" class="moment-body" id="body-l1">
+          The first silent film is projected. Cinema is born — visual, kinetic, captivating.
+          But <strong data-id="13">the screen cannot speak.</strong> Audiences watch in wonder as images move in silence.
+        </div>
+      </div>
+
+      <!-- Moment 2 -->
+      <div data-id="14" class="moment" id="moment-l2-silentEra">
+        <div data-id="15" class="moment-year moment-year-left">32 Years of the Silent Era</div>
+        <div data-id="16" class="moment-body" id="body-l2">
+          Silent film grows into a global art form. Studios build empires. Stars become icons.
+          Storytelling matures. And yet — something profound is missing.
+          <strong data-id="17">The screen sees everything. It can say nothing.</strong>
+        </div>
+      </div>
+
+      <!-- Moment 3 -->
+      <div data-id="18" class="moment" id="moment-l3-jazzSinger">
+        <div data-id="19" class="moment-year moment-year-left">1927 — The Jazz Singer</div>
+        <div data-id="20" class="moment-body" id="body-l3">
+          Warner Bros. releases The Jazz Singer. A voice comes out of the screen. The audience goes still — then erupts.
+          Within 36 months, silent film is commercially extinct. <strong data-id="21">A 30-year industry vanishes almost overnight.</strong>
+          The talkie does not improve cinema. <strong data-id="22">It redefines what cinema is.</strong>
+        </div>
+      </div>
+
+      <!-- Moment 4 — quote -->
+      <div data-id="23" class="moment" id="moment-l4-quote">
+        <div data-id="24" class="moment-quote" id="quote-l4">
+          "You ain't heard nothin' yet." — First words spoken in a commercial sound film, 1927
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DIVIDER -->
+    <div data-id="25" class="divider-wrap" id="divider-center">
+      <div data-id="26" class="divider-line" id="divider-line-gradient"></div>
+      <div data-id="27" class="divider-orb" id="divider-orb-bridge"></div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div data-id="28" class="col" id="col-right-web">
+
+      <div data-id="29" class="col-header col-header-right" id="col-right-header">
+        1993 → 2026 &nbsp;|&nbsp; The Web Finds Its Intelligence
+      </div>
+
+      <!-- Moment 1 -->
+      <div data-id="30" class="moment" id="moment-r1-mosaic">
+        <div data-id="31" class="moment-year moment-year-right">1993 — The First Graphical Web</div>
+        <div data-id="32" class="moment-body" id="body-r1">
+          Mosaic launches. The web is born — informational, hyperlinked, navigable.
+          But pages cannot understand you. They cannot respond. They cannot guide.
+          <strong data-id="33">The web, like early cinema, is silent.</strong>
+        </div>
+      </div>
+
+      <!-- Moment 2 -->
+      <div data-id="34" class="moment" id="moment-r2-silentWeb">
+        <div data-id="35" class="moment-year moment-year-right">33 Years of the Silent Web</div>
+        <div data-id="36" class="moment-body" id="body-r2">
+          The web becomes civilization's infrastructure. Billions of pages. Trillions of links.
+          Entire economies built upon it. And yet — a website in 2010 still cannot hold a conversation.
+          It presents. It waits. <strong data-id="37">The silent web has no voice.</strong>
+        </div>
+      </div>
+
+      <!-- Moment 3 -->
+      <div data-id="38" class="moment" id="moment-r3-orbWeaver">
+        <div data-id="39" class="moment-year moment-year-right">2026 — ORB Weaver Arrives</div>
+        <div data-id="40" class="moment-body" id="body-r3">
+          For the first time, a website can be fully mapped, understood, and intelligently navigated
+          by an AI that knows every route, every control, every workflow.
+          <strong data-id="41">The page does not just display — it communicates. It responds. It guides.</strong>
+          The silent web ends. <strong data-id="42">The intelligent web begins.</strong>
+        </div>
+      </div>
+
+      <!-- Moment 4 — kicker -->
+      <div data-id="43" class="moment" id="moment-r4-kicker">
+        <div data-id="44" class="moment-quote" id="quote-r4">
+          The second talkie is not audio. It is agency. It is intent. It is the web that finally understands you.
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- end columns -->
+
+  <!-- CALLOUT -->
+  <div data-id="45" class="callout-wrap" id="callout-wrap-bottom">
+    <div data-id="46" class="callout-rule" id="callout-rule-top"></div>
+    <div data-id="47" class="callout-box" id="callout-box-main">
+      <div data-id="48" class="callout-glow"></div>
+      <div data-id="49" class="callout-text" id="callout-text-body">
+        <span data-id="50" class="num">1895 → 1927 = 32 years.</span>
+        &nbsp;&nbsp;
+        <span data-id="51" class="num">1993 → 2026 = 33 years.</span>
+        &nbsp;&nbsp;
+        <span data-id="52" class="kicker">The same generational arc. The same category-defining rupture. The same overnight extinction of what came before.</span>
+        <br data-id="53" />
+        <span data-id="54" class="final">ORB Weaver is not a feature. It is the moment the web learns to speak.</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end slide-wrap -->
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "schema": "orbs.web_weaver.site_world.v1",
+  "runtime_contract": "pass2_minimal_development_identity",
+  "site": {
+    "name": "Web Weaver Development Site",
+    "domain": "localhost"
+  },
+  "routes": {
+    "/": {
+      "summary": "Development page for the minimum Web Weaver browser shell."
+    }
+  }
+}

@@ -15,21 +15,16 @@ $PackageRoot = Split-Path -Parent $PSScriptRoot
 $LogDir = Join-Path $PackageRoot "logs"
 New-Item -ItemType Directory -Force $LogDir | Out-Null
 
-$QwenVenv = if ($env:DANDY_QWEN_VENV) {
-    $env:DANDY_QWEN_VENV
-} elseif (Test-Path "R:\Services\qwen_tts_312") {
-    "R:\Services\qwen_tts_312"
-} else {
-    "R:\R_Drive_Substrate\Services\qwen_tts_312"
-}
-$QwenEngine = if ($env:DANDY_QWEN_ENGINE) {
-    $env:DANDY_QWEN_ENGINE
-} elseif (Test-Path "R:\Services\qwen_engine") {
-    "R:\Services\qwen_engine"
-} else {
-    "R:\R_Drive_Substrate\Services\qwen_engine"
-}
-$Python = Join-Path $QwenVenv "Scripts\python.exe"
+$ShowRoot = (Resolve-Path (Join-Path $PackageRoot "../..")).Path
+$RuntimePath = Join-Path $ShowRoot "config/runtime.local.json"
+$Runtime = if (Test-Path -LiteralPath $RuntimePath) { Get-Content -LiteralPath $RuntimePath -Raw | ConvertFrom-Json } else { $null }
+$Python = if ($env:DANDY_QWEN_PYTHON) { $env:DANDY_QWEN_PYTHON } elseif ($Runtime.qwen_python) { $Runtime.qwen_python } else { Join-Path $ShowRoot ".venv-qwen/Scripts/python.exe" }
+if (-not [IO.Path]::IsPathRooted($Python)) { $Python = Join-Path $ShowRoot $Python }
+$QwenEngine = $PackageRoot
+$env:HF_HUB_OFFLINE = "1"
+$env:TRANSFORMERS_OFFLINE = "1"
+$env:GRADIO_ANALYTICS_ENABLED = "False"
+$env:PYTHONIOENCODING = "utf-8"
 $SoxDir = "C:\Users\bryan\AppData\Local\Microsoft\WinGet\Packages\ChrisBagwell.SoX_Microsoft.Winget.Source_8wekyb3d8bbwe\sox-14.4.2"
 $env:PATH = "$SoxDir;$env:PATH"
 
@@ -58,6 +53,14 @@ $Checkpoint = [string]$Selected.Checkpoint
 if (-not (Test-Path $Python)) {
     throw "Python venv not found: $Python"
 }
+
+# Resolve a complete local checkpoint before stopping any running service.
+& $Python (Join-Path $PSScriptRoot "english_demo.py")
+if ($LASTEXITCODE -ne 0) { throw "Could not prepare the English Qwen UI." }
+$CheckpointPath = & $Python -c "import sys; from huggingface_hub import snapshot_download; print(snapshot_download(repo_id=sys.argv[1], local_files_only=True))" $Checkpoint
+if ($LASTEXITCODE -ne 0 -or -not $CheckpointPath) { throw "Qwen checkpoint is not installed locally: $Checkpoint" }
+$Checkpoint = ([string]$CheckpointPath).Trim()
+if (-not (Test-Path -LiteralPath (Join-Path $Checkpoint "config.json"))) { throw "Qwen checkpoint is incomplete: $Checkpoint" }
 
 if (-not $NoStopExisting) {
     & (Join-Path $PSScriptRoot "Stop-QwenTTSModels.ps1") | Out-Host

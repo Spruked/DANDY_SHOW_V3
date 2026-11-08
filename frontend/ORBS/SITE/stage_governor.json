@@ -1,0 +1,15 @@
+{
+  "schema": "orbs.web_weaver.stage_governor.v1",
+  "mode": "pass2_minimal",
+  "allowed_actions": [
+    "mount_orb",
+    "ask_text",
+    "resolve_pointer_if_api_returns_target"
+  ],
+  "blocked_actions": [
+    "desktop_mcp",
+    "site_modification",
+    "payment_action",
+    "destructive_action"
+  ]
+}

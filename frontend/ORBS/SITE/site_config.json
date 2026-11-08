@@ -1,0 +1,12 @@
+{
+  "schema": "orbs.web_weaver.site_config.v1",
+  "site_id": "web-weaver-dev",
+  "display_name": "Web Weaver",
+  "site_name": "Web Weaver Development Site",
+  "host": "localhost",
+  "identity": {
+    "name": "Web Weaver",
+    "role": "embodied site host",
+    "short_intro": "I help visitors find what matters on this site."
+  }
+}
