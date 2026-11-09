@@ -1,6 +1,6 @@
 // App.jsx — Dandy Studio root
 import { useState, useEffect } from 'react'
-import { Mic2, Radio, Image, Settings, Sliders, Trash2, FileText, Eye } from 'lucide-react'
+import { Mic2, Radio, Image, Settings, Sliders, Trash2, FileText, Eye, CalendarDays } from 'lucide-react'
 import EpisodeTab from './components/EpisodeTab'
 import ContextTab from './components/ContextTab'
 import AdTab      from './components/AdTab'
@@ -12,9 +12,11 @@ import PreviewTab from './components/PreviewTab'
 import AssemblyTab from './components/AssemblyTab'
 import ProductionProgress from './components/ProductionProgress'
 import VaultStatus from './components/VaultStatus'
+import PlanningTab from './components/PlanningTab'
 import { api, req } from './lib/api'
 
 const TABS = [
+  { id: 'planning', label: 'PLANNING', icon: CalendarDays, component: PlanningTab },
   { id: 'context', label: 'CONTEXT GENERATOR & EDITOR', icon: FileText, component: ContextTab },
   { id: 'assembly', label: 'ASSEMBLY', icon: Sliders, component: AssemblyTab },
   { id: 'episodes', label: 'EPISODES',  icon: Radio,    component: EpisodeTab },
@@ -27,6 +29,7 @@ const TABS = [
 ]
 
 const WORKSPACES = [
+  { id: 'planning', label: 'PLANNING', icon: CalendarDays, tabs: ['planning'] },
   { id: 'context', label: 'CONTEXT GENERATOR & EDITOR', icon: FileText, tabs: ['context'] },
   { id: 'production', label: 'PRODUCTION', icon: Radio, tabs: ['episodes', 'preview', 'production-editor', 'assembly'] },
   { id: 'ads', label: 'ADS', icon: Mic2, tabs: ['ads'] },

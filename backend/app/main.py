@@ -24,6 +24,7 @@ from .api.conversation import router as conversation_router
 from .api.ads import router as ads_router
 from .api.obs import router as obs_router
 from .api.mixer import router as mixer_router
+from .api.planning import router as planning_router
 from .core.settings import load_project_config
 from .core.paths import PROJECT_ROOT
 from .websockets.manager import manager
@@ -122,6 +123,8 @@ def create_app(runtime_root: Path | None = None, recover_jobs: bool = True) -> F
     app.include_router(obs_router)
     app.include_router(obs_router, prefix="/api")
     app.include_router(mixer_router)
+    app.include_router(planning_router)
+    app.include_router(planning_router, prefix="/api")
     app.include_router(mixer_router, prefix="/api")
     app.include_router(conversation_router)
     app.include_router(conversation_router, prefix="/api")
