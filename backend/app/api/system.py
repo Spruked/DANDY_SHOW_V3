@@ -27,6 +27,25 @@ router = APIRouter(tags=["system"])
 _ALLOWED_TTS_ENGINES = {"kokoro", "qwen", "voicestudio"}
 
 
+def _voicestudio_health() -> Dict[str, Any]:
+    """Check the configured local TTS provider server-side (avoids browser CORS)."""
+    config = load_project_config().get("tts", {})
+    base_url = str(config.get("voicestudio_base_url") or "").rstrip("/")
+    if not base_url:
+        return {"status": "unavailable", "error": "Voice Studio endpoint not configured"}
+    try:
+        with urlopen(f"{base_url}/health", timeout=2.5) as response:
+            return {"status": "reachable" if response.status == 200 else "unavailable",
+                    "http_status": response.status, "synthesis": "unverified"}
+    except (OSError, URLError, ValueError) as exc:
+        return {"status": "unavailable", "error": str(exc)[:250], "synthesis": "unverified"}
+
+
+@router.get("/system/voicestudio-health")
+def voicestudio_health() -> Dict[str, Any]:
+    return _voicestudio_health()
+
+
 def _qwen_bridge_status() -> Dict[str, Any]:
     cfg = load_qwen_tts_config()
     bridge_url = str(cfg.get("bridge_url") or "").rstrip("/")
@@ -240,6 +259,7 @@ async def diagnostics():
     cfg = load_qwen_tts_config()
     probes = [
         _measured("writer", _writer_probe), _measured("nvidia", _nvidia_probe), _measured("kokoro", _kokoro_probe),
+        _measured("voicestudio", _voicestudio_health),
         _measured("gpu", _gpu_probe), _measured("resources", _resources_probe),
         _measured("media_tools", _tools_probe), _measured("storage", _storage_probe),
         _measured("production", _production_probe), _measured("obs", _obs_probe, True),
@@ -252,7 +272,11 @@ async def diagnostics():
             probes.append(_measured(name, lambda url=url, suffix=suffix, is_json=is_json: _http_probe(url + suffix, is_json)))
     checks = dict(await asyncio.gather(*probes))
     selected = cfg.get("production", {}).get("required_engine") or str(load_project_config().get("tts", {}).get("primary_engine", "kokoro")).lower()
-    required = ["writer", "kokoro" if selected == "kokoro" else "qwen_bridge", "media_tools", "storage"]
+    tts_check = {"kokoro": "kokoro", "qwen": "qwen_bridge", "voicestudio": "voicestudio"}.get(selected)
+    required = ["writer", "media_tools", "storage"] + ([tts_check] if tts_check else [])
+    if not tts_check:
+        checks["tts_configuration"] = {"status": "unavailable", "error": f"Unknown production TTS engine: {selected}"}
+        required.append("tts_configuration")
     ready = all(checks.get(key, {}).get("status") in ("ready", "reachable") for key in required)
     return {"checked_at": _now(), "status": "ready" if ready else "degraded", "selected_tts": selected,
             "readiness_scope": "dependencies; inference/synthesis and camera frames require output verification",
@@ -283,7 +307,7 @@ async def get_tts_engine() -> Dict[str, Any]:
         "selected_engine": selected,
         "allowed_engines": [required] if required else sorted(_ALLOWED_TTS_ENGINES),
         "required_engine": required,
-        "fallback_engine": None,
+        "fallback_engine": "qwen" if selected == "voicestudio" and config.get("tts", {}).get("fallback_engine") == "qwen" else "none",
     }
 
 
@@ -293,7 +317,7 @@ async def set_tts_engine(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
     if selected not in _ALLOWED_TTS_ENGINES:
         raise HTTPException(
             status_code=400,
-            detail="Dandy production TTS must be either 'kokoro' or 'qwen'. No fallback engine is permitted.",
+            detail="Dandy production TTS must be one of: kokoro, qwen, voicestudio.",
         )
 
     required = load_qwen_tts_config().get("production", {}).get("required_engine")
@@ -303,8 +327,9 @@ async def set_tts_engine(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
     data = json.loads(cfg_path.read_text(encoding="utf-8"))
     tts = dict(data.get("tts", {}))
     tts["primary_engine"] = selected
-    tts["fallback_engine"] = "none"
-    tts["allowed_engines"] = ["kokoro", "qwen"]
+    # Only Voice Studio has an explicitly configured Qwen recovery path.
+    tts["fallback_engine"] = "qwen" if selected == "voicestudio" else "none"
+    tts["allowed_engines"] = sorted(_ALLOWED_TTS_ENGINES)
     data["tts"] = tts
     atomic_json(cfg_path, data)
     load_project_config.cache_clear()
@@ -312,8 +337,8 @@ async def set_tts_engine(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
     return {
         "saved": True,
         "selected_engine": selected,
-        "allowed_engines": ["kokoro", "qwen"],
-        "fallback_engine": None,
+        "allowed_engines": sorted(_ALLOWED_TTS_ENGINES),
+        "fallback_engine": tts["fallback_engine"],
     }
 
 

@@ -37,7 +37,7 @@ const dbToPct = (value) => {
   return Math.round(((db + 60) / 72) * 100)
 }
 
-export default function StudioTab() {
+export default function StudioTab({ activeView = 'audio' }) {
 
   // â”€â”€ audio mixer channel states â”€â”€
   const initCh = (label, color, gain = 0) => ({
@@ -114,7 +114,8 @@ export default function StudioTab() {
   const [obsError, setObsError] = useState('')
   const [macroBusy, setMacroBusy] = useState(false)
   const [macroError, setMacroError] = useState('')
-  const [studioView, setStudioView] = useState('obs')
+  const [studioView, setStudioView] = useState(activeView)
+  useEffect(() => { setStudioView(activeView) }, [activeView])
   const [audioIo, setAudioIo] = useState({ ok: false, label: 'AUDIO I/O' })
   const cameraVideoRef = useRef(null)
   const cameraStreamRef = useRef(null)
