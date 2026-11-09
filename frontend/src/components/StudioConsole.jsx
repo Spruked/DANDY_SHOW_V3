@@ -49,32 +49,14 @@ function studioFetch(path, options = {}) {
 
 
 function LegacyStudioView({ view }) {
-  const hostRef = useRef(null)
-
-  useEffect(() => {
-    const target = STUDIO_VIEWS.find((item) => item.id === view)?.legacyLabel
-    if (!target || !hostRef.current) return undefined
-
-    const timer = window.setTimeout(() => {
-      const navButtons = Array.from(
-        hostRef.current.querySelectorAll('.tab-body > div:nth-child(2) button')
-      )
-      const button = navButtons.find((item) => (
-        item.textContent.replace(/\s+/g, ' ').trim() === target
-      ))
-      if (button) button.click()
-    }, 0)
-
-    return () => window.clearTimeout(timer)
-  }, [view])
-
+  // Select the actual Studio workspace through React state, never by
+  // clicking hidden navigation buttons whose DOM position can change.
   return (
-    <div ref={hostRef} className={`legacy-studio legacy-${view}`}>
-      <StudioTab />
+    <div className={`legacy-studio legacy-${view}`}>
+      <StudioTab activeView={view} />
     </div>
   )
 }
-
 
 function QwenStatusLight({ ready, busy }) {
   const className = ready ? 'ready' : busy ? 'busy' : 'offline'
