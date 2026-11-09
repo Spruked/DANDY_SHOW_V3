@@ -51,6 +51,8 @@ from ..services.storage.episode_store import (
     save_feedback,
     save_script,
 )
+from ..services.authoring.context import build_context
+from ..services.authoring.pack import render_pack
 
 
 router = APIRouter(tags=["production"])
@@ -375,11 +377,37 @@ def generate_script(
     job_id: str = Query(...),
     payload: Dict | None = Body(default=None),
 ):
-    raise HTTPException(410, "Episode writing has moved to document context and external script import. Build episode context, then import through replace-script.")
+    job = load_job(job_id)
+    if not job:
+        raise HTTPException(404, "Generation job not found")
+    episode_id = job.get("episode_id")
+    detail = load_episode_detail(episode_id)
+    if not detail.get("config"):
+        raise HTTPException(404, "Episode not found")
+    try:
+        from ..services.production import llm_writer
+        body = payload or {}
+        package = build_context(
+            episode_id,
+            brief=str(body.get("brief", "")),
+            source_ids=body.get("source_ids"),
+            owner_direction=body.get("owner_direction"),
+            expected_direction_revision=body.get("expected_direction_revision"),
+            curation=body.get("curation") or {"model_name": "NVIDIA Nemotron"},
+        )
+        target = int(detail.get("config", {}).get("target_duration") or 1800)
+        target_words = max(600, round(target / 60 * 160))
+        script = llm_writer.generate_episode_script(render_pack(package), target_words=target_words)
+        save_script(episode_id, script)
+        return {"status": "generated", "episode_id": episode_id, "job_id": job_id,
+                "writer_engine": "nemotron", "script": script,
+                "word_count": sum(len(line["text"].split()) for line in script)}
+    except Exception as exc:
+        raise HTTPException(502, f"Nemotron script generation failed: {exc}") from exc
 
 
 def _generate_script_impl(job_id, payload=None):
-    raise HTTPException(410, "Episode writing has moved to document context and external script import. Build episode context, then import through replace-script.")
+    raise HTTPException(410, "Use the synchronous Nemotron generation endpoint")
 
 
 def _run_produce_background(

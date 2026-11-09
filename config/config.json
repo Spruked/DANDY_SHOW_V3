@@ -20,8 +20,9 @@
     "minimal_redesign": true
   },
   "tts": {
-    "primary_engine": "kokoro",
-    "fallback_engine": "edge",
+    "primary_engine": "voicestudio",
+    "fallback_engine": "qwen",
+    "voicestudio_base_url": "http://127.0.0.1:3900",
     "preferred_device": "cuda",
     "fallback_device": "cpu",
     "allow_cpu_fallback": true,

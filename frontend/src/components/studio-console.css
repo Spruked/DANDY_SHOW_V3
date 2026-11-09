@@ -425,6 +425,17 @@
   background: #fff;
 }
 
+.voice-studio-frame {
+  width: calc(100% - 28px);
+  height: calc(100% - 28px);
+  min-height: 0;
+  margin: 14px;
+  border: 1px solid #2b3745;
+  border-radius: 8px;
+  background: #0b1016;
+  box-sizing: border-box;
+}
+
 .qwen-loading-panel {
   min-height: 430px;
   height: 100%;

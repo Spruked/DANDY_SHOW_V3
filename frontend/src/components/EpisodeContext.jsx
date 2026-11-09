@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { req } from '../lib/api'
+import { api, req } from '../lib/api'
 
 const DIRECTION_FIELDS = [
   ['episode_direction', 'Episode direction'], ['angle_and_tone', 'Angle and tone'],
@@ -51,7 +51,7 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds }) {
   const [ready, setReady] = useState(false)
   const [notice, setNotice] = useState('')
   const [priorities, setPriorities] = useState([])
-  const [modelName, setModelName] = useState('External LLM')
+  const [modelName, setModelName] = useState('NVIDIA Nemotron')
   const [windowTokens, setWindowTokens] = useState(32768)
   const [reservedTokens, setReservedTokens] = useState(4096)
   const [inspection, setInspection] = useState({})
@@ -245,6 +245,11 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds }) {
       setDirection(directionValues(owner)); setSavedDirection(JSON.stringify(directionValues(owner))); setDirectionRevision(owner?.revision_id || '')
       setNotice('New context pack saved with your owner direction.')
     })}>{busy ? 'WORKING…' : 'BUILD CONTEXT PACKAGE'}</button>
+    <button className="btn btn-solid" disabled={busy || !ready || !selected.length || invalidBudget} onClick={() => act(async () => {
+      const result = await api.generateScript(episodeId, { brief, source_ids: selected, owner_direction: direction, expected_direction_revision: directionRevision, curation: { priority_source_ids: effectivePriorities, model_name: 'NVIDIA Nemotron', context_window_tokens: Number(windowTokens), reserved_output_tokens: Number(reservedTokens) } })
+      setNotice(`Nemotron generated ${result.word_count.toLocaleString()} words. Review and import the generated draft.`)
+      onImport?.(result.script)
+    })}>GENERATE SCRIPT WITH NEMOTRON</button>
     {curationDirty && <p role="status">Source choices, brief or model settings differ from the saved pack. Build a new pack before export.</p>}
     {packDirectionStale && <p role="status">The saved pack uses older direction. Save owner direction or build a new pack before export.</p>}
     {packet && <>

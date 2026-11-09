@@ -54,7 +54,9 @@ def _call_nvidia(prompt: str, kind: str = "short-copy") -> Optional[str]:
     model = os.getenv("DANDY_NVIDIA_MODEL", _CONFIG.get("nvidia_model", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"))
     timeout = int(os.getenv("DANDY_NVIDIA_TIMEOUT_SECONDS", _CONFIG.get("nvidia_timeout_seconds", 60)))
     retries = int(os.getenv("DANDY_NVIDIA_MAX_RETRIES", _CONFIG.get("nvidia_max_retries", 1)))
-    payload = {"model": model, "temperature": 0.4, "max_tokens": 650,
+    max_tokens = int(os.getenv("DANDY_NVIDIA_MAX_TOKENS", "12000"))
+    payload = {"model": model, "temperature": 0.4 if kind != "episode" else 0.7,
+               "max_tokens": max_tokens,
                "messages": [{"role": "system", "content":
                    f"Write only a short {kind}. Use supplied facts only. Return plain copy."},
                   {"role": "user", "content": prompt}], "stream": False}
@@ -93,6 +95,52 @@ def _call_nvidia(prompt: str, kind: str = "short-copy") -> Optional[str]:
             if attempt >= retries:
                 raise RuntimeError(f"Nemotron request failed: {type(exc).__name__}") from exc
     raise RuntimeError("Nemotron request failed after bounded retries")
+
+
+def generate_episode_script(context: str, *, target_words: int = 5000) -> List[Dict]:
+    """Generate a structured Phil/Jim episode from the saved context package."""
+    prompt = f"""Write the complete Dandy Show episode from the source-grounded context below.
+Return ONLY a JSON array. Each item must have exactly: speaker (phil or jim), text, emotion, pause_after.
+Alternate speakers, use complete spoken sentences, and never include markdown, stage directions, citations,
+or an analysis/thinking section in text. Do not invent facts beyond the supplied context. Target about
+{max(600, int(target_words))} spoken words. Make the conversation feel natural, progressive, witty, and distinct.
+
+CONTEXT PACKAGE:
+{context}
+"""
+    raw = _call_nvidia(prompt, kind="episode") or ""
+    candidate = raw.strip()
+    if candidate.startswith("```"):
+        candidate = re.sub(r"^```(?:json)?\s*|\s*```$", "", candidate, flags=re.I | re.S).strip()
+    try:
+        parsed = json.loads(candidate)
+    except json.JSONDecodeError as exc:
+        match = re.search(r"\[.*\]", candidate, flags=re.S)
+        if not match:
+            raise RuntimeError("Nemotron returned non-JSON episode script") from exc
+        parsed = json.loads(match.group(0))
+    if not isinstance(parsed, list) or not parsed:
+        raise RuntimeError("Nemotron returned an empty episode script")
+    script = []
+    expected = "phil"
+    for item in parsed:
+        if not isinstance(item, dict):
+            continue
+        speaker = str(item.get("speaker", "")).strip().lower()
+        text = str(item.get("text", "")).strip()
+        if speaker not in {"phil", "jim"} or not text:
+            continue
+        if speaker != expected:
+            continue
+        script.append({"speaker": speaker, "text": text, "emotion": str(item.get("emotion", "neutral")),
+                       "pause_after": float(item.get("pause_after", 0.4) or 0.4),
+                       "generated_by": "nemotron"})
+        expected = "jim" if expected == "phil" else "phil"
+    if len(script) < 4:
+        raise RuntimeError("Nemotron returned too few valid alternating dialogue turns")
+    for number, line in enumerate(script, 1):
+        line["line_number"] = number
+    return script
 
 
 def nvidia_status() -> Dict[str, object]:

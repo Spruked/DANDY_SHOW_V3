@@ -792,6 +792,30 @@ class HardenedPodcastWorker:
         if self.qwen_tts_config.get("production", {}).get("required_engine") == "qwen":
             selected = "qwen"
 
+        if selected == "voicestudio":
+            voice_payload = self.voices_config.get(speaker, {})
+            voice_id = voice_payload.get("voicestudio_voice")
+            base_url = self.project_config.get("tts", {}).get("voicestudio_base_url", "http://127.0.0.1:3900")
+            if not voice_id:
+                raise RuntimeError(f"No Voice Studio profile registered for '{speaker}'")
+            try:
+                from ..tts.voicestudio_wrapper import synthesize as synthesize_voicestudio
+                synthesize_voicestudio(
+                    base_url,
+                    str(voice_id),
+                    text,
+                    output_path,
+                    instructions=delivery_instruction or emotion,
+                    speed=self._resolve_speed(speaker, emotion),
+                )
+                return "voicestudio"
+            except Exception as exc:
+                fallback = str(self.project_config.get("tts", {}).get("fallback_engine", "")).lower()
+                if fallback != "qwen":
+                    raise RuntimeError(f"Voice Studio production failed: {exc}") from exc
+                logger.warning("Voice Studio failed for %s; using configured Qwen backup: %s", speaker, exc)
+                selected = "qwen"
+
         if selected == "kokoro":
             try:
                 if self._try_kokoro(text, speaker, emotion, output_path):

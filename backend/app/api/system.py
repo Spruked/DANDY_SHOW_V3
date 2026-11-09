@@ -24,7 +24,7 @@ from ..services.tts.kokoro_wrapper import get_tts_runtime
 
 
 router = APIRouter(tags=["system"])
-_ALLOWED_TTS_ENGINES = {"kokoro", "qwen"}
+_ALLOWED_TTS_ENGINES = {"kokoro", "qwen", "voicestudio"}
 
 
 def _qwen_bridge_status() -> Dict[str, Any]:

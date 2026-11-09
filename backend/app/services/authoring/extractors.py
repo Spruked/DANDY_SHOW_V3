@@ -134,6 +134,50 @@ def word_records(path):
     return records
 
 
+@register('.pptx')
+def powerpoint_records(path):
+    """Extract visible slide text without executing embedded content."""
+    with zipfile.ZipFile(path) as deck:
+        slides = sorted(name for name in deck.namelist()
+                        if re.fullmatch(r'ppt/slides/slide\d+\.xml', name))
+        records = []
+        ns = {'a': 'http://schemas.openxmlformats.org/drawingml/2006/main'}
+        for number, name in enumerate(slides, 1):
+            tree = ElementTree.fromstring(deck.read(name))
+            text = ' '.join(node.text or '' for node in tree.findall('.//a:t', ns)).strip()
+            records.append({'location': f'slide {number}', 'slide': number, 'text': text,
+                            'extraction_method': 'pptx_text'})
+        return records
+
+
+@register('.xlsx')
+def spreadsheet_records(path):
+    """Extract spreadsheet cell values using the OOXML package directly."""
+    with zipfile.ZipFile(path) as workbook:
+        shared = []
+        if 'xl/sharedStrings.xml' in workbook.namelist():
+            tree = ElementTree.fromstring(workbook.read('xl/sharedStrings.xml'))
+            ns = {'x': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+            shared = [''.join(node.text or '' for node in item.findall('.//x:t', ns))
+                      for item in tree.findall('.//x:si', ns)]
+        records = []
+        ns = {'x': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+        for sheet in sorted(name for name in workbook.namelist() if re.fullmatch(r'xl/worksheets/sheet\d+\.xml', name)):
+            tree = ElementTree.fromstring(workbook.read(sheet))
+            values = []
+            for cell in tree.findall('.//x:c', ns):
+                value = cell.find('x:v', ns)
+                if value is None or not (value.text or '').strip():
+                    continue
+                raw = value.text.strip()
+                if cell.get('t') == 's' and raw.isdigit() and int(raw) < len(shared):
+                    raw = shared[int(raw)]
+                values.append(f"{cell.get('r', '?')}={raw}")
+            records.append({'location': sheet.replace('xl/worksheets/', ''), 'text': '\n'.join(values),
+                            'extraction_method': 'xlsx_cells'})
+        return records
+
+
 @register('.png', '.jpg', '.jpeg', '.webp', '.tif', '.tiff', '.bmp', '.gif')
 def image_records(path):
     from .ocr import extract_image
@@ -148,7 +192,7 @@ def extract_document(path: Path):
     if extractor is None and path.name.lower().endswith('readme'):
         extractor = text_records
     if extractor is None:
-        raise ValueError('Unsupported document. Use text, code, Markdown, PDF, DOCX or an OCR image.')
+        raise ValueError('Unsupported document. Use text, code, Markdown, PDF, DOCX, PPTX, XLSX or an OCR image.')
     before = hashlib.sha256(path.read_bytes()).hexdigest()
     records = extractor(path)
     if hashlib.sha256(path.read_bytes()).hexdigest() != before:

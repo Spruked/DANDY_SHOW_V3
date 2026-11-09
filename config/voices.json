@@ -6,6 +6,9 @@
     "primary_voice": "am_michael",
     "fallback_engine": "edge",
     "fallback_voice": "en-US-GuyNeural",
+    "qwen_reference_audio": "./PHIL17SAMPLE.wav",
+    "qwen_reference_text": "Because one of them is about how you, yes, the person listening right now, can get your product, your song, your invention, your business featured on this show. Weekly. In front of this audience. We'll get to that. But first.",
+    "voicestudio_voice": "0c3188b8",
     "defaults": {
       "speed": 1.1,
       "pitch": 0.2,
@@ -19,6 +22,9 @@
     "primary_voice": "am_liam",
     "fallback_engine": "edge",
     "fallback_voice": "en-US-TonyNeural",
+    "qwen_reference_audio": "./jimsample18.wav",
+    "qwen_reference_text": "The tools are called Mint, Goat, and the Orb, and by the time we're done today, you're going to know exactly what they do, why they matter, and where to go to get your hands on them. And I want you to answer it honestly. You don't have to say it out loud, just feel the weight of it. How many software subscriptions are you paying for right now that you don't fully understand?",
+    "voicestudio_voice": "d745d34c",
     "defaults": {
       "speed": 1.0,
       "pitch": 0.0,

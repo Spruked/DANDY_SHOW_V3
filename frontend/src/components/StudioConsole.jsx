@@ -11,6 +11,8 @@ import './studio-console.css'
 const STUDIO_VIEWS = [
   { id: 'audio', label: 'AUDIO MIX', icon: Sliders, legacyLabel: 'AUDIO MIX' },
   { id: 'qwen', label: 'QWEN TTS', icon: Cpu },
+  { id: 'voice-clone', label: 'VOICE CLONE', icon: Mic2 },
+  { id: 'voice-studio', label: 'VOICE STUDIO', icon: Headphones },
   { id: 'obs', label: 'OBS LIVE', icon: Monitor, legacyLabel: 'OBS LIVE' },
   { id: 'cams', label: 'CAMERAS', icon: Camera, legacyLabel: 'CAMERAS' },
   { id: 'automate', label: 'MACROS / TOOLS', icon: Zap, legacyLabel: 'MACROS / TOOLS' },
@@ -86,9 +88,9 @@ function QwenStatusLight({ ready, busy }) {
 }
 
 
-function QwenStudio() {
+function QwenStudio({ initialTab = 'custom', cloneOnly = false }) {
   const [status, setStatus] = useState(null)
-  const [activeTab, setActiveTab] = useState('custom')
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [error, setError] = useState('')
   const [actionBusy, setActionBusy] = useState(false)
   const requestedModeRef = useRef(null)
@@ -177,7 +179,7 @@ function QwenStudio() {
           <div className="qwen-eyebrow">WINDOWS-NATIVE · LOCAL QWEN3-TTS · RTX 3050</div>
           <div className="qwen-title">DANDY QWEN TTS CONTROL</div>
           <div className="qwen-subtitle">
-            One heavy Qwen model at a time. Switching tabs unloads the current mode and loads the selected mode.
+          {cloneOnly ? 'Reference-audio voice cloning for the registered Phil and Jim voices.' : 'Built-in Qwen speaker synthesis and instruction-driven delivery.'}
           </div>
         </div>
 
@@ -221,7 +223,7 @@ function QwenStudio() {
       </div>
 
       <div className="qwen-tab-bar">
-        {QWEN_TABS.map((tab) => (
+        {QWEN_TABS.filter((tab) => !cloneOnly || ['clone', 'tools'].includes(tab.id)).map((tab) => (
           <button
             key={tab.id}
             className={`qwen-tab${activeTab === tab.id ? ' active' : ''}`}
@@ -233,7 +235,7 @@ function QwenStudio() {
       </div>
 
       <div className="qwen-workspace">
-        {activeTab === 'voice-lab' && (
+        {!cloneOnly && activeTab === 'voice-lab' && (
           <div className="voice-lab-grid">
             <div className="voice-lab-card phil">
               <div className="voice-lab-kicker">PHIL DANDY</div>
@@ -324,6 +326,47 @@ function QwenStudio() {
 }
 
 
+function VoiceStudioView() {
+  const [reachable, setReachable] = useState(null)
+  const voiceStudioUrl = 'http://127.0.0.1:3900'
+
+  useEffect(() => {
+    let mounted = true
+    fetch(`${voiceStudioUrl}/health`, { signal: AbortSignal.timeout(2500) })
+      .then((response) => { if (mounted) setReachable(response.ok) })
+      .catch(() => { if (mounted) setReachable(false) })
+    return () => { mounted = false }
+  }, [])
+
+  return (
+    <div className="qwen-console">
+      <div className="qwen-console-head">
+        <div>
+          <div className="qwen-eyebrow">CONNECTED LOCAL SERVICE · OMNIVOICE / VOICESTUDIO</div>
+          <div className="qwen-title">DANDY VOICE STUDIO</div>
+          <div className="qwen-subtitle">The separate Voice Studio system for voice profiles, cloning, design, models, and synthesis.</div>
+        </div>
+        <div className="qwen-engine-actions">
+          <div className="qwen-active-model">
+            <span>STATUS</span>
+            <strong>{reachable === null ? 'CHECKING…' : reachable ? 'CONNECTED' : 'OFFLINE'}</strong>
+          </div>
+          <button className="studio-action secondary" onClick={() => window.open(voiceStudioUrl, '_blank')}>
+            OPEN VOICE STUDIO
+          </button>
+        </div>
+      </div>
+      <iframe
+        className="qwen-native-frame voice-studio-frame"
+        src={voiceStudioUrl}
+        title="Dandy Voice Studio"
+        allow="microphone; clipboard-read; clipboard-write; autoplay"
+      />
+    </div>
+  )
+}
+
+
 export default function StudioConsole() {
   const [studioView, setStudioView] = useState('audio')
 
@@ -345,6 +388,10 @@ export default function StudioConsole() {
       <div className="studio-v2-body">
         {studioView === 'qwen'
           ? <QwenStudio />
+          : studioView === 'voice-clone'
+            ? <QwenStudio initialTab="clone" cloneOnly />
+            : studioView === 'voice-studio'
+              ? <VoiceStudioView />
           : <LegacyStudioView view={studioView} />
         }
       </div>

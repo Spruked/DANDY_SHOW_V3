@@ -325,8 +325,9 @@ export default function EpisodeTab({ episodeId, onEpisodeChange, onNavigate, con
     } catch (e) { showToast('Export failed: ' + e.message.slice(0, 60)) }
   }
 
-  const openScriptOverride = () => {
-    setOverrideText(lines.map((line) => `${String(line.speaker || 'PHIL').toUpperCase()}: ${line.text || line.line || ''}`).join('\n'))
+  const openScriptOverride = (incomingScript = null) => {
+    const sourceLines = Array.isArray(incomingScript) ? incomingScript : lines
+    setOverrideText(sourceLines.map((line) => `${String(line.speaker || 'PHIL').toUpperCase()}: ${line.text || line.line || ''}`).join('\n'))
     setShowScriptOverride(true)
   }
 
