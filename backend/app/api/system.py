@@ -78,6 +78,12 @@ def _writer_probe():
             "data": result, "inference": "unverified", "source": "live llama.cpp /v1/models"}
 
 
+def _nvidia_probe():
+    result = llm_writer.nvidia_status()
+    return {"status": "ready" if result["configured"] else "unavailable",
+            "data": result, "source": "Dandy Nemotron provider configuration; no background inference"}
+
+
 _wsl_cache = None
 _wsl_lock = threading.Lock()
 
@@ -233,7 +239,7 @@ async def _measured(name, callback, asynchronous=False):
 async def diagnostics():
     cfg = load_qwen_tts_config()
     probes = [
-        _measured("writer", _writer_probe), _measured("kokoro", _kokoro_probe),
+        _measured("writer", _writer_probe), _measured("nvidia", _nvidia_probe), _measured("kokoro", _kokoro_probe),
         _measured("gpu", _gpu_probe), _measured("resources", _resources_probe),
         _measured("media_tools", _tools_probe), _measured("storage", _storage_probe),
         _measured("production", _production_probe), _measured("obs", _obs_probe, True),

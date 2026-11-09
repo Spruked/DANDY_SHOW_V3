@@ -8,6 +8,7 @@ import AudioAssetPicker from './AudioAssetPicker'
 const CHECK_NAMES = {
   writer: 'Writer / Loaded Model', kokoro: 'Kokoro WSL Runtime', qwen_bridge: 'Qwen TTS Bridge',
   qwen_custom_voice: 'Qwen CustomVoice Service', qwen_operator_ui: 'Qwen Operator UI',
+  nvidia: 'NVIDIA Nemotron Provider',
   gpu: 'GPU / VRAM', resources: 'CPU / RAM / Backend Process', media_tools: 'Media Tools',
   storage: 'Storage / Required Assets', production: 'Production / Generation Records',
   obs: 'OBS / Streaming / Recording',
@@ -36,7 +37,8 @@ function probeWebSocket() {
 }
 function Summary({ name, check }) {
   const data = check.data || {}
-  if (name === 'writer') return <><div>{data.model || 'No loaded model verified'}</div><div>{data.llamacpp_url}</div><div>Inference: {check.inference || 'unverified'}</div></>
+  if (name === 'writer') return <><div>Selected provider: {data.selected_provider || data.writer_backend || 'unverified'}</div><div>{data.model || 'No loaded model verified'}</div><div>{data.llamacpp_url}</div><div>Inference: {check.inference || 'unverified'}</div></>
+  if (name === 'nvidia') return <><div>Provider: {data.provider || 'nvidia'}</div><div>Model: {data.model || 'unverified'}</div><div>Endpoint: {data.base_url || 'unverified'}</div><div>Requests: {data.usage?.request_count ?? 0} · Tokens in/out: {data.usage?.input_tokens ?? 0} / {data.usage?.output_tokens ?? 0}</div></>
   if (name === 'gpu') return data.devices?.map(d => <div key={d.index}>{d.name}<br />VRAM {d.memory_used_mib} / {d.memory_total_mib} MiB · GPU {d.utilization_percent}% · {d.temperature_c} °C</div>)
   if (name === 'resources') return <><div>CPU {data.cpu_percent ?? 'unverified'}% · RAM {data.ram_used_percent ?? 'unverified'}%</div><div>Available RAM: {bytes(data.ram_available_bytes)}</div><div>Backend PID {data.backend_pid} · RSS {bytes(data.backend_rss_bytes)}</div></>
   if (name === 'storage') return <><div>Free disk: {bytes(data.disk_free_bytes)}</div><div>Intro/outro music: {data.music_exists ? 'present' : 'MISSING'}</div><div>Brand images: {data.brand_assets?.filter(a => a.available).length ?? 0} / {data.brand_assets?.length ?? 0} present</div></>
@@ -128,7 +130,7 @@ export default function SystemTab() {
         <details><summary>Configured voice identities ({voiceKeys.length})</summary>{voiceKeys.map(key => <div key={key}>{key}: {diagnostics.voice_registry[key].primary_voice} · Qwen: {diagnostics.qwen_voice_registry[key] || 'not configured'}</div>)}</details>
       </div>
       {Object.entries(diagnostics?.checks || {}).map(([name, check]) => <div className="sys-card" key={name} style={{ minWidth: 0 }}>
-        <div className="sys-card-title">{CHECK_NAMES[name] || name} <Badge type={stale ? 'steel' : check.status === 'ready' ? 'green' : check.status === 'reachable' ? 'gold' : 'steel'}>{stale ? 'stale (' + check.status + ')' : check.status}</Badge></div>
+        <div className="sys-card-title">{CHECK_NAMES[name] || name} <Badge type={stale ? 'steel' : ['ready', 'reachable', 'ok'].includes(check.status) ? 'green' : 'steel'}>{stale ? 'stale (' + check.status + ')' : check.status}</Badge></div>
         <div style={{ fontSize: '0.98rem', lineHeight: 1.7, overflowWrap: 'anywhere' }}><Summary name={name} check={check} />{check.error && <div style={{ color: 'var(--red)' }}>{check.error}</div>}</div>
         <div className="font-mono" style={{ fontSize: '0.75rem', color: 'var(--steel)', marginTop: 8 }}>{check.source} · {clock(check.checked_at)} · {check.latency_ms} ms{check.cached ? ' · cached' : ''}</div>
         <details><summary style={{ fontSize: '0.88rem' }}>Measured details</summary><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: '0.85rem', maxHeight: 220, overflow: 'auto' }}>{JSON.stringify(check, null, 2)}</pre></details>
