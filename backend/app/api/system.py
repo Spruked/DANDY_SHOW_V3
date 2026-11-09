@@ -307,7 +307,7 @@ async def get_tts_engine() -> Dict[str, Any]:
         "selected_engine": selected,
         "allowed_engines": [required] if required else sorted(_ALLOWED_TTS_ENGINES),
         "required_engine": required,
-        "fallback_engine": None,
+        "fallback_engine": "qwen" if selected == "voicestudio" and config.get("tts", {}).get("fallback_engine") == "qwen" else "none",
     }
 
 
