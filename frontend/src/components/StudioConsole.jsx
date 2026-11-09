@@ -314,10 +314,27 @@ function VoiceStudioView() {
 
   useEffect(() => {
     let mounted = true
-    fetch(`${voiceStudioUrl}/health`, { signal: AbortSignal.timeout(2500) })
-      .then((response) => { if (mounted) setReachable(response.ok) })
-      .catch(() => { if (mounted) setReachable(false) })
-    return () => { mounted = false }
+    const controller = new AbortController()
+    const checkHealth = async () => {
+      try {
+        const response = await fetch('/api/system/voicestudio-health', {
+          signal: controller.signal,
+          cache: 'no-store',
+        })
+        if (!response.ok) throw new Error(`Health check HTTP ${response.status}`)
+        const result = await response.json()
+        if (mounted) setReachable(result.status === 'reachable')
+      } catch {
+        if (mounted && !controller.signal.aborted) setReachable(false)
+      }
+    }
+    void checkHealth()
+    const refresh = window.setInterval(() => void checkHealth(), 15000)
+    return () => {
+      mounted = false
+      controller.abort()
+      window.clearInterval(refresh)
+    }
   }, [])
 
   return (
