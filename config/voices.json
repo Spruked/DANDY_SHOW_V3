@@ -34,17 +34,20 @@
   "host": {
     "display_name": "Host",
     "primary_engine": "edge",
-    "primary_voice": "en-US-BrianNeural"
+    "primary_voice": "en-US-BrianNeural",
+    "voicestudio_voice": "alloy"
   },
   "guest": {
     "display_name": "Guest",
     "primary_engine": "edge",
-    "primary_voice": "en-US-ChristopherNeural"
+    "primary_voice": "en-US-ChristopherNeural",
+    "voicestudio_voice": "sage"
   },
   "announcer_male": {
     "display_name": "Announcer Male",
     "primary_engine": "kokoro",
     "primary_voice": "am_eric",
+    "voicestudio_voice": "echo",
     "fallback_engine": "edge",
     "fallback_voice": "en-US-GuyNeural",
     "defaults": { "speed": 1.05, "pitch": 0.0, "volume": 1.0 }
@@ -53,6 +56,7 @@
     "display_name": "Announcer Female",
     "primary_engine": "kokoro",
     "primary_voice": "bf_emma",
+    "voicestudio_voice": "shimmer",
     "fallback_engine": "edge",
     "fallback_voice": "en-US-JennyNeural",
     "defaults": { "speed": 1.05, "pitch": 0.3, "volume": 1.0 }

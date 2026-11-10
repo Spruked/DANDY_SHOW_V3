@@ -1,0 +1,16 @@
+{
+  "episode_number": 1,
+  "business_slug": "pops-proof-of-presence",
+  "featured_product": "pops-application",
+  "ad_assignments": [],
+  "ad_slots": [
+    { "slot_id": "pre_roll_1", "placement": "pre_roll_1", "status": "reserved", "assigned_ad_id": null },
+    { "slot_id": "pre_roll_2", "placement": "pre_roll_2", "status": "reserved", "assigned_ad_id": null },
+    { "slot_id": "mid_roll_1", "placement": "mid_roll_1", "status": "reserved", "assigned_ad_id": null },
+    { "slot_id": "mid_roll_2", "placement": "mid_roll_2", "status": "reserved", "assigned_ad_id": null },
+    { "slot_id": "mid_roll_3", "placement": "mid_roll_3", "status": "reserved", "assigned_ad_id": null },
+    { "slot_id": "mid_roll_4", "placement": "mid_roll_4", "status": "reserved", "assigned_ad_id": null },
+    { "slot_id": "post_roll_1", "placement": "post_roll_1", "status": "reserved", "assigned_ad_id": null }
+  ],
+  "release_date": "2026-11-10"
+}

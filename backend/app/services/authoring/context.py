@@ -1,8 +1,38 @@
 """Build source-grounded handoff packages without generating episode dialogue."""
+import json
 from ...core.safety import contained_path, file_lock
 from ..storage.episode_store import episode_dir, list_assets, load_episode_detail
 from .extractors import extract_document
 from .sizing import estimated_tokens
+from ..planning import registry
+from datetime import datetime, timezone
+
+
+def registry_context(config: dict) -> dict:
+    """Resolve relevant registered business/products and freeze their values."""
+    explicit_business = str(config.get('business_slug') or '').strip().lower()
+    explicit_products = {str(value).strip().lower() for value in (config.get('product_slugs') or [])}
+    haystack = ' '.join(str(config.get(key) or '') for key in ('title', 'topic', 'description', 'custom_instructions')).lower()
+    businesses = []
+    products = []
+    for business in registry.list_businesses():
+        slug = business['slug'].lower()
+        if explicit_business and slug != explicit_business:
+            continue
+        aliases = {slug, business['name'].lower(), *slug.split('-')[:1]}
+        if not explicit_business and not any(alias and alias in haystack for alias in aliases):
+            continue
+        folder = registry.ROOT / slug
+        business_json = json.loads((folder / 'business.json').read_text(encoding='utf-8'))
+        brief_path = folder / 'brief.md'
+        businesses.append({**business_json, 'brief': brief_path.read_text(encoding='utf-8'),
+                           'source': str(brief_path.relative_to(registry.PROJECT_ROOT)).replace('\\', '/')})
+        for product in registry.list_products(slug):
+            if explicit_products and product['slug'].lower() not in explicit_products:
+                continue
+            products.append(registry.get_product(slug, product['slug']))
+    return {'snapshot_at': datetime.now(timezone.utc).isoformat(), 'businesses': businesses, 'products': products,
+            'source': 'brands/registry.sqlite3 and registered brand files'}
 
 
 def read_sources(episode_id, source_ids=None):
@@ -71,11 +101,12 @@ def build_context(episode_id: str, brief: str = '', source_ids: list[str] | None
     sources.sort(key=lambda source: not source['priority'])
     curation['source_ids'] = [source['source_id'] for source in sources]
     config = detail.get('config', {})
-    package = {'schema_version': 2, 'episode_id': episode_id, 'title': config.get('title', episode_id),
+    package = {'schema_version': 3, 'episode_id': episode_id, 'title': config.get('title', episode_id),
                'topic': config.get('topic', ''), 'target_seconds': config.get('target_duration', 300),
                'description': config.get('description', ''), 'key_points': config.get('key_points', []),
                'custom_instructions': config.get('custom_instructions', ''),
                'brief': brief.strip(),
+               'registry_context': registry_context(config),
                'sources': sources, 'warnings': warnings, 'curation': curation}
     from .direction import current_direction, write_direction, publish_package
     from .pack import show_bible, ad_slots, FORMAT_CONTRACT

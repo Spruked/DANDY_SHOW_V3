@@ -13,7 +13,7 @@ from pydub import AudioSegment
 def synthesize(base_url: str, voice: str, text: str, output_path: Path,
                instructions: str | None = None, speed: float | None = None) -> Path:
     payload = {
-        "model": "voice-studio",
+        "model": "omnivoice",
         "voice": voice,
         "input": text,
         "response_format": "wav",

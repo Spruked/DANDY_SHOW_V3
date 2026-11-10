@@ -39,7 +39,6 @@
     "explicit_selection_enabled": true,
     "use_as_secondary_fallback": false,
     "fallback_provider": "edge",
-    "store_outputs_under_episode": true,
-    "required_engine": "qwen"
+    "store_outputs_under_episode": true
   }
 }

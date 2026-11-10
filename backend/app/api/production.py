@@ -227,14 +227,23 @@ def _resolve_episode_audio_path(episode_id: str) -> Path | None:
     return None
 
 
-def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings: Dict | None = None) -> List[Dict]:
+def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings: Dict | None = None,
+                               target_seconds: int = 2400) -> List[Dict]:
     # Only saved, explicitly created ads. Never invent sponsors, change voices,
     # duplicate a manual insertion, or add another spoken intro/outro here.
     existing = {line.get("ad_id") for line in script if line.get("ad_id")}
     available = [ad for ad in ads if ad.get("ad_id") not in existing]
     result = []
     elapsed = 0.0
-    next_break = 900.0
+    policy = (load_project_config().get("production", {}).get("ad_policy", {}) or {})
+    midroll_count = max(0, int(policy.get("midroll_count", 4)))
+    ad_duration = max(5, int(policy.get("midroll_duration_seconds", 30)))
+    # Space four single ads through the content portion while reserving their
+    # time in the final episode target. Never create or duplicate ad records.
+    planned_count = min(midroll_count, len(available))
+    content_target = max(60.0, float(target_seconds) - planned_count * ad_duration)
+    next_break = content_target / (planned_count + 1) if planned_count else float("inf")
+    break_spacing = next_break
     break_index = 0
     previous_segment = None
     for line in script:
@@ -245,7 +254,7 @@ def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings:
             ad = available.pop(0)
             result.extend({**ad_line, "ad_id": ad["ad_id"], "ad_line_index": index, "is_ad": True, "ad_break_index": break_index + 1}
                           for index, ad_line in enumerate(ad.get("script", []), start=1))
-            break_index += 1; next_break += 900
+            break_index += 1; next_break += break_spacing
         result.append(dict(line))
         if not line.get("is_ad"):
             elapsed += len(str(line.get("text", "")).split()) / 155 * 60 + float(line.get("pause_after", 0) or 0)
@@ -541,7 +550,9 @@ async def produce_episode(
     if not approved_production and target_seconds > 900:
         if est_words < 5000:
             raise HTTPException(400, f"Episode must have at least 5000 words (got {est_words}); use a short target for short scripts")
-        script = _enforce_ads_and_structure(script, detail.get("ads", []), detail.get("ad_settings"))
+        script = _enforce_ads_and_structure(
+            script, detail.get("ads", []), detail.get("ad_settings"), target_seconds=target_seconds
+        )
     try:
         script_meta = _assert_llm_script_publishable(script, require_llm=require_llm)
     except RuntimeError as exc:

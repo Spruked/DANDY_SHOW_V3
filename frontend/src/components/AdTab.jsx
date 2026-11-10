@@ -169,6 +169,9 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
     }
   }
 
+  const targetEpisodeSeconds = Number(activeEp?.target_duration || activeEp?.config?.target_duration || 0)
+  const plannedAdSeconds = ads.reduce((sum, ad) => sum + Number(ad.duration_seconds || 0), 0)
+
   return (
     <div className="tab-body">
 
@@ -202,6 +205,9 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
           <button className="icon-btn" onClick={() => activeEp && selectEpisode(activeEp)} title="Refresh">
             <RefreshCw size={10} />
           </button>
+        </div>
+        <div className="font-mono" style={{ padding: '8px 14px', color: 'var(--steel)', fontSize: '0.72rem', borderBottom: '1px solid var(--rim)' }}>
+          STANDARD: 4 SINGLE MID-ROLLS · 30s EACH · NO CLUSTERS · {targetEpisodeSeconds ? `EPISODE TARGET ${(targetEpisodeSeconds / 60).toFixed(0)}m · ` : ''}CURRENT AD LOAD {plannedAdSeconds}s
         </div>
 
         <div className="scrollable" style={{ padding: '10px 14px' }}>
@@ -241,7 +247,7 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
                 <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }} onClick={(e) => e.stopPropagation()}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     <button className="btn btn-gold btn-sm" onClick={() => handleProduce(ad.ad_id)} disabled={producingAdId === ad.ad_id}>
-                      {producingAdId === ad.ad_id ? <Spinner size={11} /> : <Zap size={10} />} PRODUCE AUDIO
+                      {producingAdId === ad.ad_id ? <Spinner size={11} /> : <Zap size={10} />} {ad.audio_file ? 'REGENERATE AUDIO' : 'PRODUCE AUDIO'}
                     </button>
                     {ad.audio_file && (
                       <button className="btn btn-steel btn-sm" onClick={() => window.open(api.adAudioUrl(epId, ad.ad_id), '_blank')}>

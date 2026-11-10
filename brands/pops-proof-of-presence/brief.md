@@ -1,0 +1,1 @@
+POPS (Proof of Presence System) develops practical documentation and evidence-preservation applications for parents and caregivers. Its mission is to help people preserve original records, organize events and communications, document parental involvement, and maintain factual timelines during family conflict and custody disputes.

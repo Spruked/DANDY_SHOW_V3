@@ -1,0 +1,54 @@
+{
+  "product": "POPS - Proof of Presence System",
+  "currency": "USD",
+  "standard_offer": {
+    "name": "POPS Desktop Access",
+    "price": 99,
+    "payment": "one-time",
+    "includes": [
+      "POPS Desktop for Windows",
+      "POPS Android companion application",
+      "Lifetime POPS Membership"
+    ],
+    "subscription_required": false
+  },
+  "beta_program": {
+    "name": "POPS Beta Program",
+    "goal": "50 active beta participants",
+    "purpose": "Test the applications, provide practical feedback, and improve the user experience",
+    "call_to_action": "Join the POPS beta testing community",
+    "website": "https://popsproof.com/beta-signup"
+  },
+  "founding_customers": {
+    "name": "First 100 Founding Customers",
+    "eligibility": "First 100 qualifying paid customers",
+    "benefits": "Special founding-customer benefits to be announced"
+  },
+  "pay_what_you_can": {
+    "name": "Open Door Access",
+    "minimum_contribution": "Greater than $0",
+    "account_required": true,
+    "review_required": true,
+    "reserve_funding": "15% of full-price license sales plus sponsorship contributions",
+    "message": "An Open Door for Every Father"
+  },
+  "sponsorship": {
+    "name": "Sponsor a Father",
+    "minimum_contribution": 25,
+    "increment": 25,
+    "purpose": "Help another father access POPS through the Open Door program",
+    "message": "Pay it forward. Help another father protect the record."
+  },
+  "membership": {
+    "name": "POPS Membership",
+    "price": 12.99,
+    "payment": "one-time lifetime",
+    "included_with_desktop": true
+  },
+  "ios": {
+    "name": "POPS for iOS",
+    "status": "Separate future platform offering"
+  },
+  "call_to_action": "Discover POPS. Protect the record. Preserve the truth.",
+  "website": "https://popsproof.com/access"
+}

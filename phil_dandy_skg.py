@@ -18,6 +18,11 @@ import random
 import logging
 from shared_encoder import get_shared_encoder
 
+
+def load_canonical_persona(base_path: Path) -> Dict[str, Any]:
+    path = Path(base_path) / 'config' / 'characters' / 'phil.persona.json'
+    return json.loads(path.read_text(encoding='utf-8')) if path.is_file() else {}
+
 @dataclass
 class LearnedPattern:
     """Immutable pattern record with decay tracking"""
@@ -210,6 +215,7 @@ class PhilDandySKG:
     
     def __init__(self, base_path: Path, enable_gpu: bool = True, jim_skg=None):
         self.base_path = Path(base_path)
+        self.persona = load_canonical_persona(self.base_path)
         self.skg_path = self.base_path / "phil_dandy_skg_v3"
         self.skg_path.mkdir(parents=True, exist_ok=True)
         
