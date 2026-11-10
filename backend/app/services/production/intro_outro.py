@@ -145,12 +145,27 @@ def _synthesize_tts_wsl(part: str, voice: str, out_path: Path, speed: float = 1.
 
 
 def _synthesize_tts_edge_sync(text: str, voice: str, output_path: Path, pause_ms: int = 700) -> None:
-    """Use required Qwen, otherwise configured Kokoro; never substitute a provider."""
-    from ...core.settings import load_qwen_tts_config
-    if load_qwen_tts_config().get("production", {}).get("required_engine") == "qwen":
+    """Use the configured production engine and existing announcer identity."""
+    from ...core.settings import load_qwen_tts_config, load_project_config
+    selected = (load_qwen_tts_config().get('production', {}).get('required_engine')
+                or load_project_config().get('tts', {}).get('primary_engine', 'kokoro'))
+    if selected in {'qwen', 'voicestudio'}:
         from .worker import HardenedPodcastWorker
         worker = HardenedPodcastWorker()
-        worker._synthesize_line(text.replace(PAUSE_MARKER, " "), "announcer_male", "neutral", output_path)
+        speaker = voice if voice in worker.voices_config else 'announcer_male'
+        parts = [part.strip() for part in text.split(PAUSE_MARKER) if part.strip()]
+        if not parts:
+            raise RuntimeError('Announcer text is empty')
+        with tempfile.TemporaryDirectory(prefix='dandy_announcer_') as directory:
+            combined = AudioSegment.empty()
+            for index, part in enumerate(parts):
+                target = Path(directory) / f'announcer_{index}.mp3'
+                worker._synthesize_line(part, speaker, 'neutral', target)
+                if index:
+                    combined += AudioSegment.silent(duration=pause_ms)
+                combined += AudioSegment.from_file(target)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            combined.export(output_path, format='mp3', bitrate='192k').close()
         return
 
     # Map Edge TTS voice names → Kokoro voice names for the announcer

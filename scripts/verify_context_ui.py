@@ -9,11 +9,12 @@ from playwright.sync_api import sync_playwright, expect
 def main():
     sources, lines, calls, errors = [], [], [], []
     packet = None
+    writer_draft = None
     owner = {'authority': 'owner_direction', 'revision_id': '', 'per_source_notes': {}}
     revision = 0
 
     def api(route):
-        nonlocal packet, lines, owner, revision
+        nonlocal packet, lines, owner, revision, writer_draft
         request = route.request
         path = urlsplit(request.url).path
         calls.append((request.method, path))
@@ -69,8 +70,19 @@ def main():
             data = {'ads': []}
         elif path.endswith('/writer-status'):
             data = {'bridge_reachable': False, 'active_writer': 'offline'}
+        elif path.endswith('/writer-draft'):
+            data = writer_draft
+        elif path.endswith('/episodes/jobs/job_fixture'):
+            data = {'status': 'draft_ready' if writer_draft else 'idle'}
+        elif path == '/api/episodes/generate-script':
+            assert request.post_data_json == {'context_version_id': packet['version_id'], 'sample': True}
+            sample = [{'speaker': 'phil' if i % 2 == 0 else 'jim', 'text': f'Approved sample dialogue number {i}.',
+                       'emotion': 'neutral', 'pause_after': .4} for i in range(8)]
+            writer_draft = {'draft_id': 'draft_ui_fixture', 'sample': True, 'status': 'sample',
+                            'context_version_id': packet['version_id'], 'word_count': 40, 'script': sample, 'review_warnings': []}
+            data = writer_draft
         elif path.endswith('/episodes/fixture'):
-            data = {'episode_id': 'fixture', 'title': 'Context workflow test', 'config': {'topic': 'Evidence', 'target_duration': 300}, 'script': lines}
+            data = {'episode_id': 'fixture', 'job_id': 'job_fixture', 'title': 'Context workflow test', 'config': {'topic': 'Evidence', 'target_duration': 300}, 'script': lines}
         else:
             data = {}
         route.fulfill(json=data)
@@ -146,6 +158,14 @@ def main():
         expect(page.get_by_role('tab', name='Sources', exact=True)).to_have_attribute('aria-selected', 'true')
         page.keyboard.press('Home')
         expect(page.get_by_role('tab', name='Direction', exact=True)).to_have_attribute('aria-selected', 'true')
+        page.get_by_role('tab', name='Build & Export', exact=True).click()
+        page.get_by_role('button', name='TEST WRITER · 8 TURNS', exact=True).click()
+        expect(page.get_by_role('heading', name='Diagnostic sample · 40 words')).to_be_visible()
+        expect(page.get_by_role('button', name='ACCEPT DRAFT TO PREVIEW', exact=True)).to_have_count(0)
+        assert lines == [], 'Sample must not activate an episode script'
+        page.reload()
+        page.get_by_role('tab', name='Build & Export', exact=True).click()
+        expect(page.get_by_role('heading', name='Diagnostic sample · 40 words')).to_be_visible()
         page.screenshot(path=str(output / 'context-958.png'), full_page=True)
         page.get_by_role('button', name='IMPORT FINISHED SCRIPT', exact=True).first.click()
         page.get_by_placeholder('PHIL: Opening line…\nJIM: Response…\nPHIL: Next point…').fill('PHIL: Welcome to the show.\nJIM: Let us examine the evidence.')
@@ -154,10 +174,10 @@ def main():
         page.get_by_role('button', name='EPISODES', exact=True).click()
         expect(page.get_by_text('Welcome to the show.', exact=True)).to_be_visible()
         page.screenshot(path=str(output / 'imported.png'), full_page=True)
-        assert not any('generate-script' in path for _, path in calls)
+        assert sum('generate-script' in path for _, path in calls) == 1
         assert not errors, errors
         browser.close()
-    print('PASS: dedicated Context workspace, nine section tabs, keyboard switching, retained edits, source analysis, priority, size planning, versioning and script import; no real API mutations')
+    print('PASS: Context workspace, retained edits, source analysis, versioning, recovered diagnostic sample and script import. All API calls intercepted; no provider calls or real episode mutations.')
 
 
 if __name__ == '__main__':

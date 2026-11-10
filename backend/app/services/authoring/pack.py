@@ -1,72 +1,43 @@
 """Context presentation: owner direction precedes all other pack content."""
-import ast
+import importlib.util
 import hashlib
 import json
 from ...core.paths import PROJECT_ROOT
-from ...core.safety import contained_path
-from ...core.settings import load_voices_config
 from ..storage.episode_store import load_ad_settings, list_ads
 
 
 def show_bible():
+    """Use the same fail-closed canon validation as the SKGs; no legacy fallback."""
+    spec = importlib.util.spec_from_file_location('_dandy_pack_persona_canon', PROJECT_ROOT / 'persona_canon.py')
+    canon = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(canon)
     result = []
-    persona_dir = PROJECT_ROOT / 'config' / 'characters'
-    personas = {}
-    for speaker in ('phil', 'jim'):
-        persona_path = persona_dir / f'{speaker}.persona.json'
-        if persona_path.is_file():
-            try:
-                personas[speaker] = (persona_path, json.loads(persona_path.read_text(encoding='utf-8')))
-            except (OSError, ValueError):
-                pass
-    for speaker in ('phil', 'jim'):
-        try:
-            if speaker in personas:
-                path, persona = personas[speaker]
-                result.append({'speaker': speaker, 'persona': persona,
-                    'source_file': path.relative_to(PROJECT_ROOT).as_posix(),
-                    'location': 'complete persona JSON', 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()})
-                continue
-            path = contained_path(PROJECT_ROOT, load_voices_config()[speaker]['character_file'])
-            source = path.read_text(encoding='utf-8')
-            identity = personality = None
-            locations = []
-            for node in ast.walk(ast.parse(source)):
-                if isinstance(node, ast.Assign):
-                    names = {t.id for t in node.targets if isinstance(t, ast.Name)}
-                    if names & {'CORE_IDENTITY', 'CORE_PERSONALITY'}:
-                        value = ast.literal_eval(node.value)
-                        if 'CORE_IDENTITY' in names: identity = value
-                        if 'CORE_PERSONALITY' in names: personality = value
-                        locations.append(f'lines {node.lineno}-{node.end_lineno}')
-            if identity is not None or personality is not None:
-                result.append({'speaker': speaker, 'identity': identity or {}, 'personality': personality or {},
-                    'source_file': path.relative_to(PROJECT_ROOT).as_posix(),
-                    'location': ', '.join(locations), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()})
-        except (KeyError, ValueError, OSError, SyntaxError):
-            continue
-    if len(personas) == 2:
-        shared = [personas[speaker][1].get('shared_family', {}) for speaker in ('phil', 'jim')]
-        fingerprints = [personas[speaker][1].get('shared_family_sha256') for speaker in ('phil', 'jim')]
-        if shared[0] != shared[1] or fingerprints[0] != fingerprints[1]:
-            raise ValueError('Phil and Jim persona shared-family blocks do not match')
-    else:
-        history_path = PROJECT_ROOT / 'config' / 'character_history.json'
-        if history_path.is_file():
-            history = json.loads(history_path.read_text(encoding='utf-8'))
-            result.append({'shared_history': history.get('shared_history', []), 'source_file': 'config/character_history.json',
-                           'location': 'owner-provided canon', 'sha256': hashlib.sha256(history_path.read_bytes()).hexdigest()})
+    try:
+        for speaker in ('phil', 'jim'):
+            path = PROJECT_ROOT / 'config' / 'characters' / f'{speaker}.persona.json'
+            if not path.is_file():
+                raise ValueError(f'Canonical persona missing: {path.name}')
+            loaded = canon.load_persona(speaker, PROJECT_ROOT)
+            persona = {key: value for key, value in loaded.items() if not key.startswith('_')}
+            result.append({'speaker': speaker, 'persona': persona,
+                           'source_file': path.relative_to(PROJECT_ROOT).as_posix(),
+                           'location': 'complete persona JSON', 'sha256': loaded['_file_sha256']})
+    except canon.PersonaIntegrityError as exc:
+        raise ValueError(f'Canonical persona validation failed: {exc}') from exc
     return result
 
 
 def ad_slots(episode_id):
+    from ..production.ads import advertising_slots
     fields = {'ad_id', 'title', 'sponsor', 'insert_after_line', 'insert_line', 'placement', 'enabled', 'duration_seconds'}
-    return {'settings': load_ad_settings(episode_id),
-            'ads': [{k: v for k, v in ad.items() if k in fields} for ad in list_ads(episode_id)]}
+    ads, settings = list_ads(episode_id), load_ad_settings(episode_id)
+    return {'settings': settings, 'slots': advertising_slots(ads, settings),
+            'ads': [{k: v for k, v in ad.items() if k in fields} for ad in ads]}
 
 
 FORMAT_CONTRACT = {
-    'spoken_script': 'One PHIL: or JIM: turn per line, plain text, complete sentences.',
+    'writer_response': 'For built-in generation return one complete JSON array. Each turn has speaker (phil or jim), text, emotion, and numeric pause_after in seconds. No reasoning or notes in the array.',
+    'spoken_script': 'For manual transcript import only: one PHIL: or JIM: turn per line, plain text, complete sentences. This is a different representation of the same dialogue, not a second requirement for the JSON response.',
     'producer_notes': 'Keep citations, scene notes, uncertainty and ad-placement instructions in a separate producer note.',
     'inline_markers': 'Do not put Markdown headings, [AD_BREAK], scene notation or other non-dialogue markers in the imported spoken transcript. Studio configures ads and cues separately.',
     'approval': 'Imported scripts still require saved Preview and explicit Production Editor approval.',

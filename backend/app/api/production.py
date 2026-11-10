@@ -76,7 +76,7 @@ class GenerationCancelled(Exception):
 def writer_status():
     from ..services.production import llm_writer
 
-    return llm_writer.writer_status()
+    return {**llm_writer.writer_status(), 'active_generation_job': _ACTIVE_GENERATION}
 
 
 
@@ -229,6 +229,37 @@ def _resolve_episode_audio_path(episode_id: str) -> Path | None:
 
 def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings: Dict | None = None,
                                target_seconds: int = 2400) -> List[Dict]:
+    policy = (load_project_config().get('production', {}).get('ad_policy', {}) or {})
+    if policy.get('model') == 'seven_independent_slots' or 'slots' in (ad_settings or {}):
+        from ..services.production.ads import advertising_slots
+        slots = advertising_slots(ads, ad_settings)
+        by_id = {ad['ad_id']: ad for ad in ads}
+        already_inserted = {line.get('ad_id') for line in script if line.get('ad_id')}
+        def slot_lines(slot_id):
+            slot = next(slot for slot in slots if slot['slot_id'] == slot_id)
+            ad_id = slot['assigned_ad_id']
+            if not ad_id or ad_id in already_inserted:
+                return []
+            ad = by_id.get(ad_id)
+            if not ad:
+                raise ValueError(f'Assigned recording missing for {slot_id}')
+            return [{**line, 'ad_id': ad_id, 'ad_slot_id': slot_id, 'ad_line_index': index, 'is_ad': True}
+                    for index, line in enumerate(ad['script'], 1)]
+        result = slot_lines('pre_roll_1') + slot_lines('pre_roll_2')
+        host_words = sum(len(str(line.get('text', '')).split()) for line in script if not line.get('is_ad'))
+        elapsed_words, next_midroll = 0, 1
+        for line in script:
+            if not line.get('is_ad'):
+                while next_midroll <= 4 and elapsed_words >= host_words * next_midroll / 5:
+                    result.extend(slot_lines(f'mid_roll_{next_midroll}'))
+                    next_midroll += 1
+                elapsed_words += len(str(line.get('text', '')).split())
+            result.append(dict(line))
+        while next_midroll <= 4:
+            result.extend(slot_lines(f'mid_roll_{next_midroll}'))
+            next_midroll += 1
+        result.extend(slot_lines('post_roll_1'))
+        return _reindex(result)
     # Only saved, explicitly created ads. Never invent sponsors, change voices,
     # duplicate a manual insertion, or add another spoken intro/outro here.
     existing = {line.get("ad_id") for line in script if line.get("ad_id")}
@@ -366,6 +397,8 @@ def cancel_job(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
     if _ACTIVE_GENERATION == job_id:
         _GENERATION_CANCEL.set()
+        save_json(episode_dir(job['episode_id']).parent / '.drafts' / 'jobs' / f'{job_id}.json',
+                  {**job, 'status': 'cancellation_requested', 'updated_at': datetime.now().isoformat()})
         return {"status": "cancellation_requested", "job_id": job_id}
     production_event = _PRODUCTION_CANCEL_EVENTS.get(job_id)
     if production_event is not None:
@@ -386,6 +419,7 @@ def generate_script(
     job_id: str = Query(...),
     payload: Dict | None = Body(default=None),
 ):
+    global _ACTIVE_GENERATION
     job = load_job(job_id)
     if not job:
         raise HTTPException(404, "Generation job not found")
@@ -393,26 +427,70 @@ def generate_script(
     detail = load_episode_detail(episode_id)
     if not detail.get("config"):
         raise HTTPException(404, "Episode not found")
+    if not _GENERATION_LOCK.acquire(blocking=False):
+        raise HTTPException(409, 'A writer request is already running; wait for its result')
+    prior_job = dict(job)
+    started = datetime.now().isoformat()
+    def record(status, **extra):
+        save_json(episode_dir(episode_id).parent / '.drafts' / 'jobs' / f'{job_id}.json',
+                  {**prior_job, 'status': status, 'started_at': started,
+                   'updated_at': datetime.now().isoformat(), **extra})
     try:
+        from .library import _assert_episode_idle
+        _assert_episode_idle(episode_id)
+        from ..services.authoring import generated_drafts
         from ..services.production import llm_writer
         body = payload or {}
-        package = build_context(
-            episode_id,
-            brief=str(body.get("brief", "")),
-            source_ids=body.get("source_ids"),
-            owner_direction=body.get("owner_direction"),
-            expected_direction_revision=body.get("expected_direction_revision"),
-            curation=body.get("curation") or {"model_name": "NVIDIA Nemotron"},
-        )
-        target = int(detail.get("config", {}).get("target_duration") or 1800)
+        package = generated_drafts.saved_context(episode_id, body.get('context_version_id'))
+        if 'brief' in body and body['brief'] != package.get('brief', ''):
+            raise ValueError('Brief differs from saved context; build a new package first')
+        source_hash = generated_drafts.script_fingerprint(episode_id)
+        target = int(package.get('target_seconds') or 1500)
         target_words = max(600, round(target / 60 * 160))
-        script = llm_writer.generate_episode_script(render_pack(package), target_words=target_words)
-        save_script(episode_id, script)
-        return {"status": "generated", "episode_id": episode_id, "job_id": job_id,
-                "writer_engine": "nemotron", "script": script,
-                "word_count": sum(len(line["text"].split()) for line in script)}
+        sample = body.get('sample', False)
+        if not isinstance(sample, bool):
+            raise ValueError('sample must be true or false')
+        _GENERATION_CANCEL.clear()
+        _ACTIVE_GENERATION = job_id
+        record('generating', context_version_id=package['version_id'], sample=sample)
+        script = llm_writer.generate_episode_script(render_pack(package), target_words=target_words,
+                                                    sample=sample, cancel_event=_GENERATION_CANCEL)
+        if _GENERATION_CANCEL.is_set():
+            raise GenerationCancelled('Generation cancelled; the active script was preserved')
+        draft = generated_drafts.save_draft(episode_id, package, script, source_hash, sample)
+        record('draft_ready', draft_id=draft['draft_id'], context_version_id=package['version_id'], sample=sample)
+        return {**draft, 'job_id': job_id}
+    except HTTPException:
+        raise
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
     except Exception as exc:
+        record('cancelled' if _GENERATION_CANCEL.is_set() else 'failed', error=str(exc))
         raise HTTPException(502, f"Nemotron script generation failed: {exc}") from exc
+    finally:
+        _ACTIVE_GENERATION = None
+        _GENERATION_LOCK.release()
+
+
+@router.get('/episodes/{episode_id}/writer-draft')
+def writer_draft(episode_id: str):
+    from ..services.authoring.generated_drafts import latest_draft
+    return latest_draft(episode_id)
+
+
+@router.post('/episodes/{episode_id}/writer-drafts/{draft_id}/accept')
+def accept_writer_draft(episode_id: str, draft_id: str):
+    from .library import _assert_episode_idle
+    from ..services.authoring.generated_drafts import accept_draft
+    if not _GENERATION_LOCK.acquire(blocking=False):
+        raise HTTPException(409, 'A writer request is running')
+    try:
+        _assert_episode_idle(episode_id)
+        return accept_draft(episode_id, draft_id)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    finally:
+        _GENERATION_LOCK.release()
 
 
 def _generate_script_impl(job_id, payload=None):

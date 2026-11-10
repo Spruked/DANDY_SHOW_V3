@@ -197,6 +197,8 @@ export const api = {
       body: JSON.stringify(body),
     })
   },
+  writerDraft: (id) => req(`/episodes/${encodeURIComponent(id)}/writer-draft`),
+  acceptWriterDraft: (id, draftId) => req(`/episodes/${encodeURIComponent(id)}/writer-drafts/${encodeURIComponent(draftId)}/accept`, { method: 'POST' }),
   generationStatus: async (id) => {
     const jobId = await ensureJob(id)
     return req(`/episodes/jobs/${encodeURIComponent(jobId)}`)
@@ -279,16 +281,15 @@ export const api = {
     return normalizeAd(data.ad || data)
   },
   adPresets: async () => {
-    try {
-      const data = await req('/ads/presets')
-      const presets = Array.isArray(data) ? data : (data.presets || [])
-      return presets
-    } catch {
-      const data = await req('/ads/catalog')
-      const entries = Object.entries(data.ads || {})
-      return entries.map(([preset_id, value]) => ({ preset_id, ...value }))
-    }
+    const [saved, catalog] = await Promise.all([req('/ads/presets').catch(() => ({ presets: [] })), req('/ads/catalog')])
+    const presets = Array.isArray(saved) ? saved : (saved.presets || [])
+    const ids = new Set(presets.map(p => p.preset_id))
+    return [...presets, ...Object.entries(catalog.ads || {}).filter(([id]) => !ids.has(id)).map(([preset_id, value]) => ({ preset_id, ...value }))]
   },
+  reusableAds: () => req('/ads/library'),
+  adSettings: (id) => req(`/episodes/${encodeURIComponent(id)}/ad-settings`),
+  saveAdSettings: (id, settings) => req(`/episodes/${encodeURIComponent(id)}/ad-settings`, { method: 'POST', body: JSON.stringify(settings) }),
+  reuseAd: (id, sourceEpisode, adId) => req(`/episodes/${encodeURIComponent(id)}/ads/reuse`, { method: 'POST', body: JSON.stringify({ source_episode_id: sourceEpisode, ad_id: adId }) }),
   adAudioUrl: (id, adId) => `${BASE}/episodes/${encodeURIComponent(id)}/ads/${encodeURIComponent(adId)}/audio`,
   produceAd: async (epId, adId) => {
     const data = await req(`/episodes/${encodeURIComponent(epId)}/ads/${encodeURIComponent(adId)}/produce`, { method: 'POST' })

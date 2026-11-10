@@ -29,6 +29,11 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
   const [producingAdId, setProducingAdId] = useState('')
   const [insertingAdId, setInsertingAdId] = useState('')
   const [uploadingAdId, setUploadingAdId] = useState('')
+  const [library, setLibrary] = useState([])
+  const [showLibrary, setShowLibrary] = useState(false)
+  const [reusing, setReusing] = useState('')
+  const [adSettings, setAdSettings] = useState({ slots: [] })
+  const [savingSlots, setSavingSlots] = useState(false)
 
   useEffect(() => {
     loadEpisodes()
@@ -65,13 +70,15 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
     } catch { /* Invalid saved positions do not block the episode. */ }
     setAds([])
     try {
-      const [adData, scriptData] = await Promise.all([
+      const [adData, scriptData, settings] = await Promise.all([
         api.listAds(id),
         api.getScript(id).catch(() => ({ script: [] })),
+        api.adSettings(id),
       ])
       const nextAds = Array.isArray(adData) ? adData : (adData.ads || [])
       if (requestId !== selectionRequest.current) return
       setAds(nextAds)
+      setAdSettings(settings)
       setScriptLength(Array.isArray(scriptData?.script) ? scriptData.script.length : 0)
       setAdAssets({})
       setInsertLines(savedLines)
@@ -170,7 +177,7 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
   }
 
   const targetEpisodeSeconds = Number(activeEp?.target_duration || activeEp?.config?.target_duration || 0)
-  const plannedAdSeconds = ads.reduce((sum, ad) => sum + Number(ad.duration_seconds || 0), 0)
+  const plannedAdSeconds = ads.reduce((sum, ad) => sum + Number(ad.actual_duration_seconds ?? ad.duration_seconds ?? 0), 0)
 
   return (
     <div className="tab-body">
@@ -202,15 +209,49 @@ export default function AdTab({ episodeId, onEpisodeChange }) {
           <button className="btn btn-gold btn-sm" onClick={() => setShowCreate(true)} disabled={!activeEp}>
             <Zap size={10} /> GENERATE AD
           </button>
+          <button className="btn btn-steel btn-sm" disabled={!activeEp} onClick={async () => {
+            try { const result = await api.reusableAds(); setLibrary(result.ads || []); setShowLibrary(true) }
+            catch (e) { showToast(e.message) }
+          }}>USE EXISTING RECORDING</button>
           <button className="icon-btn" onClick={() => activeEp && selectEpisode(activeEp)} title="Refresh">
             <RefreshCw size={10} />
           </button>
         </div>
         <div className="font-mono" style={{ padding: '8px 14px', color: 'var(--steel)', fontSize: '0.72rem', borderBottom: '1px solid var(--rim)' }}>
-          STANDARD: 4 SINGLE MID-ROLLS · 30s EACH · NO CLUSTERS · {targetEpisodeSeconds ? `EPISODE TARGET ${(targetEpisodeSeconds / 60).toFixed(0)}m · ` : ''}CURRENT AD LOAD {plannedAdSeconds}s
+          STANDARD: 2 PRE-ROLLS · 4 SINGLE MID-ROLLS · 1 POST-ROLL · {targetEpisodeSeconds ? `EPISODE TARGET ${(targetEpisodeSeconds / 60).toFixed(0)}m · ` : ''}AVAILABLE AD INVENTORY {plannedAdSeconds.toFixed(1)}s · RESERVED SLOTS CAN REMAIN EMPTY DURING DEVELOPMENT
         </div>
 
         <div className="scrollable" style={{ padding: '10px 14px' }}>
+          {activeEp && <details style={{ padding: 12, border: '1px solid var(--rim)', marginBottom: 12 }}><summary>Seven advertising slots · reserve, assign, or replace</summary>
+            <p>Assignments are applied when you create a new Production Editor draft. Existing host scripts, recordings, and approved masters remain unchanged.</p>
+            {(adSettings.slots || []).map(slot => <label key={slot.slot_id} style={{ display: 'block', padding: 6 }}>{slot.slot_id.replaceAll('_', ' ')}
+              <select className="ds-select" value={slot.assigned_ad_id || ''} onChange={event => setAdSettings(current => ({ ...current, slots: current.slots.map(item => item.slot_id === slot.slot_id ? { ...item, assigned_ad_id: event.target.value || null } : item) }))}>
+                <option value="">Reserved — leave open</option>
+                {ads.map(ad => <option key={ad.ad_id} value={ad.ad_id}>{ad.title || ad.sponsor} · {ad.actual_duration_seconds ?? ad.duration_seconds}s</option>)}
+              </select>
+            </label>)}
+            <button className="btn btn-steel" disabled={savingSlots} onClick={async () => {
+              setSavingSlots(true)
+              try { await api.saveAdSettings(epId, adSettings); setAdSettings(await api.adSettings(epId)); showToast('Ad slots saved. Create a new editor draft to review the assembly.') }
+              catch (e) { showToast(e.message) } finally { setSavingSlots(false) }
+            }}>SAVE SLOT ASSIGNMENTS</button>
+          </details>}
+          {showLibrary && <section aria-label="Reusable commercial recordings" style={{ padding: 12, border: '1px solid var(--rim)', marginBottom: 12 }}>
+            <SectionHead label="Existing recordings" /><p>Reuse copies a commercial into this episode without inserting it or regenerating host audio. Listen and review it before production approval.</p>
+            <button className="btn btn-steel btn-sm" onClick={() => setShowLibrary(false)}>CLOSE LIBRARY</button>
+            {!library.length && <p>No produced recordings found.</p>}
+            {library.map(ad => <article key={`${ad.source_episode_id}/${ad.ad_id}`} style={{ padding: 10 }}>
+              <strong>{ad.sponsor} · {ad.actual_duration_seconds ?? ad.duration_seconds}s</strong>
+              <p>{ad.source_episode_id} · {ad.ad_id} · {ad.approval_status}</p>
+              <audio controls preload="none" src={api.adAudioUrl(ad.source_episode_id, ad.ad_id)} style={{ width: '100%' }} />
+              {ad.voice_verification_required && <p>Legacy recording has no verified voice-profile ID. It can be copied and previewed, but must be reproduced with the current profile before assembly.</p>}
+              <button className="btn btn-steel" disabled={Boolean(reusing)} onClick={async () => {
+                setReusing(ad.ad_id)
+                try { await api.reuseAd(epId, ad.source_episode_id, ad.ad_id); await selectEpisode(activeEp); showToast('Recording available in this episode; no script was changed.') }
+                catch (e) { showToast(e.message) } finally { setReusing('') }
+              }}>REUSE RECORDING</button>
+            </article>)}
+          </section>}
           {!activeEp && <Empty msg="← Select an episode" />}
           {activeEp && ads.length === 0 && (
             <div style={{ textAlign: 'center', paddingTop: '3rem' }}>

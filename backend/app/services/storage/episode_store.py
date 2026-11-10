@@ -26,7 +26,7 @@ FALLBACK_LINE_SOURCES = {
     "script_seed",
     "skg_template",
 }
-LLM_LINE_SOURCES = {"governance_bridge", "llamacpp", "llm_writer"}
+LLM_LINE_SOURCES = {"governance_bridge", "llamacpp", "llm_writer", "nemotron"}
 STRUCTURAL_LINE_SOURCES = {"ad_engine", "production_structure", "script_feed", "manual_edit"}
 LEGACY_TEMPLATE_TEXTS = {
     "happy toes begins as a father trying to reach his daughter through words.",
@@ -644,6 +644,7 @@ def list_episode_summaries() -> List[Dict[str, Any]]:
                 "episode_id": path.name,
                 "title": config.get("title") or path.name,
                 "topic": config.get("topic", ""),
+                "target_duration": config.get('target_duration', 0),
                 "status": status.get("status", "new"),
                 "updated_at": status.get("updated_at"),
                 "has_script": bool(script.get("script")),
@@ -675,3 +676,9 @@ def recover_interrupted_jobs():
             save_json(path, state)
             if state.get("job_id"):
                 save_json(contained_path(JOBS_ROOT, validate_id(state["job_id"]) + ".json"), state)
+    for path in JOBS_ROOT.glob('*.json'):
+        state = load_json(path) or {}
+        if state.get('status') in {'generating', 'cancellation_requested'}:
+            state.update(status='interrupted', updated_at=datetime.now().isoformat(),
+                         error='Studio restarted during a writer request. Saved scripts and drafts were preserved; retry explicitly.')
+            save_json(path, state)

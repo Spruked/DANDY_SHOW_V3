@@ -334,6 +334,15 @@ class HardenedPodcastWorker:
                  "media_cues": approved_production.get("media_cues", [])},
                 sort_keys=True, ensure_ascii=False, separators=(",", ":")
             ).encode("utf-8")).hexdigest()
+            measured_duration = self._probe_duration_seconds(candidate_audio_path)
+            if measured_duration <= 0:
+                raise RuntimeError('Final audio has no measurable duration; existing master preserved')
+            target_duration = approved_production.get('environment_snapshot', {}).get('episode_config', {}).get('target_duration')
+            processing_result.update(actual_duration_seconds=measured_duration,
+                                     duration_scope='complete mastered episode including advertisements and theme')
+            if target_duration:
+                processing_result.update(target_duration_seconds=target_duration,
+                                         duration_delta_seconds=round(measured_duration - float(target_duration), 3))
             if current_plan_hash != approved_hash:
                 raise RuntimeError("Approved production plan changed during production; existing master was preserved")
             from .production_lifecycle import current_approval
@@ -494,8 +503,8 @@ class HardenedPodcastWorker:
         target = next((item for item in segments if item.get("segment_id") == segment_id), None)
         if target is None:
             raise ValueError(f"Unknown production segment: {segment_id}")
-        if any(chunk.get("engine") != "qwen" for chunk in target["audio"]["chunks"]):
-            raise ValueError("Only Qwen dialogue lines can be regenerated; saved ads use asset replacement")
+        if any(chunk.get("engine") not in {'qwen', 'voicestudio'} for chunk in target["audio"]["chunks"]):
+            raise ValueError("Line regeneration supports Voice Studio and Qwen dialogue; saved ads use asset replacement")
         script_lines = approved_production.get("script", [])
         line_index = int(target["line_index"])
         saved_line = next((item for item in script_lines
@@ -1015,6 +1024,8 @@ class HardenedPodcastWorker:
 
     def _resolve_voice_name(self, speaker: str, engine_used: str) -> str:
         voice_payload = self.voices_config.get(speaker, {})
+        if engine_used == 'voicestudio':
+            return str(voice_payload.get('voicestudio_voice') or '')
         if engine_used == "kokoro":
             return str(voice_payload.get("primary_voice", ""))
         if engine_used == "edge":

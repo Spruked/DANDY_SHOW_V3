@@ -6,6 +6,7 @@ from pathlib import Path
 
 from ...core.paths import PROJECT_ROOT
 from .registry import ROOT, _slug, list_businesses, list_products
+from ..production.ads import AD_SLOT_IDS
 
 ROOT_CAMPAIGNS = PROJECT_ROOT / "campaigns"
 PLANS = ROOT_CAMPAIGNS / "plans"
@@ -32,7 +33,7 @@ def create_plan(episode_number: int, featured_product: str, release_date: str,
     if date.fromisoformat(release_date) < date.today():
         raise ValueError("Release date cannot be in the past")
     PLANS.mkdir(parents=True, exist_ok=True)
-    schedule = ["pre_roll_1", "pre_roll_2", "mid_roll_1", "mid_roll_2", "mid_roll_3", "mid_roll_4", "post_roll_1"]
+    schedule = AD_SLOT_IDS
     plan = {"episode_number": episode_number, "business_slug": _slug(business_slug),
             "featured_product": _slug(featured_product), "ad_assignments": ad_assignments or [],
             "ad_slots": [{"slot_id": slot, "placement": slot, "status": "reserved", "assigned_ad_id": None}

@@ -89,7 +89,7 @@ def save_direction(episode_id, value, expected_revision=None):
         regenerated = False
         if prior and prior.get('owner_direction', {}).get('revision_id') != direction['revision_id']:
             package = deepcopy(prior)
-            package.update(schema_version=2, parent_version_id=prior['version_id'], owner_direction=direction)
+            package.update(schema_version=max(3, prior.get('schema_version', 3)), parent_version_id=prior['version_id'], owner_direction=direction)
             prior = publish_package(episode_id, package)
             regenerated = True
         return {'owner_direction': direction, 'package': prior, 'pack_regenerated': regenerated}

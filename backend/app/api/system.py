@@ -75,13 +75,18 @@ def _http_probe(url, json_response=True):
 def _writer_probe():
     result = llm_writer.writer_status()
     return {"status": "reachable" if result["bridge_reachable"] else "unavailable",
-            "data": result, "inference": "unverified", "source": "live llama.cpp /v1/models"}
+            "data": result, "inference": "unverified", "source": 'NVIDIA configuration only' if result.get('selected_provider') == 'nvidia' else 'live llama.cpp /v1/models'}
 
 
 def _nvidia_probe():
     result = llm_writer.nvidia_status()
     return {"status": "ready" if result["configured"] else "unavailable",
             "data": result, "source": "Dandy Nemotron provider configuration; no background inference"}
+
+
+def _voicestudio_probe():
+    url = load_project_config().get('tts', {}).get('voicestudio_base_url', 'http://127.0.0.1:3900').rstrip('/')
+    return {**_http_probe(url + '/health'), 'source': 'Voice Studio /health; no synthesis', 'synthesis': 'unverified'}
 
 
 _wsl_cache = None
@@ -243,6 +248,7 @@ async def diagnostics():
         _measured("gpu", _gpu_probe), _measured("resources", _resources_probe),
         _measured("media_tools", _tools_probe), _measured("storage", _storage_probe),
         _measured("production", _production_probe), _measured("obs", _obs_probe, True),
+        _measured('voicestudio', _voicestudio_probe),
     ]
     for name, key, suffix, is_json in [("qwen_bridge", "bridge_url", "/health", True),
                                       ("qwen_custom_voice", "custom_voice_url", "/config", True),
@@ -252,7 +258,7 @@ async def diagnostics():
             probes.append(_measured(name, lambda url=url, suffix=suffix, is_json=is_json: _http_probe(url + suffix, is_json)))
     checks = dict(await asyncio.gather(*probes))
     selected = cfg.get("production", {}).get("required_engine") or str(load_project_config().get("tts", {}).get("primary_engine", "kokoro")).lower()
-    required = ["writer", "kokoro" if selected == "kokoro" else "qwen_bridge", "media_tools", "storage"]
+    required = ["writer", {'kokoro': 'kokoro', 'voicestudio': 'voicestudio'}.get(selected, 'qwen_bridge'), "media_tools", "storage"]
     ready = all(checks.get(key, {}).get("status") in ("ready", "reachable") for key in required)
     return {"checked_at": _now(), "status": "ready" if ready else "degraded", "selected_tts": selected,
             "readiness_scope": "dependencies; inference/synthesis and camera frames require output verification",

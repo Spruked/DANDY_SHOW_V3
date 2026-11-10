@@ -728,7 +728,7 @@ export default function EpisodeTab({ episodeId, onEpisodeChange, onNavigate, con
         </div>}
 
         <div className="scrollable" style={{ padding: '8px 14px' }}>
-          {activeEp && stage === 'generate' && contextWorkspace && <EpisodeContext key={epId} episodeId={epId} onImport={openScriptOverride} onOpenAds={() => onNavigate?.('ads')} />}
+          {activeEp && stage === 'generate' && contextWorkspace && <EpisodeContext key={epId} episodeId={epId} onImport={openScriptOverride} onOpenAds={() => onNavigate?.('ads')} onDraftAccepted={() => { selectEpisode(activeEp); onNavigate?.('preview') }} />}
           {activeEp && stage === 'generate' && !contextWorkspace && <button className="btn btn-steel" onClick={() => onNavigate?.('context')}>OPEN CONTEXT GENERATOR &amp; EDITOR</button>}
           {!activeEp && (contextWorkspace ? <div className="context-empty-state"><h2>Context Generator &amp; Editor</h2><p>No active episodes. Start a new episode to add your direction and source files.</p><button className="btn btn-gold" onClick={() => setShowCreate(true)}>NEW EPISODE</button></div> : <Empty msg="No active episodes" />)}
           {!contextWorkspace && activeEp && stage === 'generate' && !script && <Empty msg="Loading canonical script…" />}

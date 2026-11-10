@@ -23,6 +23,13 @@ export default function PreviewTab({ episodeId, onEpisodeChange, onNavigate }) {
   const [dirty, setDirty] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
+  const [writerDraft, setWriterDraft] = useState(null)
+  useEffect(() => {
+    let live = true
+    setWriterDraft(null)
+    if (selectedId) api.writerDraft(selectedId).then(draft => { if (live) setWriterDraft(draft) }).catch(() => {})
+    return () => { live = false }
+  }, [selectedId])
 
   const loadPreview = async (id, requestedVersion = '') => {
     if (!id) return
@@ -118,10 +125,9 @@ export default function PreviewTab({ episodeId, onEpisodeChange, onNavigate }) {
     if (!selectedId || busy) return
     setBusy(true); setMessage('Script generation started…')
     try {
-      await api.generateScript(selectedId)
-      const list = await api.canonicalScripts(selectedId)
-      await loadPreview(selectedId, list.active_version_id)
-      setMessage(`New canonical snapshot ${list.active_version_id} is ready for Preview`)
+      const draft = await api.generateScript(selectedId)
+      setWriterDraft(draft)
+      setMessage(`New draft ${draft.draft_id} saved from ${draft.context_version_id}; current script preserved. Review the draft below.`)
     } catch (error) { setMessage(`Regenerate failed: ${error.message}`) } finally { setBusy(false) }
   }
 
@@ -166,6 +172,15 @@ export default function PreviewTab({ episodeId, onEpisodeChange, onNavigate }) {
         </div>
       </div>
       {message && <div role="status" style={{ padding: '6px 12px', color: message.toLowerCase().includes('failed') ? 'var(--red)' : 'var(--gold)', fontSize: '0.88rem' }}>{message}</div>}
+      {writerDraft && writerDraft.status !== 'accepted' && <details style={{ padding: 12, maxHeight: 350, overflow: 'auto' }}><summary>{writerDraft.sample ? 'Writer sample' : 'Pending generated draft'} · {writerDraft.word_count} words</summary>
+        {(writerDraft.review_warnings || []).map((warning, index) => <p key={index}>{warning}</p>)}
+        <pre style={{ whiteSpace: 'pre-wrap' }}>{writerDraft.script.map(line => `${line.speaker.toUpperCase()}: ${line.text}`).join('\n\n')}</pre>
+        {!writerDraft.sample && <button className="btn btn-gold" disabled={busy} onClick={async () => {
+          setBusy(true)
+          try { const accepted = await api.acceptWriterDraft(selectedId, writerDraft.draft_id); setWriterDraft(accepted); await loadPreview(selectedId, accepted.accepted_version_id); setMessage('Draft accepted; save Preview and approve Production Editor before producing audio.') }
+          catch (error) { setMessage(error.message) } finally { setBusy(false) }
+        }}>ACCEPT DRAFT TO PREVIEW</button>}
+      </details>}
       <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
         {!lines.length && <div style={{ ...panel, color: 'var(--steel)' }}>No canonical script exists for this episode yet. Generate a script, then review its saved snapshot here.</div>}
         {groups.map(group => <section key={group.key} style={{ ...panel, marginBottom: 10 }}>

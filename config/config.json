@@ -32,12 +32,12 @@
   "production": {
     "default_target_duration_seconds": 2400,
     "ad_policy": {
-      "model": "four_single_midrolls",
+      "model": "seven_independent_slots",
       "midroll_count": 4,
       "midroll_duration_seconds": 30,
-      "include_preroll": false,
-      "include_postroll": false,
-      "description": "Four single mid-roll ads spaced across 30-40 minute episodes; ad time is included in the episode total."
+      "include_preroll": true,
+      "include_postroll": true,
+      "description": "Two pre-rolls, four single mid-rolls and one post-roll. Slots may remain reserved during development; only explicit assignments enter the reviewed production copy."
     },
     "default_intensity": "medium",
     "auto_save_drafts": true,

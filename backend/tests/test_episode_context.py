@@ -210,10 +210,11 @@ class ContextTests(unittest.TestCase):
         response = self.client.post(self.url, json={'curation': {'context_window_tokens': 1024, 'reserved_output_tokens': 1024}})
         self.assertEqual(response.status_code, 422)
 
-    def test_retired_writer_and_rewrite_never_mutate_script(self):
+    def test_writer_requires_saved_context_and_retired_rewrite_never_mutates_script(self):
         with patch('app.api.production.save_script') as save:
             response = self.client.post(f'/api/episodes/generate-script?job_id={self.job}')
-            self.assertEqual(response.status_code, 410)
+            self.assertEqual(response.status_code, 422)
+            self.assertIn('context package', response.json()['detail'])
             response = self.client.post('/api/episodes/edit-script', json={'episode_id': 'context-test', 'edit_type': 'regenerate_section', 'section_start': 0, 'section_end': 1})
             self.assertEqual(response.status_code, 410)
             save.assert_not_called()
@@ -231,11 +232,11 @@ class ContextTests(unittest.TestCase):
 
     def test_short_writer_is_bounded_and_uses_pinned_model(self):
         from app.services.authoring.short_copy import generate_short_copy
-        with patch('app.services.authoring.short_copy._verified_model', return_value='pinned'), patch('app.services.authoring.short_copy._post_json', return_value={'choices': [{'finish_reason': 'stop', 'message': {'content': 'A short factual post.'}}]}) as post:
+        with patch.dict('os.environ', {'DANDY_WRITER_PROVIDER': 'llamacpp'}), patch('app.services.authoring.short_copy.llm_writer._verified_model', return_value='pinned'), patch('app.services.authoring.short_copy.llm_writer._post_json', return_value={'choices': [{'finish_reason': 'stop', 'message': {'content': 'A short factual post.'}}]}) as post:
             self.assertEqual(generate_short_copy('post', 'Supplied facts'), 'A short factual post.')
             self.assertEqual(post.call_args.args[1]['model'], 'pinned')
             self.assertIn('120 words', post.call_args.args[1]['messages'][0]['content'])
-        with patch('app.services.authoring.short_copy._verified_model', return_value='pinned'), patch('app.services.authoring.short_copy._post_json', return_value={'choices': [{'finish_reason': 'length', 'message': {'content': 'Incomplete'}}]}):
+        with patch.dict('os.environ', {'DANDY_WRITER_PROVIDER': 'llamacpp'}), patch('app.services.authoring.short_copy.llm_writer._verified_model', return_value='pinned'), patch('app.services.authoring.short_copy.llm_writer._post_json', return_value={'choices': [{'finish_reason': 'length', 'message': {'content': 'Incomplete'}}]}):
             with self.assertRaisesRegex(ValueError, 'truncated'):
                 generate_short_copy('ad', 'Facts')
         self.assertEqual(self.client.post('/api/authoring/short-copy', json={'kind': 'episode', 'facts': 'Facts'}).status_code, 422)

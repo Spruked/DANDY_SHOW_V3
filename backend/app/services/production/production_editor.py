@@ -161,6 +161,8 @@ class QcMorb:
                         take_findings.append({"segment_id": segment["segment_id"],
                                               "finding": str(exc), "take_asset_id": chunk.get("asset_id")})
             processing = manifest.get("processing", {})
+            if abs(float(processing.get('duration_delta_seconds') or 0)) > max(30, float(processing.get('target_duration_seconds') or 0) * .1):
+                findings.append('Measured episode duration differs from the target by more than 10% or 30 seconds; review the complete master')
             if processing.get("compliant") is False:
                 findings.append("Audio post-processing did not meet its configured compliance target")
             if (manifest.get("global_cues", {}).get("intro_outro", {}).get("enabled")

@@ -2,6 +2,24 @@ from typing import Dict, List
 import hashlib
 import json
 
+AD_SLOT_IDS = ('pre_roll_1', 'pre_roll_2', 'mid_roll_1', 'mid_roll_2',
+               'mid_roll_3', 'mid_roll_4', 'post_roll_1')
+
+
+def advertising_slots(ads, settings=None):
+    """Seven positions exist independently of commercial inventory."""
+    settings = settings or {}
+    assignments = {slot['slot_id']: slot.get('assigned_ad_id') for slot in settings.get('slots', [])}
+    available = {ad['ad_id']: ad for ad in ads}
+    result = []
+    for slot_id in AD_SLOT_IDS:
+        ad_id = assignments.get(slot_id)
+        ad = available.get(ad_id)
+        result.append({'slot_id': slot_id, 'placement': slot_id,
+                       'assigned_ad_id': ad_id, 'status': 'assigned' if ad else 'reserved',
+                       'duration_seconds': (ad.get('actual_duration_seconds') or ad.get('duration_seconds', 0)) if ad else 0})
+    return result
+
 
 def ad_audio_fingerprint(lines):
     """Spoken copy, identity, delivery and pauses must match reusable audio."""

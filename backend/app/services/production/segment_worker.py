@@ -36,7 +36,8 @@ class SegmentAwarePodcastWorker(HardenedPodcastWorker):
             ad_id = line.get("ad_id")
             end = offset + 1
             if ad_id:
-                while end < len(script_lines) and script_lines[end].get("ad_id") == ad_id:
+                while (end < len(script_lines) and script_lines[end].get("ad_id") == ad_id
+                       and script_lines[end].get('ad_slot_id') == line.get('ad_slot_id')):
                     end += 1
                 ad = ads.get(ad_id)
                 if not ad or not ad.get("audio_file") or not Path(ad["audio_file"]).is_file():

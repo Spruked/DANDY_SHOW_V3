@@ -29,7 +29,7 @@ function download(name, content, type) {
 
 const SECTION_TABS = [['direction', 'Direction'], ['sources', 'Sources'], ['brief', 'Brief'], ['bible', 'Show Bible'], ['facts', 'Source Facts'], ['format', 'Format'], ['ads', 'Ad Slots'], ['build', 'Build & Export'], ['short-copy', 'Short Copy']]
 
-export default function EpisodeContext({ episodeId, onImport, onOpenAds }) {
+export default function EpisodeContext({ episodeId, onImport, onOpenAds, onDraftAccepted }) {
   const [section, setSection] = useState('direction')
   const [reference, setReference] = useState({})
   const [sources, setSources] = useState([])
@@ -40,6 +40,8 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds }) {
   const [title, setTitle] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
   const [busy, setBusy] = useState(false)
+  const [writerDraft, setWriterDraft] = useState(null)
+  const [generationJob, setGenerationJob] = useState(null)
   const [error, setError] = useState('')
   const [copyKind, setCopyKind] = useState('post')
   const [copyFacts, setCopyFacts] = useState('')
@@ -73,6 +75,22 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds }) {
   const directionDirty = JSON.stringify(direction) !== savedDirection
   const packDirectionStale = packet && (packet.owner_direction?.revision_id || '') !== directionRevision
   const path = `/episodes/${encodeURIComponent(episodeId)}`
+  const generationRunning = ['generating', 'cancellation_requested'].includes(generationJob?.status)
+  const generationBlocked = busy || generationRunning || !ready || !packet || directionDirty || packDirectionStale || curationDirty || invalidBudget
+
+  useEffect(() => {
+    let live = true
+    const refresh = async () => {
+      try {
+        const [draft, job] = await Promise.all([api.writerDraft(episodeId), api.generationStatus(episodeId)])
+        if (live) { setWriterDraft(draft); setGenerationJob(job) }
+      } catch { /* A temporarily offline backend does not clear the saved form. */ }
+    }
+    setWriterDraft(null); setGenerationJob(null)
+    refresh()
+    const timer = setInterval(refresh, 3000)
+    return () => { live = false; clearInterval(timer) }
+  }, [episodeId])
 
   async function loadSources() {
     const data = await req(`${path}/assets`)
@@ -124,6 +142,9 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds }) {
       {directionDirty && <span role="status">Unsaved owner direction — save Direction or build a new pack.</span>}
       {notice && <p role="status">{notice}</p>}
       {error && <p role="alert" style={{ color: 'var(--gold)', whiteSpace: 'pre-wrap' }}>{error}</p>}
+      {generationRunning && <p role="status">Writer request {generationJob.status === 'cancellation_requested' ? 'cancellation requested' : 'running'} · started {generationJob.started_at}. Your saved script remains available.
+        <button className="btn btn-steel btn-sm" onClick={async () => { try { await api.cancelJob(episodeId); setNotice('Cancellation requested. The provider may finish its current request; its reply will not activate a script.') } catch (e) { setError(e.message) } }}>CANCEL WRITER</button>
+      </p>}
     </header>
     <div role="tablist" aria-label="Context sections" className="context-section-tabs">
       {SECTION_TABS.map(([key, label], index) => <button key={key} role="tab" id={`${prefix}-tab-${key}`} aria-selected={section === key} aria-controls={`${prefix}-panel-${key}`} tabIndex={section === key ? 0 : -1} onClick={() => setSection(key)} onKeyDown={event => {
@@ -215,7 +236,7 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds }) {
       {panel('bible', <>
         <h3>Show Bible</h3><p>Current character references. Building a pack snapshots these profiles; owner direction controls your episode’s tone.</p>
         {!characters.length && <p>No character profile loaded yet. Build a pack or reload to load the references.</p>}
-        {characters.map(character => <article key={character.speaker}><h4>{character.speaker.toUpperCase()}</h4><p>{character.source_file} · {character.location}</p><pre className="context-reference-text">{JSON.stringify(character.character, null, 2)}</pre></article>)}
+        {characters.map(character => <article key={character.speaker}><h4>{character.speaker.toUpperCase()}</h4><p>{character.source_file} · {character.location}</p><pre className="context-reference-text">{JSON.stringify(character.persona || character.character || { identity: character.identity, personality: character.personality }, null, 2)}</pre></article>)}
       </>)}
       {panel('facts', <>
         <h3>Source Facts</h3><p>Read-only extraction previews. Use Sources to analyze files and Direction/source notes to guide the writer. Full evidence remains in the exported pack.</p>
@@ -245,11 +266,28 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds }) {
       setDirection(directionValues(owner)); setSavedDirection(JSON.stringify(directionValues(owner))); setDirectionRevision(owner?.revision_id || '')
       setNotice('New context pack saved with your owner direction.')
     })}>{busy ? 'WORKING…' : 'BUILD CONTEXT PACKAGE'}</button>
-    <button className="btn btn-solid" disabled={busy || !ready || !selected.length || invalidBudget} onClick={() => act(async () => {
-      const result = await api.generateScript(episodeId, { brief, source_ids: selected, owner_direction: direction, expected_direction_revision: directionRevision, curation: { priority_source_ids: effectivePriorities, model_name: 'NVIDIA Nemotron', context_window_tokens: Number(windowTokens), reserved_output_tokens: Number(reservedTokens) } })
-      setNotice(`Nemotron generated ${result.word_count.toLocaleString()} words. Review and import the generated draft.`)
-      onImport?.(result.script)
+    <button className="btn btn-steel" disabled={generationBlocked} onClick={() => act(async () => {
+      const result = await api.generateScript(episodeId, { context_version_id: packet.version_id, sample: true })
+      setWriterDraft(result); setNotice(`Writer sample saved: ${result.word_count} words. The episode script is unchanged.`)
+    })}>TEST WRITER · 8 TURNS</button>
+    <button className="btn btn-solid" disabled={generationBlocked} onClick={() => act(async () => {
+      const result = await api.generateScript(episodeId, { context_version_id: packet.version_id })
+      setWriterDraft(result)
+      setNotice(`Nemotron saved a ${result.word_count.toLocaleString()}-word draft. Review it below before accepting.`)
     })}>GENERATE SCRIPT WITH NEMOTRON</button>
+    {!packet && <p>Build a context package before testing or generating.</p>}
+    {writerDraft && <section aria-label="Writer draft review">
+      <h3>{writerDraft.sample ? 'Diagnostic sample' : 'Generated draft'} · {writerDraft.word_count} words</h3>
+      <p>Context: {writerDraft.context_version_id} · {writerDraft.status}</p>
+      {(writerDraft.review_warnings || []).map((warning, index) => <p role="alert" key={index}>{warning}</p>)}
+      <pre className="context-reference-text" style={{ maxHeight: 420, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{(writerDraft.script || []).map(line => `${line.speaker.toUpperCase()}: ${line.text}`).join('\n\n')}</pre>
+      <button className="btn btn-steel" onClick={() => download(`${episodeId}-${writerDraft.draft_id}.json`, JSON.stringify(writerDraft, null, 2), 'application/json')}>DOWNLOAD DRAFT JSON</button>
+      {!writerDraft.sample && writerDraft.status !== 'accepted' && <button className="btn btn-gold" disabled={busy || generationRunning} onClick={() => act(async () => {
+        const result = await api.acceptWriterDraft(episodeId, writerDraft.draft_id)
+        setWriterDraft(result); setNotice(`Accepted as ${result.accepted_version_id}. Review and approve it in Preview and Production Editor before audio production.`)
+        onDraftAccepted?.()
+      })}>ACCEPT DRAFT TO PREVIEW</button>}
+    </section>}
     {curationDirty && <p role="status">Source choices, brief or model settings differ from the saved pack. Build a new pack before export.</p>}
     {packDirectionStale && <p role="status">The saved pack uses older direction. Save owner direction or build a new pack before export.</p>}
     {packet && <>

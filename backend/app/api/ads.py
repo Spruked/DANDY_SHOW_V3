@@ -4,10 +4,13 @@ import json
 import uuid
 import re
 import tempfile
+import copy
+import hashlib
+import shutil
 from pathlib import Path
 from typing import Dict, Optional
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Body, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from ..schemas.ads import AdCreateRequest, AdInsertRequest, AdComposition
@@ -83,13 +86,116 @@ async def ads_presets() -> Dict:
     return {"presets": presets}
 
 
+@router.get('/ads/library')
+def reusable_ad_library():
+    """Existing produced recordings, independent of the selected episode."""
+    records = []
+    for path in sorted(EPISODES_ROOT.glob('*/ads/ad_*.json')):
+        try:
+            ad = json.loads(path.read_text(encoding='utf-8'))
+            if not ad.get('ad_id') or not ad.get('script') or not ad.get('audio_file'):
+                continue
+            audio = contained_path(EPISODES_ROOT, ad['audio_file'])
+            if not audio.is_file():
+                continue
+            source_id = path.parent.parent.name
+            records.append({**ad, 'source_episode_id': source_id,
+                            'approval_status': ad.get('approval_status', 'pending_owner_review'),
+                            'voice_verification_required': any(not item.get('resolved_voice_id') for item in ad.get('voice_resolution', [])) or not ad.get('voice_resolution')})
+        except (OSError, ValueError, TypeError):
+            continue
+    return {'ads': records}
+
+
+@router.post('/episodes/{episode_id}/ads/reuse')
+def reuse_ad(episode_id: str, payload: Dict = Body(...)):
+    from .library import _assert_episode_idle
+    _assert_episode_idle(episode_id)
+    source_episode = validate_id(str(payload.get('source_episode_id', '')))
+    source_ad_id = validate_id(str(payload.get('ad_id', '')))
+    source = _find_ad(source_episode, source_ad_id)
+    if not (EPISODES_ROOT / episode_id / 'config.json').is_file():
+        raise HTTPException(404, 'Destination episode was not found')
+    if not source.get('audio_file'):
+        raise HTTPException(422, 'Produce the source recording first')
+    audio = contained_path(EPISODES_ROOT, source['audio_file'])
+    if not audio.is_file():
+        raise HTTPException(422, 'Source audio is missing')
+    fingerprint = hashlib.sha256(audio.read_bytes()).hexdigest()
+    if source.get('audio_script_fingerprint') != ad_audio_fingerprint(source['script']):
+        raise HTTPException(422, 'Source recording no longer matches its script')
+    if source.get('audio_sha256') and fingerprint != source['audio_sha256']:
+        raise HTTPException(422, 'Source audio integrity check failed')
+    for existing in list_ads(episode_id):
+        if existing.get('source_episode_id') == source_episode and existing.get('source_ad_id') == source_ad_id and existing.get('audio_sha256') == fingerprint:
+            return {'status': 'already_available', 'ad': existing}
+    ad_id = 'ad_' + uuid.uuid4().hex[:8]
+    target_dir = EPISODES_ROOT / episode_id / 'ads'
+    target_dir.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='reuse_', dir=target_dir) as scratch:
+        scratch = Path(scratch)
+        copied_audio = scratch / f'{ad_id}.mp3'
+        shutil.copy2(audio, copied_audio)
+        asset_source = EPISODES_ROOT / source_episode / 'ads' / f'{source_ad_id}_assets.json'
+        assets = json.loads(asset_source.read_text(encoding='utf-8')) if asset_source.is_file() else []
+        asset_mapping, copied_assets = {}, []
+        for asset in assets:
+            asset_id = 'asset_' + uuid.uuid4().hex[:8]
+            asset_mapping[asset['asset_id']] = asset_id
+            original = contained_path(EPISODES_ROOT, asset['stored_path'])
+            if not original.is_file():
+                raise HTTPException(422, 'An attached source ad asset is missing')
+            target = target_dir / f'{ad_id}_assets' / (asset_id + original.suffix)
+            staged = scratch / target.name
+            shutil.copy2(original, staged)
+            copied_assets.append((staged, target, {**asset, 'asset_id': asset_id, 'stored_name': target.name, 'stored_path': str(target)}))
+        record = copy.deepcopy(source)
+        for key in ('composition_saved_at', 'visual_export', 'visual_rendered_at', 'inserted', 'inserted_line_index'):
+            record.pop(key, None)
+        for group in ('visuals', 'sfx_tracks'):
+            for item in record.get('composition', {}).get(group, []):
+                if item.get('asset_id') not in asset_mapping:
+                    raise HTTPException(422, 'A composition refers to an unavailable source asset')
+                item['asset_id'] = asset_mapping[item['asset_id']]
+        record.update(ad_id=ad_id, episode_id=episode_id, audio_file=str(target_dir / f'{ad_id}.mp3'),
+                      source_episode_id=source_episode, source_ad_id=source_ad_id,
+                      audio_sha256=fingerprint, approval_status='pending_owner_review',
+                      created_at=datetime.now().isoformat())
+        copied_audio.replace(Path(record['audio_file']))
+        for staged, target, _ in copied_assets:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            staged.replace(target)
+        if copied_assets:
+            atomic_json(target_dir / f'{ad_id}_assets.json', [asset for _, _, asset in copied_assets])
+        saved = save_ad(episode_id, record)
+    from ..services.storage.vault_store import preserve_files
+    preserve_files([target_dir / f'{ad_id}.json', Path(record['audio_file']),
+                    *[target for _, target, _ in copied_assets],
+                    *([target_dir / f'{ad_id}_assets.json'] if copied_assets else [])], 'commercial recording reused without host synthesis')
+    return {'status': 'reused', 'ad': saved}
+
+
 @router.get("/episodes/{episode_id}/ad-settings")
 async def get_ad_settings(episode_id: str) -> Dict:
-    return load_ad_settings(episode_id)
+    from ..services.production.ads import advertising_slots
+    settings = load_ad_settings(episode_id)
+    return {**settings, 'slots': advertising_slots(list_ads(episode_id), settings)}
 
 
 @router.post("/episodes/{episode_id}/ad-settings")
 async def update_ad_settings(episode_id: str, payload: Dict):
+    from .library import _assert_episode_idle
+    from ..services.production.ads import AD_SLOT_IDS
+    _assert_episode_idle(episode_id)
+    if 'slots' in payload:
+        slots = payload['slots']
+        available = {ad['ad_id'] for ad in list_ads(episode_id)}
+        if not isinstance(slots, list) or len(slots) != 7 or any(not isinstance(slot, dict) for slot in slots):
+            raise HTTPException(422, 'Supply all seven advertising slot assignments')
+        if {slot.get('slot_id') for slot in slots} != set(AD_SLOT_IDS):
+            raise HTTPException(422, 'Advertising slot identities must match the seven-slot standard')
+        if any(slot.get('assigned_ad_id') and slot['assigned_ad_id'] not in available for slot in slots):
+            raise HTTPException(422, 'An assigned recording is not registered in this episode')
     saved = save_ad_settings(episode_id, payload)
     return saved
 
@@ -229,7 +335,8 @@ def produce_ad_audio(episode_id: str, ad_id: str) -> Dict:
         resolution = []
         for segment in segments:
             record = {"requested_voice": segment["speaker"], "resolved_voice": segment["speaker"],
-                      "resolved_voice_id": segment["voice_name"], "engine": segment["engine"], "fallback_used": False}
+                      "resolved_voice_id": segment["voice_name"], "engine": segment["engine"],
+                      "fallback_used": segment['engine'] != worker.project_config.get('tts', {}).get('primary_engine')}
             if record not in resolution:
                 resolution.append(record)
         ads_dir = EPISODES_ROOT / episode_id / "ads"
@@ -243,6 +350,11 @@ def produce_ad_audio(episode_id: str, ad_id: str) -> Dict:
                "status": "produced", "actual_duration_seconds": measured,
                "audio_script_fingerprint": ad_audio_fingerprint(script_lines),
                "voice_resolution": resolution}
+    import hashlib
+    updated.update(audio_sha256=hashlib.sha256(final_audio.read_bytes()).hexdigest(),
+                   audio_format='mp3', audio_sample_rate=sound.frame_rate,
+                   approval_status=ad.get('approval_status') or 'pending_owner_review',
+                   fallback_used=any(item['fallback_used'] for item in resolution))
 
     save_ad(episode_id, updated)
     return {"status": "produced", "ad": updated}
