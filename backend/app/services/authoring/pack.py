@@ -50,8 +50,6 @@ def show_bible():
         fingerprints = [personas[speaker][1].get('shared_family_sha256') for speaker in ('phil', 'jim')]
         if shared[0] != shared[1] or fingerprints[0] != fingerprints[1]:
             raise ValueError('Phil and Jim persona shared-family blocks do not match')
-        result.append({'shared_history': shared[0], 'source_file': 'config/characters/phil.persona.json + jim.persona.json',
-                       'location': 'matching shared_family_sha256 fingerprints', 'sha256': fingerprints[0]})
     else:
         history_path = PROJECT_ROOT / 'config' / 'character_history.json'
         if history_path.is_file():
@@ -103,12 +101,12 @@ def render_pack(package):
              'of 160 spoken words per minute plus pauses; character pacing is style guidance.\n')
     text += '\n## Show bible\n'
     for character in package.get('show_bible', []):
-        text += f"\n### {character['speaker'].upper()}\n{character['source_file']} · {character['location']} · SHA256 {character['sha256']}\n"
-        text += json.dumps(character.get('persona') or {
-            'identity': character.get('identity', {}),
-            'personality': character.get('personality', {})
-        }, ensure_ascii=False, indent=2) + '\n'
-    for character in package.get('show_bible', []):
+        if character.get('speaker'):
+            text += f"\n### {character['speaker'].upper()}\n{character['source_file']} · {character['location']} · SHA256 {character['sha256']}\n"
+            text += json.dumps(character.get('persona') or {
+                'identity': character.get('identity', {}),
+                'personality': character.get('personality', {})
+            }, ensure_ascii=False, indent=2) + '\n'
         if character.get('shared_history'):
             text += f"\n### SHARED FAMILY HISTORY\n{character['source_file']} · {character['location']} · SHA256 {character['sha256']}\n"
             text += json.dumps(character['shared_history'], ensure_ascii=False, indent=2) + '\n'

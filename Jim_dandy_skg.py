@@ -1,5 +1,6 @@
-# jim_dandy_skg.py - Jim Dandy Personality SKG
-# Version: 3.1.0 - Canonical Edition (Bio-Locked)
+# jim_dandy_skg.py - Jim Dandridge (on air: Jim Dandy) Personality SKG
+# Version: 3.2.0 - Persona-Bound Edition
+# Canon: config/characters/jim.persona.json (loaded and verified at startup)
 # GPU: RTX 3050 6GB GDDR6 Optimization Enabled
 # Architecture: Self-Pruning SKG with Edge Repair
 # Canonical Source: Jim Dandy Master Character File v1.0
@@ -17,11 +18,10 @@ from collections import deque
 import random
 import logging
 from shared_encoder import get_shared_encoder
+from persona_canon import (load_persona, persona_brief, household_summary, add_family_nodes, PersonaIntegrityError,
+                           skg_cache_dir, write_cache_manifest, style_only, log_learning_event)
 
-
-def load_canonical_persona(base_path: Path) -> Dict[str, Any]:
-    path = Path(base_path) / 'config' / 'characters' / 'jim.persona.json'
-    return json.loads(path.read_text(encoding='utf-8')) if path.is_file() else {}
+SKG_VERSION = "3.2.0"
 
 @dataclass
 class LearnedPattern:
@@ -80,8 +80,10 @@ class JimDandySKG:
     # Never modified by learning (Security boundary per Memory #25)
     
     CORE_IDENTITY = {
-        "full_name": "James Arthur Dandridge",
+        "full_name": "James Arthur Dandridge",  # Must match jim.persona.json (checked at startup)
         "alias": "Jim Dandy",
+        "on_air_name": "Jim Dandy",
+        "birth_order": "older",
         "born": "1978-03-14",
         "origin": "Joplin, Missouri",
         "core_tone_anchor": "Competent. Observant. Unimpressed. Says less than he knows.",
@@ -202,9 +204,17 @@ class JimDandySKG:
     
     def __init__(self, base_path: Path, enable_gpu: bool = True):
         self.base_path = Path(base_path)
-        self.persona = load_canonical_persona(self.base_path)
-        self.skg_path = self.base_path / "jim_dandy_skg_v3"
-        self.skg_path.mkdir(parents=True, exist_ok=True)
+
+        # Canonical persona (fails closed if missing or inconsistent)
+        self.persona = load_persona("jim", self.base_path)
+        self._verify_identity_matches_persona()
+        self.BROTHER_DYNAMIC = persona_brief(self.persona)
+
+        # Learned-pattern cache: <project>/jim_dandy_skg_v3/ unless DANDY_SKG_CACHE_ROOT is set
+        self.skg_path = skg_cache_dir("jim", self.base_path)
+        previous_manifest = write_cache_manifest(self.skg_path, self.persona, SKG_VERSION)
+        if previous_manifest.get("persona_sha256") not in (None, self.persona["_file_sha256"]):
+            logging.info("[JimSKG] Persona changed since this cache was built; learned style patterns kept, change recorded in cache_manifest.json")
         
         # GPU Detection & Optimization (RTX 3050 6GB Profile)
         self.device = self._initialize_gpu(enable_gpu)
@@ -277,8 +287,27 @@ class JimDandySKG:
         # Integrity Check
         self.core_hash = self._compute_core_hash()
         
-        logging.info(f"Jim Dandy SKG v3.1 (Canonical) initialized | GPU: {self.device} | VRAM: {self.vram_available}GB")
-        logging.info(f"Identity locked: James Arthur Dandridge | Joplin, Missouri | The Filter")
+        logging.info(f"Jim SKG v3.2 (Persona-Bound) initialized | GPU: {self.device} | VRAM: {self.vram_available}GB")
+        logging.info(f"Identity locked: {self.persona['identity']['full_name']} ({self.persona['identity']['on_air_name']}) | "
+                     f"{self.persona['identity']['hometown']} | {self.persona['identity']['show_role']} | "
+                     f"persona {self.persona['_file_sha256'][:12]}")
+
+    def _verify_identity_matches_persona(self) -> None:
+        """Refuse to start if the code's identity or family disagrees with the persona file."""
+        ident = self.persona["identity"]
+        checks = [(key, self.CORE_IDENTITY.get(key), ident.get(key)) for key in ("full_name", "on_air_name", "birth_order")]
+        checks.append(("born", self.CORE_IDENTITY.get("born"), ident.get("born")))
+        household = self.persona["household"]
+        domestic = self.CORE_IDENTITY["domestic_architecture"]
+        checks.append(("wife", domestic["wife"]["name"], (household.get("spouse") or {}).get("name")))
+        canon_kids = {c["name"].split()[0].lower(): c.get("birth_year") for c in household.get("children", [])}
+        code_kids = {name: data.get("born") for name, data in domestic["children"].items()}
+        checks.append(("children", code_kids, canon_kids))
+        for key, in_code, in_canon in checks:
+            if in_code != in_canon:
+                raise PersonaIntegrityError(
+                    f"Jim_dandy_skg.py {key}={in_code!r} but jim.persona.json says {in_canon!r}"
+                )
         
     def _initialize_gpu(self, enable_gpu: bool) -> str:
         """Initialize RTX 3050 6GB for inference acceleration"""
@@ -292,7 +321,9 @@ class JimDandySKG:
     
     def _compute_core_hash(self) -> str:
         """Verify core personality integrity including canonical bio"""
-        core_str = json.dumps({**self.CORE_PERSONALITY, **self.CORE_IDENTITY}, sort_keys=True)
+        core_str = json.dumps({**self.CORE_PERSONALITY, **self.CORE_IDENTITY,
+                               "persona_sha256": self.persona["_file_sha256"],
+                               "sibling_persona_sha256": self.persona["_sibling_file_sha256"]}, sort_keys=True)
         return hashlib.sha256(core_str.encode()).hexdigest()
     
     def _build_immutable_core_graph(self):
@@ -373,6 +404,9 @@ class JimDandySKG:
         self.kg.add_edge("joplin_origin", "jim_identity", weight=1.0, relation="formed")
         self.kg.add_edge("laura_anchor", "domestic_grounding", weight=1.0, relation="provides")
         self.kg.add_edge("domestic_grounding", "jim_identity", weight=0.9, relation="stabilizes")
+
+        # === CANON FAMILY (from jim.persona.json: parents, Duke, household) ===
+        add_family_nodes(self.kg, self.persona, "jim_identity")
         
     def _initialize_templates(self) -> Dict[str, List[Dict]]:
         """Immutable template library with canonical voice patterns"""
@@ -893,6 +927,11 @@ class JimDandySKG:
         topic = interaction_data.get("topic", "general")
         
         if feedback.get("reaction") == "positive" and template_used:
+            # Canon guard: learned patterns are style only; family facts come from the persona file
+            if not style_only(template_used, self.persona, set(self.persona["_sibling_canon_names"])):
+                log_learning_event(self.skg_path, {"result": "rejected_family_reference", "topic": topic,
+                                                   "template": template_used})
+                return
             # Validate against character lock before learning
             if len(template_used) < 200 and "..." in template_used or any(
                 p in template_used for p in ["Hold on", "Yeah but", "That doesn't make sense", "Who told you"]):
@@ -908,6 +947,12 @@ class JimDandySKG:
                 self.patterns[new_pattern.pattern_hash] = new_pattern
                 self._save_pattern(new_pattern)
                 self._strengthen_edge("jim_identity", f"know_{topic}", 0.1)
+                log_learning_event(self.skg_path, {"result": "learned", "topic": topic,
+                                                   "pattern_hash": new_pattern.pattern_hash,
+                                                   "effectiveness": new_pattern.effectiveness})
+            else:
+                log_learning_event(self.skg_path, {"result": "rejected_off_voice", "topic": topic,
+                                                   "template": template_used})
         
         if len(self.patterns) > self.pruning_config["max_patterns"]:
             self._prune_patterns()
@@ -939,6 +984,9 @@ class JimDandySKG:
             del self.patterns[hash_id]
             
         logging.info(f"Pruned {len(to_remove)} stale patterns. Remaining: {len(self.patterns)}")
+        if to_remove:
+            log_learning_event(self.skg_path, {"result": "pruned", "count": len(to_remove),
+                                               "remaining": len(self.patterns)})
         
         if len(to_remove) > 10:
             self._compact_pattern_storage()
@@ -969,8 +1017,12 @@ class JimDandySKG:
                 elif node in ["laura_anchor", "ethan_apprentice", "claire_softener"]:
                     # Protect domestic architecture
                     self.kg.add_edge("domestic_grounding", node, weight=1.0, relation="reinforced")
+                elif node.startswith("canon_"):
+                    self.kg.add_edge("jim_identity", node, weight=1.0, relation="canon_reattached")
                     
-        weak_edges = [(u, v) for u, v, d in self.kg.edges(data=True) if d.get("weight", 0) < 0.2]
+        # Canon family edges are never pruned
+        weak_edges = [(u, v) for u, v, d in self.kg.edges(data=True)
+                      if d.get("weight", 0) < 0.2 and not str(v).startswith("canon_")]
         
         for u, v in weak_edges:
             key = f"{u}->{v}"
@@ -1067,15 +1119,17 @@ class JimDandySKG:
                 "name": self.CORE_IDENTITY["full_name"],
                 "alias": self.CORE_IDENTITY["alias"],
                 "origin": self.CORE_IDENTITY["origin"],
-                "domestic": f"Married to {self.CORE_IDENTITY['domestic_architecture']['wife']['name']}, "
-                           f"father of Ethan ({self.CORE_IDENTITY['domestic_architecture']['children']['ethan']['born']}) "
-                           f"and Claire ({self.CORE_IDENTITY['domestic_architecture']['children']['claire']['born']})"
+                "on_air_name": self.CORE_IDENTITY["on_air_name"],
+                "relationship": "Older brother to Phil, protective filter",
+                "domestic": household_summary(self.persona),
+                "persona_sha256": self.persona["_file_sha256"]
             },
             "core": self.CORE_PERSONALITY["archetype"],
             "current_mood": self.current_state["mood"],
             "patience": round(self.current_state["patience_level"], 2),
             "exuberance_counter": self.current_state["phil_exuberance_counter"],
             "learned_patterns": len(self.patterns),
+            "cache_dir": str(self.skg_path),
             "graph_nodes": self.kg.number_of_nodes(),
             "graph_edges": self.kg.number_of_edges(),
             "gpu_enabled": self.device == "cuda",
