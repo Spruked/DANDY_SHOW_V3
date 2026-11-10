@@ -59,3 +59,45 @@ Findings:
 - The personal-story candidate pool is intentionally narrow. For long-form 5000-word output, repeated-template risk remains if generation relies mostly on SKG instead of the LLM bridge.
 - Earlier backend logs showing repeated lines came from the seed fallback path after quality rejection, not direct proof that these SKG files alone are corrupt.
 - Live import/runtime verification was not possible in this shell because Python is not currently usable.
+
+## 2026-11-10 - Canonical Persona, Context, Vault, and GitHub Handoff
+
+This work completed the persona/SKG integration needed for Episode 001 and documented the surrounding production decisions from the handoff.
+
+### Completed
+
+- Installed the supplied canonical persona files as the source of truth:
+  - `config/characters/phil.persona.json`
+  - `config/characters/jim.persona.json`
+- Replaced the active root SKGs with the supplied versions:
+  - `phil_dandy_skg.py`
+  - `Jim_dandy_skg.py`
+- Added the shared persona loader/canon validation in `persona_canon.py`.
+- Updated the episode context pack so the writer receives the complete persona data, including shared family history and continuity facts, while preserving exactly two Show Bible character entries: Phil and Jim.
+- Preserved the shared-family fingerprint check so the two persona files cannot silently diverge.
+- Added `backend/tests/test_persona_canon.py`, including the learning-cache default/override and manifest coverage.
+- Archived the supplied character source documents and previous SKG files in `Dandy_Vault_System/memory_archives/persona_sources/20261110/` before replacement.
+- Preserved the production voice requirement: Jim uses `jimsample18.wav` and Phil uses `PHIL17SAMPLE.wav` through the configured voice system.
+- Captured the production architecture decisions for Voice Studio/Qwen fallback, seven independent replaceable advertising slots, ad-slot reservation versus assigned advertisements, and continuity records for approved episodes. The ad-slot handoff remains documented for follow-up rather than being changed during this persona deployment.
+- Retained the existing Nemotron script-generation/context workflow and its validation requirements; no external Nemotron request was made during validation.
+
+### Verification
+
+- Persona suite: `python -m unittest backend.tests.test_persona_canon -v`
+  - Result: all 7 tests passed.
+- Full suite: `python scripts/test.py`
+  - Result: 82 tests ran; 7 known environment/dependency errors and 2 known Nemotron 502/410 failures remain.
+  - No persona/SKG failures remained.
+- Git working tree was committed and pushed to GitHub `origin/main`.
+- Commit: `423bedb Install validated canonical persona SKGs`
+- Local `main` and `origin/main` are synchronized.
+
+### Known remaining items
+
+- The seven unrelated baseline errors involve the existing `memory_core` vault tests plus `pypdf` and `_verified_model` environment/dependency coverage.
+- The two expected failures exercise Nemotron 502/410 behavior.
+- The supplied source package and reference DOCX/PDF files remain retained locally as uncommitted safety/reference material; they were not included in the production commit.
+
+### Handoff summary
+
+Dandy now has a durable, test-covered persona boundary: canonical JSON is authoritative, both SKGs load it, the context writer sees the brothers' shared history without inventing a third character, and the change is safely pushed to GitHub. The result is a much stronger foundation for consistent Phil-and-Jim identity across episodes, while keeping voice production, ad replacement, and continuity concerns separable for future work.
