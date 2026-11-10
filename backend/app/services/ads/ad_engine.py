@@ -3,6 +3,9 @@ from typing import Dict, List
 
 ADS_CATALOG: Dict[str, Dict] = {
     "truemark": {"label": "TrueMark Mint", "tone": "authority"},
+    "orb_weaver": {"label": "ORB Weaver", "tone": "curiosity"},
+    "shiloh_ridge_katahdins": {"label": "Shiloh Ridge Katahdins", "tone": "warm"},
+    "pro_prime_series_ai": {"label": "Pro Prime Series AI LLC", "tone": "clarity"},
     "goat": {"label": "GOAT Engine", "tone": "curiosity"},
     "apex": {"label": "APEX Docs", "tone": "clarity"},
     "vaultforge": {"label": "VaultForge", "tone": "trust"},

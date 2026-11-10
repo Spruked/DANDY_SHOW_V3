@@ -101,3 +101,34 @@ This work completed the persona/SKG integration needed for Episode 001 and docum
 ### Handoff summary
 
 Dandy now has a durable, test-covered persona boundary: canonical JSON is authoritative, both SKGs load it, the context writer sees the brothers' shared history without inventing a third character, and the change is safely pushed to GitHub. The result is a much stronger foundation for consistent Phil-and-Jim identity across episodes, while keeping voice production, ad replacement, and continuity concerns separable for future work.
+
+## 2026-11-10 - Three Commercial VoiceStudio Production Package
+
+Scope: reusable commercial assets only. Episode 001, its context package, host script, host personas, host voice references, and the existing TrueMark Mint advertisement were not modified.
+
+- Inspected the active advertising API, ad storage conventions, VoiceStudio wrapper, worker routing, voice configuration, and running VoiceStudio service.
+- Confirmed the authoritative production path is the existing Dandy worker with `primary_engine: voicestudio`, VoiceStudio at `http://127.0.0.1:3900`, and the existing `announcer_male` VoiceStudio profile (`echo`). No direct Qwen request was used.
+- Created a separate `commercial_library_20261110` record so the three reusable commercials remain independent from Episode 001.
+- Produced three new commercials through the existing `POST /episodes/{episode_id}/ads` and `POST /episodes/{episode_id}/ads/{ad_id}/produce` workflow:
+  - ORB Weaver — `ad_3f17e82f` — `episodes/commercial_library_20261110/ads/ad_3f17e82f.mp3`
+  - Shiloh Ridge Katahdins — `ad_8488b34b` — `episodes/commercial_library_20261110/ads/ad_8488b34b.mp3`
+  - Pro Prime Series AI LLC — `ad_dece1b21` — `episodes/commercial_library_20261110/ads/ad_dece1b21.mp3`
+- Each asset is registered with its own script, sponsor, product, offer, CTA, announcer identity, VoiceStudio resolution, production timestamp, duration, and audio fingerprint. All three resolved to VoiceStudio with no fallback.
+- Added the three advertiser keys to `backend/app/services/ads/ad_engine.py` so they are independently selectable in the existing catalog. The seven-slot architecture was not changed.
+- Restarted the backend so the live catalog loaded the new keys.
+
+### Audio verification
+
+- ORB Weaver: 29.999750 seconds, 601,484 bytes, SHA-256 `4752DD68C917D04B8C1778EF4A5C6CB15120F21E3B9A304E15C65582A11A7...`.
+- Shiloh Ridge Katahdins: 30.001958 seconds, 601,964 bytes, SHA-256 `69C4EF6EFF554FEF4476F2D4BBF0CC5BAFE13578461E92C61C4E0AB206B14...`.
+- Pro Prime Series AI LLC: 30.001958 seconds, 601,964 bytes, SHA-256 `EF4A98D8A8D4396B58F0042AB3013A67744D634F947506489C04432DF9CC1...`.
+- `ffprobe` confirmed all files have valid nonzero MP3 duration and size.
+- Episode 001 remained `script_ready`, with 3 existing ad-only lines, 1 existing TrueMark Mint ad, and the original TrueMark audio fingerprint.
+
+### Boundaries
+
+- TrueMark Mint was preserved unchanged.
+- Phil and Jim voice settings and samples were untouched.
+- Episode 001 was not generated, modified, or assembled with the new commercials.
+- The new commercials were not inserted into any episode.
+- Owner approval remains distinct from production status; the three assets are produced/draft assets until explicitly approved.
