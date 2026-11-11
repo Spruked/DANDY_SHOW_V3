@@ -24,11 +24,7 @@ from typing import Any, Callable, Dict, List, Optional
 from pydub import AudioSegment
 
 # ── Hardened modules ──
-from .context_builder import build_rich_context
-from .quality_guard import QualityDecision, ScriptQualityGuard
-from .rhythm import RhythmState
-from .script_expander import ScriptExpander
-from .script_seed import generate_seed_script
+from .quality_guard import ScriptQualityGuard
 from .intro_outro import wrap_episode_audio
 from .production_manifest import EDITOR_VERSION, checked_take_path, file_hash, load_manifest, save_manifest, validate_takes
 from .sfx import apply_sfx_events

@@ -1,20 +1,25 @@
 # Endpoint Wiring Audit
 
-Date: 2026-04-04
-Scope: `frontend/src/lib/api.js` + `frontend/src/components/StudioTab.jsx` against `backend/app/api/*.py`
+Date: 2026-11-10
+Scope: every `.js`/`.jsx` file under `frontend/src` against the live FastAPI app.
 
 ## Method
-- Enumerate backend route decorators (`@router.get/post/put/patch/delete`)
-- Expand backend compatibility routes (`/` and `/api` prefixes)
-- Enumerate frontend request paths from `req(...)` and direct StudioTab `fetch('/api/mixer...')` / `fetch('/api/obs...')`
-- Match dynamic URL segments by shape (`{episode_id}`, `{ad_id}`, etc.)
+- Backend routes and methods come from the app's own OpenAPI table (`create_app().openapi()`), so router
+  prefixes, `/api` aliases and decorator quoting style cannot cause false reports.
+- Frontend calls are collected from `req(...)`, `fetch('/api/...')`, `mixerRequest(...)` and `obsRequest(...)`.
+  The stated method (`{ method: 'POST' }`) is checked; calls without one are treated as GET.
+- `${...}` in a frontend path matches one or more segments; `{param}` in a backend route matches one segment.
 
 ## Result
-- Frontend routes checked: `31`
-- Backend routes discovered (including `/api` aliases): `90`
-- Unmatched frontend routes: `0`
+- Backend paths: `233`
+- Frontend calls checked: `112`
+- Calls with no route or the wrong method: `0`
+
+The previous version of the script read only `api.js` and `StudioTab.jsx`, recognised double-quoted route
+decorators only and normalised a fixed list of parameter names, so it reported 14 working routes as missing.
 
 ## Validation command
 ```powershell
-python scripts/audit_endpoints.py
+.venv\Scripts\python.exe scripts\audit_endpoints.py
 ```
+Exit code 1 lists each unmatched call with its file and line.

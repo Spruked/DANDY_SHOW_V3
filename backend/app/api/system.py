@@ -370,8 +370,6 @@ async def get_intro_outro_config() -> Dict:
 async def save_intro_outro_config(payload: Dict[str, Any] = Body(...)) -> Dict:
     cfg_path = CONFIG_ROOT / "config.json"
     data = json.loads(cfg_path.read_text(encoding="utf-8"))
-    # Protect top-level structure â€” only update intro_outro key
-    protected = {"intro_outro"}
     incoming = {k: v for k, v in payload.items() if k not in ("_meta",)}
     data["intro_outro"] = incoming
     atomic_json(cfg_path, data)

@@ -14,14 +14,13 @@ from typing import Any
 
 from functools import wraps
 from ...core.safety import file_lock
-from ...core.paths import PROJECT_ROOT
 from ...core.settings import load_project_config, load_qwen_tts_config, load_voices_config
 from ..storage.asset_library import list_library_assets, list_episode_ad_assets
 from ..storage.episode_store import (
     episode_dir, list_assets, list_canonical_scripts, load_canonical_script,
-    load_episode_detail, load_media_cues, save_json,
+    load_episode_detail,
 )
-from .production_editor import ArbiterMorb, EditorialMorb, PerformanceMorb, _spoken_text
+from .production_editor import ArbiterMorb, EditorialMorb, PerformanceMorb
 
 
 def _serialized_mutation(function):

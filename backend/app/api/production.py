@@ -1,11 +1,9 @@
 import asyncio
 import threading
 from datetime import datetime
-from functools import partial
 import json
 from pathlib import Path
 import re
-import threading
 from typing import Dict, List, Optional
 from uuid import uuid4
 
@@ -17,12 +15,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 from ..core.paths import PROJECT_ROOT
-from ..core.safety import contained_path
 from ..core.settings import load_project_config
 from ..schemas.episode import EpisodeCreateRequest
 from ..services.production import MergedDandyPodcastWorker
-from ..services.production.quality_guard import QualityDecision, ScriptQualityGuard
-from ..services.production.production_manifest import file_hash, load_manifest, script_hash, validate_takes
+from ..services.production.quality_guard import ScriptQualityGuard
+from ..services.production.production_manifest import load_manifest, validate_takes
 from ..services.production.production_editor import QcMorb, build_assembly_graph
 from ..services.production.production_lifecycle import (
     approve_draft, canonical_versions, create_draft, current_approval,
@@ -30,15 +27,11 @@ from ..services.production.production_lifecycle import (
     selected_preview_review,
 )
 from ..services.social.package_builder import export_social_package
-from ..services.production.script_seed import generate_seed_script
-from ..services.ads.ad_engine import ADS_CATALOG, generate_ad_script, summarize_context
 from ..services.storage.episode_store import (
-    build_source_context,
     calculate_repetition_report,
     calculate_script_provenance,
     create_episode_draft,
     episode_dir,
-    load_draft,
     load_job,
     load_script,
     load_canonical_script,
@@ -47,13 +40,12 @@ from ..services.storage.episode_store import (
     load_episode_detail,
     list_ads,
     load_ad_settings,
-    load_asset,
     load_media_cues,
     save_json,
     save_feedback,
     save_script,
 )
-from ..services.authoring.context import build_context
+from ..services.authoring.context import build_context  # noqa: F401  (tests patch it to prove generation never rebuilds context)
 from ..services.authoring.pack import render_pack
 
 
@@ -120,12 +112,6 @@ def _assert_llm_script_publishable(script: List[Dict], require_llm: bool = True)
     # Repetition is recorded for owner review only. Repeated product names, slogans
     # and messages are normal in this format and never block production.
     return {**provenance, **repetition}
-
-
-def _validate_runtime_or_raise(script: List[Dict], min_minutes: float = 30.0, max_minutes: float = 45.0) -> None:
-    est = _estimate_minutes(script)
-    if est < min_minutes or est > max_minutes:
-        raise HTTPException(status_code=400, detail=f"Episode must be between {min_minutes:.0f} and {max_minutes:.0f} minutes (current ~{est:.1f}m)")
 
 
 def _script_as_text(script: List[Dict]) -> str:
@@ -311,65 +297,6 @@ def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings:
     return _reindex(result)
 
 
-def _legacy_structure_unused(script: List[Dict], ads: List[Dict], ad_settings: Dict | None = None) -> List[Dict]:
-    if len(script) < 4:
-        return script
-    ad_settings = ad_settings or {}
-    required_ads = 2
-    est_minutes = _estimate_minutes(script)
-    if est_minutes > 40:
-        required_ads = 3
-
-    # Ensure at least two ads exist
-    def fallback_ad(idx: int) -> List[Dict]:
-        key = list(ADS_CATALOG.keys())[idx % len(ADS_CATALOG)]
-        announcer = ad_settings.get(f"ad{idx+1}_announcer") or ("announcer_female" if idx == 0 else "announcer_male")
-        return generate_ad_script(key, announcer, summarize_context(script), duration_seconds=20)
-
-    def pick_announcer_for_record(idx: int, default_key: str) -> str:
-        return (
-            ad_settings.get(f"ad{idx+1}_announcer")
-            or (ads[idx].get("announcer_key") if idx < len(ads) else None)
-            or default_key
-        )
-
-    ad1 = ads[0]["script"] if len(ads) > 0 else fallback_ad(0)
-    ad2 = ads[1]["script"] if len(ads) > 1 else fallback_ad(1)
-    ad3 = ads[2]["script"] if len(ads) > 2 else fallback_ad(2) if required_ads >= 3 else []
-
-    seg_len = max(1, len(script) // 4)
-    segments = [
-        script[0:seg_len],
-        script[seg_len : seg_len * 2],
-        script[seg_len * 2 : seg_len * 3],
-        script[seg_len * 3 :],
-    ]
-
-    assembled: List[Dict] = []
-    intro_voice = ad_settings.get("intro_announcer", "announcer_male")
-    outro_voice = ad_settings.get("outro_announcer", "announcer_female")
-    assembled.append(
-        {"speaker": intro_voice, "text": "Welcome to the Phil and Jim Dandy Show.", "emotion": "confident", "pause_after": 0.6, "generated_by": "production_structure"}
-    )
-    assembled.extend(segments[0])
-    assembled.extend(segments[1])
-    ad1_speaker = pick_announcer_for_record(0, "announcer_female")
-    assembled.extend([{**l, "speaker": ad1_speaker, "generated_by": l.get("generated_by", "ad_engine")} for l in ad1])
-    assembled.extend(segments[2])
-    ad2_speaker = pick_announcer_for_record(1, "announcer_male")
-    assembled.extend([{**l, "speaker": ad2_speaker, "generated_by": l.get("generated_by", "ad_engine")} for l in ad2])
-    assembled.extend(segments[3])
-    if required_ads >= 3 and ad3:
-        ad3_speaker = pick_announcer_for_record(2, "announcer_male")
-        assembled.extend([{**l, "speaker": ad3_speaker, "generated_by": l.get("generated_by", "ad_engine")} for l in ad3])
-    assembled.append(
-        {"speaker": outro_voice, "text": "Thanks for listening. Catch us next episode.", "emotion": "warm", "pause_after": 0.6, "generated_by": "production_structure"}
-    )
-    for idx, line in enumerate(assembled, start=1):
-        line["line_number"] = idx
-    return assembled
-
-
 def _get_worker() -> MergedDandyPodcastWorker:
     global _WORKER
     from ..core.settings import load_project_config, load_voices_config, load_qwen_tts_config
@@ -519,10 +446,6 @@ def accept_writer_draft(episode_id: str, draft_id: str):
         raise HTTPException(409, str(exc)) from exc
     finally:
         _GENERATION_LOCK.release()
-
-
-def _generate_script_impl(job_id, payload=None):
-    raise HTTPException(410, "Use the synchronous Nemotron generation endpoint")
 
 
 def _run_produce_background(
@@ -951,7 +874,6 @@ def production_editor_report(episode_id: str):
         raise HTTPException(400, "Invalid episode ID")
     state = editor_state(episode_id)
     episode_path = episode_dir(episode_id)
-    import json
     for key, filename in (("assembly_graph", "assembly_graph.v1.json"), ("qc_report", "qc_report.v1.json")):
         path = episode_path / filename
         state[key] = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
@@ -965,7 +887,6 @@ def production_revision_status(episode_id: str):
     path = episode_dir(episode_id) / "revision_status.json"
     if not path.is_file():
         return {"status": "idle", "episode_id": episode_id}
-    import json
     state = json.loads(path.read_text(encoding="utf-8"))
     if state.get("status") == "running" and episode_id not in _ACTIVE_REVISIONS:
         state.update({"status": "interrupted", "error": "Backend restarted before revision completed",

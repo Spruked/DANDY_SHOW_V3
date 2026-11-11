@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import json
 from datetime import date, timedelta
-from pathlib import Path
 
 from ...core.paths import PROJECT_ROOT
-from .registry import ROOT, _slug, list_businesses, list_products
+from .registry import _slug, list_businesses, list_products
 from ..production.ads import AD_SLOT_IDS
 
 ROOT_CAMPAIGNS = PROJECT_ROOT / "campaigns"

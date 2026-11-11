@@ -1,5 +1,4 @@
 from ...core.safety import atomic_json
-import json
 import re
 import shutil
 import subprocess

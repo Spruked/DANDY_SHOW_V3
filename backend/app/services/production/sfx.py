@@ -51,7 +51,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from pydub import AudioSegment
-import pydub.utils as _pydub_utils
+import pydub.utils as _pydub_utils  # noqa: F401  (kept deliberately)
 
 logger = logging.getLogger(__name__)
 

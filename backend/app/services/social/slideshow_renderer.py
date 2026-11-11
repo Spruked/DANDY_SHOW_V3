@@ -103,7 +103,6 @@ def _text_layer_image(layer, size):
 
 def render_composed_ad(ad, composition, assets):
     """Local, saved-state renderer: visual/text motion + voice + timed SFX."""
-    from pydub import AudioSegment
     ffmpeg = os.getenv("DANDY_FFMPEG") or shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError("FFmpeg is unavailable")

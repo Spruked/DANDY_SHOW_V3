@@ -1,7 +1,6 @@
 import json
 import hashlib
 import re
-import shutil
 import uuid
 from functools import wraps
 from collections import Counter

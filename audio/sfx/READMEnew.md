@@ -48,7 +48,7 @@ copy dandy_hardened\worker.py              backend\app\services\production\
 
 ### Step 2: Patch your communication_layer.py
 
-Follow the instructions in `COMMUNICATION_LAYER_PATCH.md` to update your
+Follow the instructions in `docs/COMMUNICATION_LAYER_PATCH.md` to update your
 existing `communication_layer.py` with the rich context builder.
 
 ### Step 3: Update your API endpoint to use the new worker
