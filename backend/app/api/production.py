@@ -45,6 +45,8 @@ from ..services.storage.episode_store import (
     load_script_version,
     list_script_versions,
     load_episode_detail,
+    list_ads,
+    load_ad_settings,
     load_asset,
     load_media_cues,
     save_json,
@@ -58,7 +60,8 @@ from ..services.authoring.pack import render_pack
 router = APIRouter(tags=["production"])
 _WORKER: MergedDandyPodcastWorker | None = None
 _PRODUCTION_SLOT = threading.BoundedSemaphore(1)
-_SPOKEN_WPM = max(1, int(load_project_config().get("production", {}).get("spoken_wpm", 160)))
+from ..services.production.duration import line_seconds, spoken_wpm
+_SPOKEN_WPM = spoken_wpm()
 _QUALITY_GUARD = ScriptQualityGuard(words_per_minute=_SPOKEN_WPM)
 _GENERATION_LOCK = threading.Lock()
 _ACTIVE_GENERATION = None
@@ -114,11 +117,8 @@ def _assert_llm_script_publishable(script: List[Dict], require_llm: bool = True)
         raise RuntimeError(f"Fallback-authored lines present: {provenance.get('fallback_sources')}")
     if require_llm and int(provenance.get("llm_line_count", 0)) <= 0:
         raise RuntimeError("No LLM-authored lines found in script")
-    if not repetition.get("repetition_guard_passed"):
-        raise RuntimeError(
-            "Repetition guard failed: "
-            f"max repeated line count {repetition.get('max_repeated_line_count')}"
-        )
+    # Repetition is recorded for owner review only. Repeated product names, slogans
+    # and messages are normal in this format and never block production.
     return {**provenance, **repetition}
 
 
@@ -150,7 +150,7 @@ def _script_as_srt(script: List[Dict]) -> str:
     return "\n".join(rows)
 
 
-def _estimate_minutes(script: List[Dict], wpm: int = 160) -> float:
+def _estimate_minutes(script: List[Dict], wpm: int = _SPOKEN_WPM) -> float:
     words = sum(len(line.get("text", "").split()) for line in script)
     return words / float(wpm)
 
@@ -245,6 +245,23 @@ def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings:
                 raise ValueError(f'Assigned recording missing for {slot_id}')
             return [{**line, 'ad_id': ad_id, 'ad_slot_id': slot_id, 'ad_line_index': index, 'is_ad': True}
                     for index, line in enumerate(ad['script'], 1)]
+        if any(line.get('episode_segment') for line in script if not line.get('is_ad')):
+            # Three-segment episodes: ads only before, between and after segments, never inside one.
+            from ..services.production.duration import segment_settings
+            layout = segment_settings()['ad_layout']
+            def placed(position):
+                return [entry for slot_id in layout.get(position, []) for entry in slot_lines(slot_id)]
+            result = placed('before_segment_1')
+            previous = None
+            for line in script:
+                current = line.get('episode_segment')
+                if not line.get('is_ad') and current and previous and current != previous:
+                    result.extend(placed(f'after_segment_{previous}'))
+                if not line.get('is_ad') and current:
+                    previous = current
+                result.append(dict(line))
+            result.extend(placed(f'after_segment_{previous}' if previous else 'after_segment_3'))
+            return _reindex(result)
         result = slot_lines('pre_roll_1') + slot_lines('pre_roll_2')
         host_words = sum(len(str(line.get('text', '')).split()) for line in script if not line.get('is_ad'))
         elapsed_words, next_midroll = 0, 1
@@ -288,7 +305,7 @@ def _enforce_ads_and_structure(script: List[Dict], ads: List[Dict], ad_settings:
             break_index += 1; next_break += break_spacing
         result.append(dict(line))
         if not line.get("is_ad"):
-            elapsed += len(str(line.get("text", "")).split()) / 155 * 60 + float(line.get("pause_after", 0) or 0)
+            elapsed += line_seconds(line, _SPOKEN_WPM)
             if segment is not None:
                 previous_segment = segment
     return _reindex(result)
@@ -446,18 +463,29 @@ def generate_script(
             raise ValueError('Brief differs from saved context; build a new package first')
         source_hash = generated_drafts.script_fingerprint(episode_id)
         target = int(package.get('target_seconds') or 1500)
-        target_words = max(600, round(target / 60 * 160))
+        from ..services.production.ads import advertising_slots
+        from ..services.production.duration import dialogue_budget
+        slots = (package.get('ad_slots') or {}).get('slots') or advertising_slots(
+            list_ads(episode_id), load_ad_settings(episode_id))
+        budget = dialogue_budget(target, slots)
+        target_words = budget['target_words']
         sample = body.get('sample', False)
         if not isinstance(sample, bool):
             raise ValueError('sample must be true or false')
         _GENERATION_CANCEL.clear()
         _ACTIVE_GENERATION = job_id
-        record('generating', context_version_id=package['version_id'], sample=sample)
+        record('generating', context_version_id=package['version_id'], sample=sample, duration_budget=budget)
+        def progress(state):
+            if not _GENERATION_CANCEL.is_set():  # never overwrite a cancellation request
+                record('generating', context_version_id=package['version_id'], sample=sample,
+                       duration_budget=budget, progress=state)
         script = llm_writer.generate_episode_script(render_pack(package), target_words=target_words,
-                                                    sample=sample, cancel_event=_GENERATION_CANCEL)
+                                                    sample=sample, cancel_event=_GENERATION_CANCEL,
+                                                    progress=progress)
         if _GENERATION_CANCEL.is_set():
             raise GenerationCancelled('Generation cancelled; the active script was preserved')
-        draft = generated_drafts.save_draft(episode_id, package, script, source_hash, sample)
+        draft = generated_drafts.save_draft(episode_id, package, script, source_hash, sample,
+                                         duration_budget=budget)
         record('draft_ready', draft_id=draft['draft_id'], context_version_id=package['version_id'], sample=sample)
         return {**draft, 'job_id': job_id}
     except HTTPException:

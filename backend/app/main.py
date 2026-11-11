@@ -14,6 +14,7 @@ from .api.context import router as context_router
 from .api.vault import router as vault_router
 from .api.library import router as library_router
 from .api.segment_production import router as segment_production_router
+from .api.segments import router as segments_router
 from .api.production import router as production_router
 from .api.social import router as social_router
 from .api.social_slideshow import router as slideshow_router
@@ -113,6 +114,8 @@ def create_app(runtime_root: Path | None = None, recover_jobs: bool = True) -> F
     # Compatibility alias delegates to the unified production handler.
     app.include_router(segment_production_router)
     app.include_router(segment_production_router, prefix="/api")
+    app.include_router(segments_router)
+    app.include_router(segments_router, prefix="/api")
     app.include_router(production_router)
     app.include_router(production_router, prefix="/api")
 

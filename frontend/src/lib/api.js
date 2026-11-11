@@ -197,6 +197,23 @@ export const api = {
       body: JSON.stringify(body),
     })
   },
+  // Three-segment authoring. Writer calls share the generation job, so CANCEL WRITER applies.
+  segments: (id) => req(`/episodes/${encodeURIComponent(id)}/segments`),
+  newSegmentPlan: (id, expected_revision) => req(`/episodes/${encodeURIComponent(id)}/segment-plan/new`, { method: 'POST', body: JSON.stringify({ expected_revision }) }),
+  saveSegmentPlan: (id, plan, expected_revision) => req(`/episodes/${encodeURIComponent(id)}/segment-plan`, { method: 'PUT', body: JSON.stringify({ plan, expected_revision }) }),
+  lockSegmentPlan: (id, expected_revision) => req(`/episodes/${encodeURIComponent(id)}/segment-plan/lock`, { method: 'POST', body: JSON.stringify({ expected_revision }) }),
+  unlockSegmentPlan: (id, expected_revision) => req(`/episodes/${encodeURIComponent(id)}/segment-plan/unlock`, { method: 'POST', body: JSON.stringify({ expected_revision }) }),
+  proposeSegmentPlan: async (id, expected_revision) => {
+    const jobId = await ensureJob(id)
+    return req(`/episodes/segment-plan/propose?job_id=${encodeURIComponent(jobId)}`, { method: 'POST', body: JSON.stringify({ expected_revision }) })
+  },
+  generateSegment: async (id, index) => {
+    const jobId = await ensureJob(id)
+    return req(`/episodes/segments/${index}/generate?job_id=${encodeURIComponent(jobId)}`, { method: 'POST' })
+  },
+  approveSegmentDraft: (id, index, draftId) => req(`/episodes/${encodeURIComponent(id)}/segments/${index}/drafts/${encodeURIComponent(draftId)}/approve`, { method: 'POST' }),
+  assemblyPreview: (id) => req(`/episodes/${encodeURIComponent(id)}/segments/assembly-preview`),
+  assembleEpisode: (id, preview_sha256) => req(`/episodes/${encodeURIComponent(id)}/segments/assemble`, { method: 'POST', body: JSON.stringify({ preview_sha256 }) }),
   writerDraft: (id) => req(`/episodes/${encodeURIComponent(id)}/writer-draft`),
   acceptWriterDraft: (id, draftId) => req(`/episodes/${encodeURIComponent(id)}/writer-drafts/${encodeURIComponent(draftId)}/accept`, { method: 'POST' }),
   generationStatus: async (id) => {

@@ -31,6 +31,21 @@
   },
   "production": {
     "default_target_duration_seconds": 2400,
+    "spoken_wpm": 160,
+    "segments": {
+      "count": 3,
+      "talk_minutes": 10,
+      "min_talk_minutes": 10,
+      "max_talk_minutes": 12,
+      "max_pass_words": 700,
+      "continuity_lines": 5,
+      "ad_layout": {
+        "before_segment_1": ["pre_roll_1", "pre_roll_2"],
+        "after_segment_1": ["mid_roll_1", "mid_roll_2"],
+        "after_segment_2": ["mid_roll_3", "mid_roll_4"],
+        "after_segment_3": ["post_roll_1"]
+      }
+    },
     "ad_policy": {
       "model": "seven_independent_slots",
       "midroll_count": 4,

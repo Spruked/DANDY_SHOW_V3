@@ -31,21 +31,18 @@ def saved_context(episode_id, version_id=None):
     return package
 
 
-def save_draft(episode_id, package, script, source_hash, sample=False):
+def save_draft(episode_id, package, script, source_hash, sample=False, duration_budget=None):
     draft_id = 'draft_' + uuid4().hex
-    warnings = []
-    import re
-    for index, line in enumerate(script, 1):
-        name = line['speaker']
-        if re.match(rf'^(?:you know,\s*|hey,?\s*|listen,?\s*)?{name}[,!?:]', line['text'], re.I):
-            warnings.append(f'Turn {index}: {name} appears to address himself; review character identity')
+    from .review import review_dialogue
+    warnings = [f"Turn {w['line']}: {w['detail']}" for w in review_dialogue(script)]
     draft = {'draft_id': draft_id, 'episode_id': episode_id, 'status': 'sample' if sample else 'draft',
              'sample': sample, 'context_version_id': package['version_id'],
              'context_sha256': hashlib.sha256(json.dumps(package, sort_keys=True, ensure_ascii=False).encode()).hexdigest(),
              'source_script_hash': source_hash, 'created_at': datetime.now(timezone.utc).isoformat(),
              'script': script, 'word_count': sum(len(line['text'].split()) for line in script),
              'script_sha256': hashlib.sha256(json.dumps(script, sort_keys=True, ensure_ascii=False).encode()).hexdigest(),
-             'review_warnings': warnings, 'writer_engine': 'nemotron'}
+             'review_warnings': warnings, 'writer_engine': 'nemotron',
+             'duration_budget': duration_budget}
     path = store.episode_dir(episode_id) / 'generated_drafts' / f'{draft_id}.json'
     atomic_json(path, draft)
     from ..storage.vault_store import preserve_files

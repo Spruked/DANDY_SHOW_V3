@@ -62,7 +62,8 @@ class HardenedPodcastWorker:
         self.project_config = load_project_config()
         self.voices_config = load_voices_config()
         self.qwen_tts_config = load_qwen_tts_config()
-        spoken_wpm = max(1, int(self.project_config.get("production", {}).get("spoken_wpm", 90)))
+        from .duration import spoken_wpm as _spoken_wpm
+        spoken_wpm = _spoken_wpm(self.project_config)
         self.runtime = WorkerRuntime(
             primary_engine=self.project_config.get("tts", {}).get("primary_engine", "kokoro"),
             fallback_engine=self.project_config.get("tts", {}).get("fallback_engine", "edge"),

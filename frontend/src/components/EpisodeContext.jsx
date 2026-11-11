@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, req } from '../lib/api'
+import SegmentsView from './SegmentsView'
 
 const DIRECTION_FIELDS = [
   ['episode_direction', 'Episode direction'], ['angle_and_tone', 'Angle and tone'],
@@ -27,7 +28,7 @@ function download(name, content, type) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-const SECTION_TABS = [['direction', 'Direction'], ['sources', 'Sources'], ['brief', 'Brief'], ['bible', 'Show Bible'], ['facts', 'Source Facts'], ['format', 'Format'], ['ads', 'Ad Slots'], ['build', 'Build & Export'], ['short-copy', 'Short Copy']]
+const SECTION_TABS = [['direction', 'Direction'], ['sources', 'Sources'], ['brief', 'Brief'], ['bible', 'Show Bible'], ['facts', 'Source Facts'], ['format', 'Format'], ['ads', 'Ad Slots'], ['build', 'Build & Export'], ['segments', 'Segments'], ['short-copy', 'Short Copy']]
 
 export default function EpisodeContext({ episodeId, onImport, onOpenAds, onDraftAccepted }) {
   const [section, setSection] = useState('direction')
@@ -142,7 +143,7 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds, onDraft
       {directionDirty && <span role="status">Unsaved owner direction — save Direction or build a new pack.</span>}
       {notice && <p role="status">{notice}</p>}
       {error && <p role="alert" style={{ color: 'var(--gold)', whiteSpace: 'pre-wrap' }}>{error}</p>}
-      {generationRunning && <p role="status">Writer request {generationJob.status === 'cancellation_requested' ? 'cancellation requested' : 'running'} · started {generationJob.started_at}. Your saved script remains available.
+      {generationRunning && <p role="status">Writer request {generationJob.status === 'cancellation_requested' ? 'cancellation requested' : 'running'}{generationJob.progress?.segment ? ` · segment ${generationJob.progress.segment}, pass ${generationJob.progress.pass} of ${generationJob.progress.passes} (${generationJob.progress.words_so_far} of ~${generationJob.progress.target_words} words)` : generationJob.progress?.section ? ` · section ${generationJob.progress.section} of ${generationJob.progress.sections} (${generationJob.progress.words_so_far} of ~${generationJob.progress.target_words} words)` : ''} · started {generationJob.started_at}. Your saved script remains available.
         <button className="btn btn-steel btn-sm" onClick={async () => { try { await api.cancelJob(episodeId); setNotice('Cancellation requested. The provider may finish its current request; its reply will not activate a script.') } catch (e) { setError(e.message) } }}>CANCEL WRITER</button>
       </p>}
     </header>
@@ -270,11 +271,7 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds, onDraft
       const result = await api.generateScript(episodeId, { context_version_id: packet.version_id, sample: true })
       setWriterDraft(result); setNotice(`Writer sample saved: ${result.word_count} words. The episode script is unchanged.`)
     })}>TEST WRITER · 8 TURNS</button>
-    <button className="btn btn-solid" disabled={generationBlocked} onClick={() => act(async () => {
-      const result = await api.generateScript(episodeId, { context_version_id: packet.version_id })
-      setWriterDraft(result)
-      setNotice(`Nemotron saved a ${result.word_count.toLocaleString()}-word draft. Review it below before accepting.`)
-    })}>GENERATE SCRIPT WITH NEMOTRON</button>
+    <button className="btn btn-solid" disabled={!packet} onClick={() => setSection('segments')}>WRITE EPISODE IN SEGMENTS →</button>
     {!packet && <p>Build a context package before testing or generating.</p>}
     {writerDraft && <section aria-label="Writer draft review">
       <h3>{writerDraft.sample ? 'Diagnostic sample' : 'Generated draft'} · {writerDraft.word_count} words</h3>
@@ -300,6 +297,7 @@ export default function EpisodeContext({ episodeId, onImport, onOpenAds, onDraft
       <details><summary>Review saved context</summary><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 360, overflow: 'auto' }}>{packet.markdown}</pre></details>
     </>}
       </>)}
+      {panel('segments', section === 'segments' ? <SegmentsView episodeId={episodeId} generationRunning={generationRunning} onAssembled={onDraftAccepted} /> : null)}
       {panel('short-copy', <>
     <div><h3>Local writer: ads and short posts</h3>
       <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>

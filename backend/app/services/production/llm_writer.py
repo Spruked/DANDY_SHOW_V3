@@ -83,7 +83,8 @@ def _post_json(url: str, payload: Dict, timeout: int = _TIMEOUT) -> Dict:
         return json.loads(resp.read().decode())
 
 
-def _call_nvidia(prompt: str, kind: str = "short-copy", *, cancel_event=None, max_tokens_override=None) -> Optional[str]:
+def _call_nvidia(prompt: str, kind: str = "short-copy", *, cancel_event=None, max_tokens_override=None,
+                 sample: bool = False) -> Optional[str]:
     """Explicit Nemotron authoring adapter; credentials remain process-local."""
     api_key = os.getenv("NVIDIA_API_KEY")
     if not api_key:
@@ -98,15 +99,17 @@ def _call_nvidia(prompt: str, kind: str = "short-copy", *, cancel_event=None, ma
     payload = {"model": model, "temperature": 0.4 if kind != "episode" else settings['temperature'],
                "max_tokens": max_tokens,
                "messages": [{"role": "system", "content":
-                   ("Write the complete episode at the requested length. Use supplied facts only. "
-                    "Return only the JSON array requested." if kind == "episode" else
+                   ("Write the requested Dandy Show dialogue at the requested length. Use supplied facts only. "
+                    "Return only the dialogue in the format requested." if kind == "episode" else
+                    "Propose the requested episode segment plan. Return only the JSON object requested."
+                    if kind == "segment-plan" else
                     f"Write only a short {kind}. Use supplied facts only. Return plain copy.")},
                   {"role": "user", "content": prompt}], "stream": False}
     if kind == "episode":
         # Match the successful transition probe: positive budget alone keeps
         # provider reasoning separate from final dialogue (variant D).
         payload["reasoning_budget"] = settings['reasoning_budget']
-        if max_tokens_override == 6000:
+        if sample:
             payload['messages'][0]['content'] = (
                 'Write only the requested eight-turn diagnostic dialogue sample, about 200 spoken words. '
                 'Use the complete saved context for facts and canon. Full-episode duration instructions '
@@ -162,74 +165,336 @@ def _call_nvidia(prompt: str, kind: str = "short-copy", *, cancel_event=None, ma
     raise RuntimeError("Nemotron request failed after bounded retries")
 
 
-def generate_episode_script(context: str, *, target_words: int = 5000,
-                            sample: bool = False, cancel_event=None) -> List[Dict]:
-    """Generate a structured Phil/Jim episode from the saved context package."""
-    prompt = f"""Write the complete Dandy Show episode from the source-grounded context below.
-Return ONLY a complete JSON array. Each item must have exactly: speaker (phil or jim),
-text (spoken dialogue string), emotion (string), pause_after (number of seconds from 0 to 3, e.g. 0.4).
-Alternate speakers, use complete spoken sentences, and never include markdown, stage directions, citations,
-or an analysis/thinking section in text. Do not invent facts beyond the supplied context. Target about
-{int(target_words)} spoken words. Make the conversation feel natural, progressive, witty, and distinct.
+SECTION_WORDS = 550          # one request reliably yields ~800 words; stay well inside that
+MAX_SECTION_WORDS = 900
+_TURN_FIELDS = {'speaker', 'text', 'emotion', 'pause_after'}
+_OUTPUT_CONTRACT = """OUTPUT FORMAT (this overrides the PHIL:/JIM: transcript format described in the context package,
+which is only for manual imports):
+Return ONLY a JSON array, nothing before or after it. Each item has exactly these keys:
+speaker ("phil" or "jim"), text (spoken dialogue), emotion (one word), pause_after (number of seconds, 0 to 3).
+Example: [{"speaker": "phil", "text": "Spoken sentence.", "emotion": "warm", "pause_after": 0.5},
+{"speaker": "jim", "text": "Spoken reply.", "emotion": "curious", "pause_after": 0.4}]"""
+_RULES = """Alternate speakers on every turn. Use complete spoken sentences. No markdown, stage directions,
+citations or planning notes inside text. Do not invent facts beyond the context package.
 Phil addresses Jim; Jim addresses Phil. Neither addresses himself by name. The brothers' biographies
-do not establish product features. iOS/Android parity does not mean mobile/desktop parity.
+do not establish product features. iOS/Android parity does not mean mobile/desktop parity."""
+_BLOCK_SPEAKER = re.compile(r'^(PHIL|JIM)\s*:\s*(.+)$', re.I)
+_BLOCK_EMOTION = re.compile(r'^emotion\s*:\s*(.+)$', re.I)
+_BLOCK_PAUSE = re.compile(r'^pause[_ ]after\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*(?:s|sec|seconds)?$', re.I)
 
-CONTEXT PACKAGE:
-{context}
-"""
-    if sample:
-        prompt = ("DIAGNOSTIC SAMPLE: write exactly eight alternating turns, starting with phil, about 200 spoken words. "
-                  "Full-episode duration and word-count instructions in the saved context do not apply to this sample. "
-                  "Return only a complete JSON array with speaker, text, emotion, numeric pause_after.\n\n"
-                  "CONTEXT PACKAGE:\n" + context)
-    raw = _call_nvidia(prompt, kind="episode", cancel_event=cancel_event,
-                       max_tokens_override=6000 if sample else None) or ""
-    candidate = raw.strip()
+
+def _parse_turn_blocks(text: str) -> Optional[List[Dict]]:
+    """Strict reader for the SPEAKER:/Emotion:/pause_after: layout the model sometimes emits.
+
+    Every non-blank line must belong to a complete three-line turn; anything
+    else returns None so the caller rejects the response rather than drop lines.
+    """
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if not lines or len(lines) % 3:
+        return None
+    turns = []
+    for i in range(0, len(lines), 3):
+        speaker = _BLOCK_SPEAKER.match(lines[i])
+        emotion = _BLOCK_EMOTION.match(lines[i + 1])
+        pause = _BLOCK_PAUSE.match(lines[i + 2])
+        if not (speaker and emotion and pause):
+            return None
+        turns.append({'speaker': speaker.group(1).lower(), 'text': speaker.group(2).strip(),
+                      'emotion': emotion.group(1).strip(), 'pause_after': float(pause.group(1))})
+    return turns
+
+
+DEFAULT_TRANSCRIPT_PAUSE = 0.4
+
+
+def _parse_transcript_lines(text: str) -> Optional[List[Dict]]:
+    """Plain PHIL:/JIM: lines, one turn per line. Any other line rejects the response."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    turns = []
+    for line in lines:
+        match = _BLOCK_SPEAKER.match(line)
+        if not match:
+            return None
+        turns.append({'speaker': match.group(1).lower(), 'text': match.group(2).strip(),
+                      'emotion': 'neutral', 'pause_after': DEFAULT_TRANSCRIPT_PAUSE})
+    return turns or None
+
+
+_LEADING_LABEL = re.compile(r'^(phil|jim)\s*:\s*', re.I)
+
+
+def parse_dialogue(raw: str, first_speaker: str = 'phil') -> List[Dict]:
+    """Validate one model response; reject it whole instead of discarding turns.
+
+    Accepts PHIL:/JIM: transcript lines, SPEAKER/Emotion/pause_after blocks or a JSON array.
+    A repeated own-speaker label inside the text ("PHIL: Phil: ...") is removed; the
+    other speaker's label inside the text rejects the response.
+    """
+    candidate = (raw or '').strip()
     if candidate.startswith("```"):
-        candidate = re.sub(r"^```(?:json)?\s*|\s*```$", "", candidate, flags=re.I | re.S).strip()
+        candidate = re.sub(r"^```(?:json|text)?\s*|\s*```$", "", candidate, flags=re.I | re.S).strip()
     try:
         parsed = json.loads(candidate)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError("Nemotron returned non-JSON dialogue; raw evidence was retained") from exc
+    except json.JSONDecodeError:
+        parsed = _parse_turn_blocks(candidate) or _parse_transcript_lines(candidate)
+        if parsed is None:
+            raise RuntimeError("Nemotron returned dialogue that is neither PHIL:/JIM: transcript lines, "
+                               "SPEAKER/Emotion/pause_after turns nor a JSON array; raw evidence was retained") from None
     if not isinstance(parsed, list) or not parsed:
         raise RuntimeError("Nemotron returned an empty episode script")
     script = []
-    expected = "phil"
+    expected = first_speaker
     for index, item in enumerate(parsed, 1):
         if not isinstance(item, dict):
             raise RuntimeError(f'Dialogue turn {index} must be an object')
-        if set(item) != {'speaker', 'text', 'emotion', 'pause_after'}:
+        if set(item) != _TURN_FIELDS:
             raise RuntimeError(f'Dialogue turn {index} has missing or unexpected fields')
         if not isinstance(item['text'], str) or not isinstance(item['emotion'], str):
             raise RuntimeError(f'Dialogue turn {index} requires text and emotion strings')
         speaker = str(item.get("speaker", "")).strip().lower()
-        text = str(item.get("text", "")).strip()
+        text = item["text"].strip()
         if speaker not in {"phil", "jim"} or not text:
             raise RuntimeError(f'Dialogue turn {index} has an invalid speaker or empty text')
         if speaker != expected:
             raise RuntimeError(f'Dialogue turn {index} must be {expected}; no turns were discarded')
+        label = _LEADING_LABEL.match(text)
+        if label:
+            if label.group(1).lower() != speaker:
+                raise RuntimeError(f"Dialogue turn {index} is {speaker} but its text carries the "
+                                   f"{label.group(1).upper()}: label")
+            text = text[label.end():].strip()
+            if not text:
+                raise RuntimeError(f'Dialogue turn {index} has empty text')
         pause = item['pause_after']
         if isinstance(pause, bool) or not isinstance(pause, (int, float)) or not math.isfinite(pause) or not 0 <= pause <= 3:
             raise RuntimeError(f'Dialogue turn {index} requires a numeric pause from 0 to 3 seconds')
-        if dialogue_issue(text):
-            raise RuntimeError(f'Dialogue turn {index}: {dialogue_issue(text)}')
-        script.append({"speaker": speaker, "text": text, "emotion": str(item.get("emotion", "neutral")),
-                       "pause_after": float(pause),
-                       "generated_by": "nemotron"})
+        issue = dialogue_issue(text)
+        if issue:
+            raise RuntimeError(f'Dialogue turn {index}: {issue}')
+        script.append({"speaker": speaker, "text": text, "emotion": item["emotion"].strip() or "neutral",
+                       "pause_after": float(pause), "generated_by": "nemotron"})
         expected = "jim" if expected == "phil" else "phil"
-    if len(script) < 4:
-        raise RuntimeError("Nemotron returned too few valid alternating dialogue turns")
-    if sample and len(script) != 8:
-        raise RuntimeError('Diagnostic sample must contain exactly eight dialogue turns')
-    words = sum(len(line['text'].split()) for line in script)
-    if not sample and not target_words * 0.65 <= words <= target_words * 1.35:
-        raise RuntimeError(f'Dialogue contains {words} words; expected approximately {target_words}. Raw evidence retained')
-    from ..storage.episode_store import calculate_repetition_report
-    if not calculate_repetition_report(script)['repetition_guard_passed']:
-        raise RuntimeError('Repeated dialogue detected; raw evidence retained')
+    return script
+
+
+def _words(lines: List[Dict]) -> int:
+    return sum(len(line['text'].split()) for line in lines)
+
+
+def _section_prompt(context: str, written: List[Dict], number: int, total: int,
+                    words: int, first_speaker: str, target_words: int) -> str:
+    if number == 1:
+        position = "This is the OPENING section: open the episode and start the first topic in the segment notes."
+    elif number == total:
+        position = ("This is the FINAL section: finish the remaining segment-note topics, then bring the "
+                    "conversation to a natural close. The last turn ends the episode.")
+    else:
+        position = ("This is a MIDDLE section: continue directly from the last line. Do not re-open the show, "
+                    "greet listeners, or wrap up.")
+    so_far = "\n".join(f"{line['speaker'].upper()}: {line['text']}" for line in written) or "(nothing yet)"
+    return f"""CONTEXT PACKAGE:
+{context}
+
+EPISODE SO FAR ({_words(written)} of about {target_words} words). Do not repeat points already made:
+{so_far}
+
+YOUR TASK: write section {number} of {total} of this Dandy Show episode.
+{position}
+Work through the owner's segment notes in order; this section covers roughly part {number} of {total} of them.
+Write about {words} spoken words, roughly {max(4, round(words / 16))} turns. The first turn is {first_speaker}.
+{_RULES}
+
+{_OUTPUT_CONTRACT}
+"""
+
+
+def _request_dialogue(prompt: str, first_speaker: str, *, cancel_event, sample: bool) -> List[Dict]:
+    """One provider call plus one bounded retry when the response cannot be parsed."""
+    last_error = None
+    for _attempt in range(2):
+        raw = _call_nvidia(prompt, kind="episode", cancel_event=cancel_event,
+                           max_tokens_override=6000 if sample else None, sample=sample) or ""
+        try:
+            return parse_dialogue(raw, first_speaker)
+        except RuntimeError as exc:
+            last_error = exc
+            logger.warning("[Nemotron] unusable dialogue response, retrying once: %s", exc)
+    raise last_error
+
+
+def generate_episode_script(context: str, *, target_words: int = 5000, sample: bool = False,
+                            cancel_event=None, progress=None) -> List[Dict]:
+    """Generate a structured Phil/Jim episode from the saved context package.
+
+    Full episodes are written in sections because a single request yields far
+    fewer words than a 25-minute script needs. Every section sees the whole
+    saved context and the dialogue written so far.
+    """
+    if sample:
+        prompt = (f"CONTEXT PACKAGE:\n{context}\n\nDIAGNOSTIC SAMPLE: write exactly eight alternating turns, "
+                  "starting with phil, about 200 spoken words. Full-episode duration and word-count instructions "
+                  f"in the context package do not apply to this sample.\n{_RULES}\n\n{_OUTPUT_CONTRACT}\n")
+        script = _request_dialogue(prompt, 'phil', cancel_event=cancel_event, sample=True)
+        if len(script) != 8:
+            raise RuntimeError('Diagnostic sample must contain exactly eight dialogue turns')
+    else:
+        total = max(1, math.ceil(target_words / SECTION_WORDS))
+        script: List[Dict] = []
+        for number in range(1, total + 1):
+            if cancel_event is not None and cancel_event.is_set():
+                raise RuntimeError('Generation cancelled; no script was activated')
+            remaining = max(0, target_words - _words(script))
+            words = min(MAX_SECTION_WORDS, max(150, round(remaining / (total - number + 1))))
+            first = 'phil' if not script or script[-1]['speaker'] == 'jim' else 'jim'
+            if progress:
+                progress({'section': number, 'sections': total, 'words_so_far': _words(script),
+                          'target_words': target_words})
+            prompt = _section_prompt(context, script, number, total, words, first, target_words)
+            section = _request_dialogue(prompt, first, cancel_event=cancel_event, sample=False)
+            for line in section:
+                line['section'] = number
+            script.extend(section)
+        if len(script) < 4:
+            raise RuntimeError("Nemotron returned too few valid alternating dialogue turns")
+        words = _words(script)
+        if not target_words * 0.65 <= words <= target_words * 1.35:
+            raise RuntimeError(f'Dialogue contains {words} words; expected approximately {target_words}. Raw evidence retained')
+    # Repetition is reported as a review warning on the saved draft, not rejected here.
     for number, line in enumerate(script, 1):
         line["line_number"] = number
     return script
+
+
+# ── Three-segment writing ───────────────────────────────────────────────────
+TRANSCRIPT_CONTRACT = """OUTPUT FORMAT: return ONLY dialogue lines, one turn per line, each starting with PHIL: or JIM:
+(the same transcript format as the context package). Alternate speakers. No headings, notes, numbering,
+blank commentary or anything else before, between or after the lines."""
+
+
+def split_beats(beats: List[str], passes: int) -> List[List[str]]:
+    """Contiguous, non-overlapping share of the segment's beats for each pass."""
+    passes = max(1, min(passes, len(beats))) if beats else max(1, passes)
+    size, extra = divmod(len(beats), passes)
+    result, start = [], 0
+    for index in range(passes):
+        end = start + size + (1 if index < extra else 0)
+        result.append(beats[start:end])
+        start = end
+    return result
+
+
+def _position_rules(segment_index: int, segment_count: int, pass_number: int, pass_count: int) -> str:
+    opening = segment_index == 1 and pass_number == 1
+    closing = segment_index == segment_count and pass_number == pass_count
+    rules = []
+    if opening:
+        rules.append("This pass OPENS THE SHOW: welcome listeners, introduce Phil and Jim, and introduce the topic.")
+    else:
+        rules.append("Continue directly from the last lines shown. No greetings, welcomes, show openings or "
+                     "re-introductions of Phil, Jim or the show. Move the conversation forward; do not replay "
+                     "earlier exchanges.")
+    if closing:
+        rules.append("This pass CLOSES THE SHOW: finish the last beats, then wrap up, thank listeners and sign off. "
+                     "The final turn ends the episode.")
+    elif pass_number == pass_count:
+        rules.append("End this segment at a natural transition. An advertising break follows. Do not summarize "
+                     "the episode, thank listeners or sign off.")
+    else:
+        rules.append("Do not wrap up, summarize the episode, thank listeners or sign off.")
+    return "\n".join(f"- {rule}" for rule in rules)
+
+
+def segment_pass_prompt(context: str, *, segment: Dict, segment_count: int, pass_number: int, pass_count: int,
+                        beats: List[str], covered: List[str], recent_lines: List[Dict], words: int,
+                        first_speaker: str, requirements: List[Dict]) -> str:
+    """One writing pass. Earlier dialogue appears only as the last few lines, never in full."""
+    index = segment["index"]
+    recent = "\n".join(f"{line['speaker'].upper()}: {line['text']}" for line in recent_lines) or "(the show has not started)"
+    covered_text = "\n".join(f"- {item}" for item in covered) or "- (nothing yet)"
+    points = "\n".join(f"- {point}" for point in segment.get("point_texts", [])) or "- (none assigned)"
+    episode_wide = "\n".join(
+        f"- {item['text']}" + (" (address primarily in this segment)" if item.get('primary_segment') == index else "")
+        for item in requirements) or "- (none)"
+    return f"""CONTEXT PACKAGE:
+{context}
+
+SEGMENT {index} OF {segment_count}: {segment.get('title', '')}
+Topic focus: {segment.get('focus', '')}
+Must-include points assigned to this segment:
+{points}
+Episode-wide requirements:
+{episode_wide}
+
+ALREADY COVERED (from the segment plan, for progression). Product names, benefits, key messages,
+slogans and callbacks may recur naturally; build on these rather than replaying them:
+{covered_text}
+
+LAST LINES SO FAR:
+{recent}
+
+YOUR TASK: write pass {pass_number} of {pass_count} of segment {index}. Cover only these beats, in order:
+{chr(10).join(f'- {beat}' for beat in beats) or '- (continue the segment focus)'}
+Write about {words} spoken words, roughly {max(4, round(words / 16))} turns. The first turn is {first_speaker.upper()}.
+POSITION RULES (these override the context package's whole-episode instructions about welcoming listeners,
+summarizing, signing off and total target length, which apply to the episode as a whole):
+{_position_rules(index, segment_count, pass_number, pass_count)}
+{_RULES}
+
+{TRANSCRIPT_CONTRACT}
+"""
+
+
+def write_segment(context: str, *, segment: Dict, segment_count: int, target_words: int, max_pass_words: int,
+                  covered_before: List[str], previous_lines: List[Dict], requirements: List[Dict],
+                  continuity_lines: int = 5, cancel_event=None, progress=None) -> Dict:
+    """Write one segment in passes of at most max_pass_words words.
+
+    Each pass sees the full context package, its beats, a plan-derived list of
+    covered points, and only the last few lines written. A pass whose reply
+    cannot be parsed is retried once. Repetition never triggers a retry; it is
+    reported on the draft for the owner to judge.
+    """
+    pass_count = max(1, math.ceil(target_words / max_pass_words))
+    beat_groups = split_beats(list(segment.get("beats", [])), pass_count)
+    pass_count = len(beat_groups)
+    lines: List[Dict] = []
+    log = []
+    covered = list(covered_before)
+    for pass_number, beats in enumerate(beat_groups, 1):
+        if cancel_event is not None and cancel_event.is_set():
+            raise RuntimeError('Generation cancelled; no script was activated')
+        remaining = max(0, target_words - _words(lines))
+        words = min(max_pass_words, max(150, round(remaining / (pass_count - pass_number + 1))))
+        recent = (previous_lines + lines)[-continuity_lines:] if continuity_lines else []
+        first = 'phil' if not recent or recent[-1]['speaker'] == 'jim' else 'jim'
+        if progress:
+            progress({'segment': segment['index'], 'pass': pass_number, 'passes': pass_count,
+                      'words_so_far': _words(lines), 'target_words': target_words})
+        entry = {'pass': pass_number, 'beats': beats, 'requested_words': words, 'attempts': []}
+        prompt = segment_pass_prompt(context, segment=segment, segment_count=segment_count,
+                                     pass_number=pass_number, pass_count=pass_count, beats=beats,
+                                     covered=covered, recent_lines=recent, words=words,
+                                     first_speaker=first, requirements=requirements)
+        result = None
+        for attempt in (1, 2):
+            raw = _call_nvidia(prompt, kind="episode", cancel_event=cancel_event) or ""
+            try:
+                result = parse_dialogue(raw, first)
+            except RuntimeError as exc:
+                entry['attempts'].append({'attempt': attempt, 'rejected': str(exc)})
+                if attempt == 2:
+                    raise
+                continue
+            entry['attempts'].append({'attempt': attempt, 'turns': len(result), 'words': _words(result)})
+            break
+        for line in result:
+            line.update(segment_index=segment['index'], segment_pass=pass_number)
+        lines.extend(result)
+        covered.extend(beats)
+        log.append(entry)
+    for number, line in enumerate(lines, 1):
+        line['segment_line'] = number
+    return {'script': lines, 'passes': log, 'word_count': _words(lines)}
 
 
 def nvidia_status() -> Dict[str, object]:
