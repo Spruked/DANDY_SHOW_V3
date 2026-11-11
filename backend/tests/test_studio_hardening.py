@@ -234,6 +234,18 @@ class DraftWorkflow(unittest.TestCase):
         listed = self.client.get('/api/ads/library').json()['ads']
         self.assertEqual(len(listed), 2)
 
+    def test_library_ignores_attached_asset_lists(self):
+        self.client.post('/api/episodes/create', json={'episode_id': 'source', 'title': 'Commercials', 'topic': 'Ads'})
+        path = store.ads_dir('source') / 'source.mp3'
+        path.write_bytes(b'fixture-recording')
+        lines = [{'speaker': 'announcer_male', 'text': 'Sponsor message.'}]
+        record = store.save_ad('source', {'script': lines, 'audio_file': str(path),
+                                         'audio_script_fingerprint': ad_audio_fingerprint(lines)})
+        (store.ads_dir('source') / f"{record['ad_id']}_assets.json").write_text('[{"asset_id": "asset_x"}]', encoding='utf-8')
+        response = self.client.get('/api/ads/library')
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual([ad['ad_id'] for ad in response.json()['ads']], [record['ad_id']])
+
 
 if __name__ == '__main__':
     unittest.main()

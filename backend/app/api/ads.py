@@ -91,9 +91,11 @@ def reusable_ad_library():
     """Existing produced recordings, independent of the selected episode."""
     records = []
     for path in sorted(EPISODES_ROOT.glob('*/ads/ad_*.json')):
+        if path.name.endswith('_assets.json'):  # attached-asset lists, not commercial records
+            continue
         try:
             ad = json.loads(path.read_text(encoding='utf-8'))
-            if not ad.get('ad_id') or not ad.get('script') or not ad.get('audio_file'):
+            if not isinstance(ad, dict) or not ad.get('ad_id') or not ad.get('script') or not ad.get('audio_file'):
                 continue
             audio = contained_path(EPISODES_ROOT, ad['audio_file'])
             if not audio.is_file():

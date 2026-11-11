@@ -5,7 +5,7 @@ the REAL Episode 001 prompt from the saved evidence file with a capped thinking
 budget, to see whether Nemotron thinks briefly and then writes the JSON script.
 2 calls (~11k input tokens each, 3,500 output max), testing a capped thinking budget. Changes nothing in Dandy.
 
-    python nemotron_budget_probe.py data\\debug\\nemotron_EVIDENCE_6ac4f6eb.json
+    python scripts\nemotron_budget_probe.py data\\debug\\nemotron_EVIDENCE_6ac4f6eb.json
 """
 import json
 import os
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     if not KEY:
         raise SystemExit("NVIDIA_API_KEY is not set in this window.")
     if len(sys.argv) != 2:
-        raise SystemExit("Usage: python nemotron_budget_probe.py <evidence json>")
+        raise SystemExit("Usage: python scripts/nemotron_budget_probe.py <evidence json>")
     episode_prompt, _ = load_evidence(sys.argv[1])
     print(f"Prompt length: {len(episode_prompt):,} characters\n")
     run("D  reasoning_budget=2000 (thinking allowed, capped)", episode_prompt, 0.7,
