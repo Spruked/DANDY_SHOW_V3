@@ -881,6 +881,7 @@ class HardenedPodcastWorker:
             "voice_prompt": voice_prompt,
             "reference_audio": self._resolve_voice_asset(voice_payload.get("qwen_reference_audio")),
             "reference_text": voice_payload.get("qwen_reference_text"),
+            "speed": float(voice_payload.get("performance", {}).get("native_speed", voice_payload.get("defaults", {}).get("speed", 1.0))),
             "language": "English",
             "format": output_path.suffix.lstrip(".") or "mp3",
             "output_path": str(output_path),
@@ -1012,11 +1013,12 @@ class HardenedPodcastWorker:
 
     def _resolve_speed(self, speaker: str, emotion: str) -> float:
         defaults = self.voices_config.get(speaker, {}).get("defaults", {})
-        speed = float(defaults.get("speed", 1.0))
+        performance = self.voices_config.get(speaker, {}).get("performance", {})
+        speed = float(performance.get("native_speed", defaults.get("speed", 1.0)))
         if speaker == "phil" and emotion == "excited":
             return speed + 0.05
         if speaker == "jim" and emotion == "skeptical":
-            return max(0.85, speed - 0.08)
+            return max(0.76, speed - 0.04)
         return speed
 
     def _resolve_voice_name(self, speaker: str, engine_used: str) -> str:

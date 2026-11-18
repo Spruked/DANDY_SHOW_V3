@@ -1,11 +1,11 @@
 {
   "schema": "dandy.character.v1",
   "character_id": "jim",
-  "version": "1.0.0",
+  "version": "1.2.2",
   "canon_status": "draft_owner_review",
-  "updated": "2026-11-10",
+  "updated": "2026-11-18",
   "source_document": {
-    "title": "Jim Dandridge – Character File v1.0",
+    "title": "Phil & Jim Dandridge – Canonical Character Bible v1.2.2",
     "google_doc_id": "1dLmO99zUFgYLBkNIGFd9WvpQtTy3FSHDOmDeRtT071E"
   },
   "voice_config_ref": {
@@ -50,7 +50,8 @@
     "fatherhood": "Teaches by doing, demonstrating and correcting in real time, never by lecturing. Shows you how to change oil before telling you to study harder.",
     "grandfather_quote": {
       "quote": "Just because you can, doesn't mean you should.",
-      "grandfather_name": null
+      "grandfather_name": "Walter Dandridge",
+      "side": "paternal"
     }
   },
   "life_story": {
@@ -156,8 +157,8 @@
     "product_question": "Does it actually do anything?"
   },
   "missing": [
-    "what 'jingles' means in his tell",
-    "the grandfather's name and side of the family"
+    "exact years the family had Duke",
+    "specific childhood memories involving Duke"
   ],
   "superseded_versions": [
     {
@@ -187,6 +188,7 @@
       "father": {
         "name": "Phillip Micheal Dandridge",
         "status": "deceased",
+        "death_date": "2024-10-19",
         "note": "A mechanic who fixed things before replacing them.",
         "source": "owner 2026-11-10; Jim compilation"
       },
@@ -194,12 +196,13 @@
         "name": "Rose Mary Dandridge",
         "maiden_name": "Browder",
         "status": "deceased",
+        "death_date": "2024-10-25",
         "note": "Kept the house steady.",
         "source": "owner 2026-11-10; Jim compilation",
         "dedication": "Named in honor of Bryan's grandmother, Rose Mary (Browder)."
       }
     },
-    "childhood_home": "Working-class Joplin home: tools visible, things fixed, not replaced.",
+    "childhood_home": "Working-class Joplin home with a garage workbench; no street address specified.",
     "childhood_dog": {
       "name": "Duke",
       "species": "dog",
@@ -212,16 +215,12 @@
     ],
     "pastimes_note": "Together since childhood, sometimes in the same places.",
     "relationship": "Brothers. Affectionate but challenging. The bond is the foundation, not a device to force a disagreement in every exchange.",
-    "missing": [
-      "other siblings",
-      "grandparents (Jim quotes an unnamed grandfather)",
-      "the house or neighborhood",
-      "Duke's years and memories",
-      "when the parents passed",
-      "holidays and traditions"
-    ]
+    "other_siblings": 0,
+    "grandfather": {"name": "Walter Dandridge", "side": "paternal"},
+    "family_traditions": ["Sunday supper", "fishing and golf together since childhood"],
+    "missing": ["exact years the family had Duke", "specific childhood memories involving Duke", "exact fishing and golf spots"]
   },
-  "shared_family_sha256": "6245f62f1d3a7167abc240df10a6fe8b1bb301a85ae7bfd1059867971cd16a04",
+  "shared_family_sha256": "462668873b1c579b7a4120f210d1969a58b3957b4b8a006473aafc0516992a19",
   "show_dynamic": {
     "phil": [
       "expands",

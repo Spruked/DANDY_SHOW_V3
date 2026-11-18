@@ -1,11 +1,11 @@
 {
   "schema": "dandy.character.v1",
   "character_id": "phil",
-  "version": "1.0.0",
+  "version": "1.2.2",
   "canon_status": "draft_owner_review",
-  "updated": "2026-11-10",
+  "updated": "2026-11-18",
   "source_document": {
-    "title": "Phil Dandridge – Character File v1.0",
+    "title": "Phil & Jim Dandridge – Canonical Character Bible v1.2.2",
     "google_doc_id": "1mwTfREJl73urSJMl3mdcaNIxt1qCwTE12HBj1PD6uG8"
   },
   "voice_config_ref": {
@@ -14,12 +14,11 @@
   },
   "identity": {
     "full_name": "Phillip Dandridge",
-    "middle_name": null,
-    "middle_name_note": "Possibly Micheal, after his father. MISSING.",
+    "middle_name": "Daniel",
+    "middle_name_note": "Owner-adopted fictional canon in Bible v1.2.2.",
     "called": "Phil",
     "on_air_name": "Phil Dandy",
-    "born": null,
-    "born_note": "After 1978-03-14 (younger brother). Exact date MISSING.",
+    "born": "1981-09-22",
     "birth_order": "younger",
     "hometown": "Joplin, Missouri",
     "show_role": "The Engine / The Expander"
@@ -28,19 +27,21 @@
     "spouse": {
       "name": "Mary Virginia Dandridge",
       "maiden_name": "Wilton",
+      "birth_date": "1982-06-18",
       "status": "living",
-      "marriage": "Married once, still married. Length MISSING.",
+      "marriage": "Married once, in 2005; still married.",
       "rule": "Off-limits for jokes unless she's there.",
       "dedication": "Named in honor of Bryan's mother, Mary Virginia (Wilton).",
       "source": "owner 2026-11-10; February show bible"
     },
     "children": [
       {
-        "name": "Phillip Dandridge",
+        "name": "Phillip Daniel Dandridge Jr.",
         "nickname": "Lip",
         "order": 1,
         "sex": "male",
-        "birth_year": null,
+        "birth_year": 2007,
+        "birth_date": "2007-04-12",
         "note": "The oldest, named after his father and his grandfather.",
         "source": "owner 2026-11-10"
       },
@@ -49,7 +50,8 @@
         "nickname": "Stew",
         "order": 2,
         "sex": "male",
-        "birth_year": null,
+        "birth_year": 2010,
+        "birth_date": "2010-08-09",
         "source": "owner 2026-11-10"
       }
     ],
@@ -65,8 +67,9 @@
     ]
   },
   "background": {
-    "schooling": null,
-    "work": null,
+    "schooling": "Joplin-area high-school graduate, 2000; business and electronics coursework",
+    "work": "Equipment sales and practical troubleshooting",
+    "life_milestones": ["marriage in 2005", "sons born in 2007 and 2010", "early small-business projects"],
     "flavor": "An older version gave him a golf story for every situation. Flavor, not a rule."
   },
   "personality": {
@@ -163,10 +166,6 @@
     "example_wait_what": "I think the internet is just a garage sale where nobody actually wants to sell anything."
   },
   "missing": [
-    "birth dates for Phil, Mary Virginia, Lip and Stew",
-    "Phil's middle name (Micheal?) and Lip's full name",
-    "length of marriage",
-    "schooling and work history",
     "Milo and Precious details (optional)"
   ],
   "superseded_versions": [
@@ -197,6 +196,7 @@
       "father": {
         "name": "Phillip Micheal Dandridge",
         "status": "deceased",
+        "death_date": "2024-10-19",
         "note": "A mechanic who fixed things before replacing them.",
         "source": "owner 2026-11-10; Jim compilation"
       },
@@ -204,12 +204,13 @@
         "name": "Rose Mary Dandridge",
         "maiden_name": "Browder",
         "status": "deceased",
+        "death_date": "2024-10-25",
         "note": "Kept the house steady.",
         "source": "owner 2026-11-10; Jim compilation",
         "dedication": "Named in honor of Bryan's grandmother, Rose Mary (Browder)."
       }
     },
-    "childhood_home": "Working-class Joplin home: tools visible, things fixed, not replaced.",
+    "childhood_home": "Working-class Joplin home with a garage workbench; no street address specified.",
     "childhood_dog": {
       "name": "Duke",
       "species": "dog",
@@ -222,16 +223,12 @@
     ],
     "pastimes_note": "Together since childhood, sometimes in the same places.",
     "relationship": "Brothers. Affectionate but challenging. The bond is the foundation, not a device to force a disagreement in every exchange.",
-    "missing": [
-      "other siblings",
-      "grandparents (Jim quotes an unnamed grandfather)",
-      "the house or neighborhood",
-      "Duke's years and memories",
-      "when the parents passed",
-      "holidays and traditions"
-    ]
+    "other_siblings": 0,
+    "grandfather": {"name": "Walter Dandridge", "side": "paternal"},
+    "family_traditions": ["Sunday supper", "fishing and golf together since childhood"],
+    "missing": ["exact years the family had Duke", "specific childhood memories involving Duke", "exact fishing and golf spots"]
   },
-  "shared_family_sha256": "6245f62f1d3a7167abc240df10a6fe8b1bb301a85ae7bfd1059867971cd16a04",
+  "shared_family_sha256": "462668873b1c579b7a4120f210d1969a58b3957b4b8a006473aafc0516992a19",
   "show_dynamic": {
     "phil": [
       "expands",

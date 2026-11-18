@@ -29,6 +29,11 @@
       "speed": 1.0,
       "pitch": 0.0,
       "volume": 0.95
+    },
+    "performance": {
+      "target_wpm": 90,
+      "native_speed": 0.82,
+      "delivery": "Measured, deliberate, dry and corrective. Use short bursts, a brief pause before corrections, and let punchlines land. Do not sound slowed down in post-production."
     }
   },
   "host": {

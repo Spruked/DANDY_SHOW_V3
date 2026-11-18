@@ -28,7 +28,7 @@
   },
   "instructions": {
     "phil": "A curious, energetic younger-brother host voice. Warm, quick, conversational, with clean cadence.",
-    "jim": "A grounded, practical older-brother host voice. Dry, measured, skeptical, and clear.",
+    "jim": "A grounded, practical older-brother host voice. Measured and deliberate at roughly 90 words per minute. Dry, skeptical, economical, with natural pauses before corrections and a quiet pause after a punchline. Never sound like fast speech played slowly.",
     "announcer_male": "A confident radio announcer voice with polished articulation.",
     "announcer_female": "A warm professional announcer voice with steady pacing.",
     "host": "A clear studio host voice with natural pacing.",
