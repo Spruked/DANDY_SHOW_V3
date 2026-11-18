@@ -19,6 +19,30 @@ CHARACTERS = ("phil", "jim")
 SIBLING = {"phil": "jim", "jim": "phil"}
 
 
+
+# Approved v1.2.2 SHA-256 release anchor. Changing the manifest alone cannot
+# authorize a changed biography; a new owner-approved version is required.
+LOCKED_RELEASE = "1.2.2"
+LOCKED_SHA256 = {
+    "phil": "1e7dd4416c46edef890f939a45dccc84be0e08f89dc06b3c9bc204c82d74b4ab",
+    "jim": "f81d0e2c0e218996c015b78b66d80bb38937ca96b3c8b7dec42690337cf77bda",
+}
+
+
+def verify_release_manifest(base_path: Optional[Path] = None) -> None:
+    root = Path(base_path) if base_path is not None else Path(__file__).resolve().parent
+    manifest_path = root / "canon-release-v1.2.2.json"
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise PersonaIntegrityError("Approved canon release manifest missing or invalid") from exc
+    if manifest.get("version") != LOCKED_RELEASE or manifest.get("status") != "approved_locked":
+        raise PersonaIntegrityError("Canon release is not approved and locked")
+    for name, expected in LOCKED_SHA256.items():
+        if manifest.get("files", {}).get(name + ".persona.json", {}).get("sha256") != expected:
+            raise PersonaIntegrityError("Canon manifest SHA-256 mismatch: " + name)
+
+
 class PersonaIntegrityError(RuntimeError):
     """Raised when a persona file is missing, malformed, or inconsistent."""
 
@@ -84,11 +108,16 @@ def load_persona(character_id: str, base_path: Optional[Path] = None) -> Dict[st
     character_id = character_id.lower()
     if character_id not in CHARACTERS:
         raise PersonaIntegrityError(f"Unknown character '{character_id}'")
+    verify_release_manifest(base_path)
     data = _read(persona_path(character_id, base_path))
+    if data.get('_file_sha256') != LOCKED_SHA256[character_id] or data.get('version') != LOCKED_RELEASE or data.get('canon_status') != 'approved_locked':
+        raise PersonaIntegrityError('Locked persona SHA-256 or release metadata mismatch: ' + character_id)
     _check_one(character_id, data)
 
     sibling_id = SIBLING[character_id]
     sibling = _read(persona_path(sibling_id, base_path))
+    if sibling.get('_file_sha256') != LOCKED_SHA256[sibling_id] or sibling.get('version') != LOCKED_RELEASE or sibling.get('canon_status') != 'approved_locked':
+        raise PersonaIntegrityError('Locked sibling SHA-256 or release metadata mismatch: ' + sibling_id)
     _check_one(sibling_id, sibling)
     if sibling["shared_family"] != data["shared_family"]:
         raise PersonaIntegrityError(
