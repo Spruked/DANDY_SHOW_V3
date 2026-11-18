@@ -1,0 +1,21 @@
+{
+  "schema": "dandy.persona.release.v1",
+  "version": "1.2.2",
+  "status": "approved_locked",
+  "approval": "Owner explicitly approved 2026-11-18",
+  "files": {
+    "phil.persona.json": {
+      "sha256": "1e7dd4416c46edef890f939a45dccc84be0e08f89dc06b3c9bc204c82d74b4ab",
+      "git_blob_sha": "80ba07fde21a0c1969ac84460119f02a58ac37d0",
+      "bytes": 9126
+    },
+    "jim.persona.json": {
+      "sha256": "f81d0e2c0e218996c015b78b66d80bb38937ca96b3c8b7dec42690337cf77bda",
+      "git_blob_sha": "e520f44bb9dc9d5871e7877c6df70f558ecc5d66",
+      "bytes": 9807
+    }
+  },
+  "source_commit_persona_studio": "bd2769ce7cb818dba868634debcd7ac302031166",
+  "source_commit_v3": "a8e5f363e5f4df69ff5563dc4d27332dfb126136",
+  "policy": "Immutable release. Any change requires new version, owner approval and new hashes."
+}
