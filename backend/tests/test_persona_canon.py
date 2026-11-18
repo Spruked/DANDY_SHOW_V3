@@ -20,6 +20,7 @@ class PersonaCanonTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         shutil.copytree(ROOT / "config" / "characters", self.tmp / "config" / "characters")
+        shutil.copy2(ROOT / "canon-release-v1.2.2.json", self.tmp / "canon-release-v1.2.2.json")
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -52,6 +53,11 @@ class PersonaCanonTests(unittest.TestCase):
             self.assertNotIn(word, phil)
         for word in ("Mary Virginia", "Milo", "Precious"):
             self.assertNotIn(word, jim)
+
+    def test_any_biography_edit_fails_closed(self):
+        self._edit("phil", lambda d: d["identity"].update(full_name="Not Phil"))
+        with self.assertRaises(canon.PersonaIntegrityError):
+            canon.load_persona("phil", self.tmp)
 
     def test_shared_family_edited_without_fingerprint_fails_closed(self):
         self._edit("phil", lambda d: d["shared_family"]["childhood_dog"].update(name="Rex"))
